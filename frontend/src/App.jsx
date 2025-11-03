@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -31,17 +26,13 @@ let API_BASE = import.meta.env?.VITE_API_URL;
 
 if (!API_BASE) {
   if (import.meta.env.DEV) {
-    // ✅ Local development fallback
     API_BASE = "http://localhost:5000";
   } else {
-    // ✅ Deployed fallback (same domain)
     API_BASE = window.location.origin;
   }
 }
 
-// ✅ Export for shared usage
 export const API_BASE_URL = API_BASE;
-
 console.log("🌐 API_BASE =", API_BASE);
 
 const GlobalStyles = () => (
@@ -81,71 +72,69 @@ const AdminRoute = ({ children }) => {
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
-        <GlobalStyles />
-        <div className="min-h-screen bg-gradient-to-red from-orange-900 via-orange-700 to-orange-500">
-          <ToastContainer position="top-center" />
-          <Navbar />
+      <GlobalStyles />
+      <div className="min-h-screen bg-gradient-to-red from-orange-900 via-orange-700 to-orange-500">
+        <ToastContainer position="top-center" />
+        <Navbar />
 
-          <main className="pt-6 pb-12">
-            <Routes>
-              {/* Public */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/Home" element={<Home />} />
-              <Route path="/feedback" element={<Feedback />} />
+        <main className="pt-6 pb-12">
+          <Routes>
+            {/* Public */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/feedback" element={<Feedback />} />
 
-              {/* User Protected */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/events"
-                element={
-                  <PrivateRoute>
-                    <Events />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/create-event"
-                element={
-                  <PrivateRoute>
-                    <CreateEvent />
-                  </PrivateRoute>
-                }
-              />  
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
+            {/* User Protected */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <Events />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-event"
+              element={
+                <PrivateRoute>
+                  <CreateEvent />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
 
-              {/* Admin Protected */}
-              <Route
-                path="/admin"
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                }
-              />
+            {/* Admin Protected */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
 
-              {/* Default & 404 */}
-              <Route path="/" element={<Navigate to="/events" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+            {/* Default & 404 */}
+            <Route path="/" element={<Navigate to="/events" replace />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
     </AuthProvider>
   );
 };
