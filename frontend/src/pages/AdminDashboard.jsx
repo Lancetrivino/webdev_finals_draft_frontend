@@ -37,7 +37,7 @@ function AdminDashboard() {
       const data = await res.json();
 
       // show only pending events
-      const pending = data.filter((e) => e.status === "pending");
+      const pending = data.filter((e) => e.status.toLowerCase() === "pending");
       setEvents(pending);
     } catch (err) {
       console.error("Error:", err);
