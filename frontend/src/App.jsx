@@ -26,9 +26,9 @@ let API_BASE = import.meta.env?.VITE_API_URL;
 
 if (!API_BASE) {
   if (import.meta.env.DEV) {
-    API_BASE = "http://localhost:5000";
+    API_BASE = "http://localhost:5000"; // ✅ local dev
   } else {
-    API_BASE = window.location.origin;
+    API_BASE = window.location.origin; // ✅ production
   }
 }
 
@@ -69,13 +69,17 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-const App = () => {
+const AppContent = () => {
+  const { currentUser } = useAuth(); // ✅ used for conditional navbar
+
   return (
-    <AuthProvider>
+    <>
       <GlobalStyles />
-      <div className="min-h-screen bg-gradient-to-red from-orange-900 via-orange-700 to-orange-500">
+      <div className="min-h-screen bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500">
         <ToastContainer position="top-center" />
-        <Navbar />
+        
+        {/* ✅ Navbar only shown when logged in */}
+        {currentUser && <Navbar />}
 
         <main className="pt-6 pb-12">
           <Routes>
@@ -130,13 +134,19 @@ const App = () => {
             />
 
             {/* Default & 404 */}
-            <Route path="/" element={<Navigate to="/events" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} /> {/* ✅ Fixed default redirect */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </div>
-    </AuthProvider>
+    </>
   );
 };
+
+const App = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
 
 export default App;
