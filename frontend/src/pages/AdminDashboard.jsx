@@ -53,24 +53,26 @@ function AdminDashboard() {
 
   // ✅ Approve Event
   const handleApprove = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/api/events/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "approved" }),
-      });
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/api/events/${id}/approve`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      if (!res.ok) throw new Error("Failed to approve event");
-      toast.success("✅ Event approved!");
-      fetchEvents();
-    } catch (err) {
-      toast.error(err.message || "Error approving event");
-    }
-  };
+    if (!res.ok) throw new Error("Failed to approve event");
+
+    // Update state: remove approved event from pending list
+    setEvents((prev) => prev.filter((event) => event._id !== id));
+
+    toast.success("✅ Event approved!");
+  } catch (err) {
+    toast.error(err.message || "Error approving event");
+  }
+};
 
   // ✅ Delete Event (with custom modal)
   const confirmDelete = async () => {
