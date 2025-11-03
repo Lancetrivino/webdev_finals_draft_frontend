@@ -10,7 +10,7 @@ function CreateEvent() {
   const navigate = useNavigate();
   const { currentUser } = useAuth(); // ✅ Check if logged in
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  
   const [eventData, setEventData] = useState({
     title: "",
     description: "",

@@ -1,14 +1,27 @@
-import express from 'express';
-import { protect, admin } from '../middleware/authMiddleware.js'; 
-import { createEvent, getEvents, approveEvent, updateEvent, deleteEvent } from '../controllers/eventController.js';
+import express from "express";
+import {
+  createEvent,
+  getEvents,
+  approveEvent,
+  updateEvent,
+  deleteEvent,
+} from "../controllers/eventController.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-router.route('/').get(protect, getEvents).post(protect, createEvent);
 
-router.put('/:id/approve', protect, admin, approveEvent);
+// 🧩 GET all events (for logged-in users)
+// 🧩 POST create a new event (for logged-in users)
+router.route("/")
+  .get(protect, getEvents)
+  .post(protect, createEvent);
 
-router.route('/:id')
-    .put(protect, updateEvent)
-    .delete(protect, deleteEvent);
+// 🧩 Approve an event (Admin only)
+router.put("/:id/approve", protect, admin, approveEvent);
+
+// 🧩 Update or Delete event (for logged-in users)
+router.route("/:id")
+  .put(protect, updateEvent)
+  .delete(protect, deleteEvent);
 
 export default router;
