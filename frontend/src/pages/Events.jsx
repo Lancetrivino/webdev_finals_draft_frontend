@@ -32,7 +32,9 @@ function Events() {
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
         // ✅ Filter only approved events
-        const approved = data.filter((event) => event.status === "approved");
+        const approved = data.filter(
+          (event) => event.status.toLowerCase() === "approved"
+        );
         setEvents(approved);
       } catch (error) {
         console.error("Error:", error);
