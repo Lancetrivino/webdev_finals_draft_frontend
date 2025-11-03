@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",              // local dev
-      "https://webdev-finals.vercel.app",   // your live frontend
+      "https://webdev-finals-draft.vercel.app",   // your live frontend
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
