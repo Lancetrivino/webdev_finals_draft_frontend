@@ -79,7 +79,7 @@ function Feedback() {
             className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-red from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
+                : "bg-gradient-to-right from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
             }`}
           >
             {loading ? "Submitting..." : "Submit Feedback"}
