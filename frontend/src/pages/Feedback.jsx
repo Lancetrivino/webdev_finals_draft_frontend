@@ -54,7 +54,7 @@ function Feedback() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-red from-orange-900 via-orange-700 to-orange-500 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500 p-6">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           We Value Your Feedback
@@ -79,7 +79,7 @@ function Feedback() {
             className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-right from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
+                : "bg-gradient-to-right from-orange-700 via-orange-600 to-orange-500 hover:opacity-90"
             }`}
           >
             {loading ? "Submitting..." : "Submit Feedback"}
