@@ -23,17 +23,19 @@ function Login() {
     setLoading(true);
 
     try {
-      const user = await login(formData); // ✅ Uses AuthContext API call
-      toast.success("Welcome back!");
+      const user = await login(formData);
+      toast.success("Welcome back!", { autoClose: 1500 });
 
-      // ✅ Redirect based on role
+      // Redirect after toast finishes
       setTimeout(() => {
         if (user.role === "Admin") navigate("/admin");
         else navigate("/dashboard");
-      }, 1000);
+      }, 1500);
     } catch (err) {
       console.error(err);
-      toast.error("Login failed. Please check your credentials.");
+      toast.error("Login failed. Please check your credentials.", {
+        autoClose: 2000,
+      });
     } finally {
       setLoading(false);
     }
@@ -83,7 +85,10 @@ function Login() {
 
         <p className="text-center mt-4 text-gray-700">
           Don’t have an account?{" "}
-          <a href="/register" className="text-green-600 font-semibold hover:underline">
+          <a
+            href="/register"
+            className="text-green-600 font-semibold hover:underline"
+          >
             Register
           </a>
         </p>
