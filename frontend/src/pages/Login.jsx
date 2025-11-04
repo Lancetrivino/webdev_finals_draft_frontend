@@ -24,13 +24,16 @@ function Login() {
 
     try {
       const user = await login(formData);
-      toast.success("Welcome back!", { autoClose: 1500 });
+      toast.success("Welcome back!", {
+        autoClose: 1500,
+        toastId: "login-success", // prevents duplicates
+      });
 
       // Redirect after toast finishes
       setTimeout(() => {
         if (user.role === "Admin") navigate("/admin");
         else navigate("/dashboard");
-      }, 1500);
+      });
     } catch (err) {
       console.error(err);
       toast.error("Login failed. Please check your credentials.", {
@@ -43,7 +46,6 @@ function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <ToastContainer position="top-center" />
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-green-600 mb-6">
           Login to Eventure
