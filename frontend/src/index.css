@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+button {
+  transition: background-color 0.2s, transform 0.1s;
+}
+button:hover {
+  transform: scale(1.03);
+}

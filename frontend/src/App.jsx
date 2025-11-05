@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import EventDetails from "./pages/EventDetails";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -70,7 +71,7 @@ const AdminRoute = ({ children }) => {
 };
 
 const AppContent = () => {
-  const { currentUser } = useAuth(); // ✅ Used for conditional navbar
+  const { currentUser } = useAuth();
 
   return (
     <>
@@ -88,8 +89,23 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
 
-            {/* ✅ Feedback route now accepts eventId */}
-            <Route path="/feedback/:eventId" element={<Feedback />} />
+            {/* ✅ Dynamic event and feedback routes */}
+            <Route
+              path="/events/:id"
+              element={
+                <PrivateRoute>
+                  <EventDetails />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/feedback/:eventId"
+              element={
+                <PrivateRoute>
+                  <Feedback />
+                </PrivateRoute>
+              }
+            />
 
             {/* Protected User Routes */}
             <Route
