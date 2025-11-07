@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../App"; // ✅ Use your centralized base URL
 
 function Events() {
   const { currentUser } = useAuth();
@@ -19,11 +20,10 @@ function Events() {
 
     const fetchEvents = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${API_BASE}/api/events`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        const res = await fetch(`${API_BASE_URL}/api/events`, {
+          headers: {
+            Authorization: `Bearer ${currentUser?.token}`, // ✅ use token from context
+          },
         });
 
         const data = await res.json();

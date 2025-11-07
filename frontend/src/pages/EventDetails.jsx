@@ -14,14 +14,18 @@ const EventDetails = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/events`, {
+        const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
           headers: {
             Authorization: `Bearer ${currentUser?.token}`,
           },
         });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch event details");
+        }
+
         const data = await res.json();
-        const foundEvent = data.find((e) => e._id === id);
-        setEvent(foundEvent);
+        setEvent(data);
       } catch (error) {
         console.error("❌ Error fetching event details:", error);
       } finally {
@@ -32,19 +36,54 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, currentUser]);
 
-  if (loading) return <div className="text-white text-center mt-10">Loading event details...</div>;
-  if (!event) return <div className="text-white text-center mt-10">Event not found</div>;
+  if (loading)
+    return (
+      <div className="text-white text-center mt-10">Loading event details...</div>
+    );
+  if (!event)
+    return (
+      <div className="text-white text-center mt-10">Event not found</div>
+    );
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
       <h1 className="text-3xl font-bold text-orange-800 mb-4">{event.title}</h1>
-      <p className="text-gray-700 mb-2">
-        <span className="font-semibold">Date:</span> {new Date(event.date).toLocaleDateString()}
+
+      <div className="text-gray-700 space-y-2 mb-6">
+        <p>
+          <span className="font-semibold">📅 Date:</span>{" "}
+          {new Date(event.date).toLocaleDateString()}
+        </p>
+        <p>
+          <span className="font-semibold">📍 Location:</span> {event.location}
+        </p>
+        <p>
+          <span className="font-semibold">👤 Organizer:</span>{" "}
+          {event.organizer?.name || "N/A"}
+        </p>
+        <p>
+          <span className="font-semibold">📝 Status:</span>{" "}
+          <span
+            className={`font-bold ${
+              event.status === "approved" ? "text-green-600" : "text-yellow-600"
+            }`}
+          >
+            {event.status}
+          </span>
+        </p>
+        {event.feedbacks && (
+          <p>
+            <span className="font-semibold">💬 Feedbacks:</span>{" "}
+            {event.feedbacks.length}
+          </p>
+        )}
+      </div>
+
+      <hr className="my-4" />
+
+      <p className="text-gray-800 leading-relaxed mb-6">
+        {event.description || "No description available."}
       </p>
-      <p className="text-gray-700 mb-2">
-        <span className="font-semibold">Location:</span> {event.location}
-      </p>
-      <p className="text-gray-700 mb-6">{event.description}</p>
 
       {/* ✅ Give Feedback Button */}
       <button
