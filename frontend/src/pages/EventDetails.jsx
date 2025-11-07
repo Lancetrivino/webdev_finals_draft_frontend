@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../App";
 import { useAuth } from "../contexts/AuthContext";
 
 const EventDetails = () => {
-  const { id } = useParams(); // ✅ event ID from URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
@@ -40,6 +40,7 @@ const EventDetails = () => {
     return (
       <div className="text-white text-center mt-10">Loading event details...</div>
     );
+
   if (!event)
     return (
       <div className="text-white text-center mt-10">Event not found</div>
@@ -55,17 +56,19 @@ const EventDetails = () => {
           {new Date(event.date).toLocaleDateString()}
         </p>
         <p>
-          <span className="font-semibold">📍 Location:</span> {event.location}
+          <span className="font-semibold">📍 Venue:</span> {event.venue}
         </p>
         <p>
           <span className="font-semibold">👤 Organizer:</span>{" "}
-          {event.organizer?.name || "N/A"}
+          {event.createdBy?.name || "N/A"}
         </p>
         <p>
           <span className="font-semibold">📝 Status:</span>{" "}
           <span
             className={`font-bold ${
-              event.status === "approved" ? "text-green-600" : "text-yellow-600"
+              event.status?.toLowerCase() === "approved"
+                ? "text-green-600"
+                : "text-yellow-600"
             }`}
           >
             {event.status}
@@ -85,13 +88,21 @@ const EventDetails = () => {
         {event.description || "No description available."}
       </p>
 
-      {/* ✅ Give Feedback Button */}
-      <button
-        onClick={() => navigate(`/feedback/${id}`)}
-        className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-xl transition duration-300"
-      >
-        Give Feedback
-      </button>
+      {/* ✅ Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => navigate(`/feedback/${id}`)}
+          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-xl transition duration-300"
+        >
+          Give Feedback
+        </button>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-xl"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
   );
 };
