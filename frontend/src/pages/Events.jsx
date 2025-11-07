@@ -2,49 +2,46 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App"; // ✅ Use your centralized base URL
+import { API_BASE_URL } from "../App";
 
 function Events() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) {
-      toast.info("Please login to view events");
-      navigate("/login");
-      return;
-    }
+    if (!currentUser?.token) return; // wait for auth token
 
     const fetchEvents = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/events`, {
           headers: {
-            Authorization: `Bearer ${currentUser?.token}`, // ✅ use token from context
+            Authorization: `Bearer ${currentUser.token}`,
           },
         });
 
         const data = await res.json();
+        console.log("✅ Events fetched:", data); // debug
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // ✅ Show only approved events
-        const approved = data.filter(
+        const allEvents = Array.isArray(data) ? data : data.events || [];
+        const approved = allEvents.filter(
           (event) => event.status?.toLowerCase() === "approved"
         );
+
         setEvents(approved);
       } catch (error) {
-        console.error("Error:", error);
-        toast.error("Failed to load events. Check your connection or permissions.");
+        console.error("❌ Error fetching events:", error);
+        toast.error("Failed to load events. Please check your login or server.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [currentUser, navigate]);
+  }, [currentUser]);
 
   if (loading) {
     return (
@@ -87,9 +84,10 @@ function Events() {
             <p className="text-gray-700 mb-1">
               📍 <strong>Venue:</strong> {event.venue}
             </p>
-            <p className="text-gray-600 mb-3">{event.description}</p>
+            <p className="text-gray-600 mb-3">
+              {event.description || "No description available"}
+            </p>
 
-            {/* ✅ Dynamic event detail link */}
             <Link
               to={`/events/${event._id}`}
               className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:scale-95 transition-transform"
