@@ -66,7 +66,7 @@ function Login() {
         {/* Right Section */}
         <div className="w-1/2 p-12 flex flex-col justify-center">
           <h1 className="text-3xl font-semibold text-[#2C2C2C] mb-2">
-            Welcome back
+            Eventure
           </h1>
           <p className="text-sm text-gray-500 mb-8">
             Please enter your details to continue
