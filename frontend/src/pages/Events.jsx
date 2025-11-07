@@ -10,8 +10,7 @@ function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-    // ✅ Redirect unauthenticated users
+  useEffect(() => {
     if (!currentUser) {
       toast.info("Please login to view events");
       navigate("/login");
@@ -27,15 +26,22 @@ function Events() {
         });
 
         const data = await res.json();
-        console.log("✅ Events fetched:", data); // debug
+        console.log("✅ Events fetched from backend:", data);
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
+        // handle either array or object
         const allEvents = Array.isArray(data) ? data : data.events || [];
-        const approved = allEvents.filter(
-          (event) => event.status?.toLowerCase() === "approved"
-        );
 
+        // handle both `status` or `isApproved`
+        const approved = allEvents.filter((event) => {
+          return (
+            event.status?.toLowerCase() === "approved" ||
+            event.isApproved === true
+          );
+        });
+
+        console.log("✅ Approved events:", approved);
         setEvents(approved);
       } catch (error) {
         console.error("❌ Error fetching events:", error);
@@ -46,7 +52,7 @@ function Events() {
     };
 
     fetchEvents();
-  }, [currentUser]);
+  }, [currentUser, navigate]);
 
   if (loading) {
     return (
