@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App";
 
 function Events() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,26 +19,25 @@ function Events() {
 
     const fetchEvents = async () => {
       try {
-        console.log("🌍 Fetching:", `${API_BASE_URL}/api/events`);
-        const res = await fetch(`${API_BASE_URL}/api/events`, {
-          headers: {
-            Authorization: `Bearer ${currentUser?.token}`,
-          },
+        const API_BASE = import.meta.env.VITE_API_URL;
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API_BASE}/api/events`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
-        const text = await res.text();
-        console.log("🧾 Raw response:", text);
-
-        const data = JSON.parse(text);
-        console.log("✅ Parsed events:", data);
+        const data = await res.json();
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        const allEvents = Array.isArray(data) ? data : data.events || [];
-        setEvents(allEvents);
+        // ✅ Show only approved events
+        const approved = data.filter(
+          (event) => event.status?.toLowerCase() === "approved"
+        );
+        setEvents(approved);
       } catch (error) {
-        console.error("❌ Error fetching events:", error);
-        toast.error("Failed to load events.");
+        console.error("Error:", error);
+        toast.error("Failed to load events. Check your connection or permissions.");
       } finally {
         setLoading(false);
       }
@@ -88,10 +87,9 @@ function Events() {
             <p className="text-gray-700 mb-1">
               📍 <strong>Venue:</strong> {event.venue}
             </p>
-            <p className="text-gray-600 mb-3">
-              {event.description || "No description available"}
-            </p>
+            <p className="text-gray-600 mb-3">{event.description}</p>
 
+            {/* ✅ Dynamic event detail link */}
             <Link
               to={`/events/${event._id}`}
               className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:scale-95 transition-transform"
