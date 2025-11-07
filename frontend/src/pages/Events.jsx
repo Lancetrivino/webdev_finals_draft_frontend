@@ -30,19 +30,10 @@ function Events() {
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // handle either array or object
+        // Your backend already sends the right events
         const allEvents = Array.isArray(data) ? data : data.events || [];
 
-        // handle both `status` or `isApproved`
-        const approved = allEvents.filter((event) => {
-          return (
-            event.status?.toLowerCase() === "approved" ||
-            event.isApproved === true
-          );
-        });
-
-        console.log("✅ Approved events:", approved);
-        setEvents(approved);
+        setEvents(allEvents);
       } catch (error) {
         console.error("❌ Error fetching events:", error);
         toast.error("Failed to load events. Please check your login or server.");
