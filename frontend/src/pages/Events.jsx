@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext"; // ✅ use shared auth state
+import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
 
 function Events() {
@@ -11,7 +11,6 @@ function Events() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ Redirect unauthenticated users
     if (!currentUser) {
       toast.info("Please login to view events");
       navigate("/login");
@@ -31,14 +30,14 @@ function Events() {
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // ✅ Filter only approved events
+        // ✅ Show only approved events
         const approved = data.filter(
-          (event) => event.status.toLowerCase() === "approved"
+          (event) => event.status?.toLowerCase() === "approved"
         );
         setEvents(approved);
       } catch (error) {
         console.error("Error:", error);
-        toast.error("Failed to load events. Check connection or permissions.");
+        toast.error("Failed to load events. Check your connection or permissions.");
       } finally {
         setLoading(false);
       }
@@ -90,9 +89,10 @@ function Events() {
             </p>
             <p className="text-gray-600 mb-3">{event.description}</p>
 
+            {/* ✅ Dynamic event detail link */}
             <Link
               to={`/events/${event._id}`}
-              className="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:scale-95 transition-transform"
             >
               View Details
             </Link>

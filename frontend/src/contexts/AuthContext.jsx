@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       // ✅ Update context
       setCurrentUser(data.user);
 
-      toast.success("✅ Login successful!");
+      
       return data.user;
     } catch (err) {
       toast.error(err.message || "Login failed");

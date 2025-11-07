@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import EventDetails from "./pages/EventDetails";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -26,9 +27,9 @@ let API_BASE = import.meta.env?.VITE_API_URL;
 
 if (!API_BASE) {
   if (import.meta.env.DEV) {
-    API_BASE = "http://localhost:5000"; // ✅ local dev
+    API_BASE = "http://localhost:5000"; // ✅ Local dev
   } else {
-    API_BASE = window.location.origin; // ✅ production
+    API_BASE = window.location.origin; // ✅ Production
   }
 }
 
@@ -70,26 +71,43 @@ const AdminRoute = ({ children }) => {
 };
 
 const AppContent = () => {
-  const { currentUser } = useAuth(); // ✅ used for conditional navbar
+  const { currentUser } = useAuth();
 
   return (
     <>
       <GlobalStyles />
       <div className="min-h-screen bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500">
         <ToastContainer position="top-center" />
-        
+
         {/* ✅ Navbar only shown when logged in */}
         {currentUser && <Navbar />}
 
         <main className="pt-6 pb-12">
           <Routes>
-            {/* Public */}
+            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
-            <Route path="/feedback" element={<Feedback />} />
 
-            {/* User Protected */}
+            {/* ✅ Dynamic event and feedback routes */}
+            <Route
+              path="/events/:id"
+              element={
+                <PrivateRoute>
+                  <EventDetails />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/feedback/:eventId"
+              element={
+                <PrivateRoute>
+                  <Feedback />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Protected User Routes */}
             <Route
               path="/dashboard"
               element={
@@ -134,7 +152,7 @@ const AppContent = () => {
             />
 
             {/* Default & 404 */}
-            <Route path="/" element={<Navigate to="/login" replace />} /> {/* ✅ Fixed default redirect */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

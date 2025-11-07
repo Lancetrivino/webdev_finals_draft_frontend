@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../contexts/AuthContext";
 
 function Login() {
@@ -9,50 +11,46 @@ function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // Clear error while typing
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     // Validate email format
     if (!validateEmail(formData.email)) {
-      setError("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.", { autoClose: 2000 });
       setLoading(false);
       return;
     }
 
     try {
       const user = await login(formData);
+
+      toast.success("Welcome back!", {
+        autoClose: 1500,
+        toastId: "login-success",
+      });
+
+      // Redirect after a short delay
       setTimeout(() => {
         if (user.role === "Admin") navigate("/admin");
         else navigate("/dashboard");
-      }, 800);
+      }, 1500);
     } catch (err) {
       console.error(err);
-      if (err.message.includes("user-not-found")) {
-        setError("Couldn't find your account.");
-      } else if (err.message.includes("wrong-password")) {
-        setError("Incorrect password. Try again.");
-      } else {
-        setError("Login failed. Please try again later.");
-      }
+      toast.error("Login failed. Please check your credentials.", {
+        autoClose: 2000,
+      });
     } finally {
       setLoading(false);
     }
   };
-
-  const inputErrorStyle = error
-    ? "border-[#D93025] focus:ring-[#D93025]"
-    : "border-gray-300 focus:ring-[#C9BEB3]";
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#EDE9E6]">
@@ -81,25 +79,8 @@ function Login() {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border rounded-lg focus:outline-none focus:ring-2 ${inputErrorStyle}`}
+                className="w-full p-3 mt-1 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-[#C9BEB3]"
               />
-              {error && (
-                <div className="flex items-center mt-1 text-sm text-[#D93025]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10A8 8 0 11.001 10 8 8 0 0118 10zM9 5h2v5H9V5zm0 6h2v2H9v-2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {error}
-                </div>
-              )}
             </div>
 
             <div className="relative">
@@ -110,7 +91,7 @@ function Login() {
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border rounded-lg focus:outline-none focus:ring-2 ${inputErrorStyle}`}
+                className="w-full p-3 mt-1 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-[#C9BEB3]"
                 required
               />
               <button
@@ -150,6 +131,9 @@ function Login() {
           </p>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="top-center" />
     </div>
   );
 }
