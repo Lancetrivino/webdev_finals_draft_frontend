@@ -32,7 +32,7 @@ function Login() {
     try {
       const user = await login(formData);
 
-      toast.success("Welcome back!", {
+      toast.success("Welcome back!!", {
         autoClose: 1500,
         toastId: "login-success",
       });
