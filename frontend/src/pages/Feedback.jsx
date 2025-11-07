@@ -45,9 +45,15 @@ function Feedback() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
+      // ✅ Show toast safely before navigation
       toast.success("✅ Thank you for your feedback!");
       setComment("");
       setRating(5);
+
+      // ✅ Optional: small delay before redirecting, so toast renders cleanly
+      setTimeout(() => {
+        navigate("/events");
+      }, 1200);
     } catch (err) {
       toast.error(err.message || "Error submitting feedback.");
     } finally {
