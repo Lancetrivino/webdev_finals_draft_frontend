@@ -22,20 +22,22 @@ import EventDetails from "./pages/EventDetails";
 // Components
 import Navbar from "./components/Navbar";
 
-// ✅ Dynamic API Base Configuration
+// ✅ API Base URL configuration
 let API_BASE = import.meta.env?.VITE_API_URL;
 
 if (!API_BASE) {
   if (import.meta.env.DEV) {
-    API_BASE = "http://localhost:5000"; // ✅ Local dev
+    API_BASE = "http://localhost:5000"; // ✅ Local development
   } else {
-    API_BASE = window.location.origin; // ✅ Production
+    // ⚠️ Replace this with your actual Render backend URL
+    API_BASE = "https://your-backend-name.onrender.com"; 
   }
 }
 
 export const API_BASE_URL = API_BASE;
 console.log("🌐 API_BASE =", API_BASE);
 
+// ✅ Global Styles for Toasts and fonts
 const GlobalStyles = () => (
   <style>
     {`
@@ -58,6 +60,7 @@ const GlobalStyles = () => (
   </style>
 );
 
+// ✅ Private and Admin route guards
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
@@ -70,6 +73,7 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// ✅ Main app content
 const AppContent = () => {
   const { currentUser } = useAuth();
 
@@ -78,8 +82,6 @@ const AppContent = () => {
       <GlobalStyles />
       <div className="min-h-screen bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500">
         <ToastContainer position="top-center" />
-
-        {/* ✅ Navbar only shown when logged in */}
         {currentUser && <Navbar />}
 
         <main className="pt-6 pb-12">
@@ -89,7 +91,7 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
 
-            {/* ✅ Dynamic event and feedback routes */}
+            {/* Event & Feedback Dynamic Routes */}
             <Route
               path="/events/:id"
               element={
@@ -141,7 +143,7 @@ const AppContent = () => {
               }
             />
 
-            {/* Admin Protected */}
+            {/* Admin Route */}
             <Route
               path="/admin"
               element={
@@ -151,7 +153,7 @@ const AppContent = () => {
               }
             />
 
-            {/* Default & 404 */}
+            {/* Default & Not Found */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -161,6 +163,7 @@ const AppContent = () => {
   );
 };
 
+// ✅ Wrap with AuthProvider
 const App = () => (
   <AuthProvider>
     <AppContent />
