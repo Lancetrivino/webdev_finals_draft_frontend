@@ -19,24 +19,26 @@ function Events() {
 
     const fetchEvents = async () => {
       try {
+        console.log("🌍 Fetching:", `${API_BASE_URL}/api/events`);
         const res = await fetch(`${API_BASE_URL}/api/events`, {
           headers: {
-            Authorization: `Bearer ${currentUser.token}`,
+            Authorization: `Bearer ${currentUser?.token}`,
           },
         });
 
-        const data = await res.json();
-        console.log("✅ Events fetched from backend:", data);
+        const text = await res.text();
+        console.log("🧾 Raw response:", text);
+
+        const data = JSON.parse(text);
+        console.log("✅ Parsed events:", data);
 
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // Your backend already sends the right events
         const allEvents = Array.isArray(data) ? data : data.events || [];
-
         setEvents(allEvents);
       } catch (error) {
         console.error("❌ Error fetching events:", error);
-        toast.error("Failed to load events. Please check your login or server.");
+        toast.error("Failed to load events.");
       } finally {
         setLoading(false);
       }
