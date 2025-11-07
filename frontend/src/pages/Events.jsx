@@ -10,8 +10,13 @@ function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!currentUser?.token) return; // wait for auth token
+ useEffect(() => {
+    // ✅ Redirect unauthenticated users
+    if (!currentUser) {
+      toast.info("Please login to view events");
+      navigate("/login");
+      return;
+    }
 
     const fetchEvents = async () => {
       try {
