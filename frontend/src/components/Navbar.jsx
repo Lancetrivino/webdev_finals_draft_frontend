@@ -9,7 +9,6 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide on auth pages
   if (location.pathname === "/login" || location.pathname === "/register") return null;
 
   const handleLogout = () => {
@@ -26,16 +25,24 @@ const NavBar = () => {
       .join("");
   }, [currentUser]);
 
+  // ✅ Smooth underline + hover animation
   const navLinkStyle = ({ isActive }) =>
-    `px-2 md:px-3 py-1 font-medium transition ${
-      isActive ? "text-slate-800" : "text-slate-600 hover:text-slate-800"
-    }`;
+    `relative px-2 md:px-3 py-1 font-medium transition text-slate-700 group
+     ${isActive ? "text-slate-900" : "hover:text-slate-900"}
+     after:absolute after:left-0 after:-bottom-0.5
+     after:h-[2px] after:w-full after:bg-slate-900
+     after:scale-x-0 after:origin-left after:transition-transform after:duration-300
+     ${
+       isActive
+         ? "after:scale-x-100"
+         : "hover:after:scale-x-100"
+     }`;
 
   return (
     <header className="sticky top-0 z-50 bg-transparent/30 backdrop-blur-sm">
-      {/* Pill container */}
       <div className="max-w-6xl mx-auto px-4">
         <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
+
           {/* Brand */}
           <NavLink to="/" className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight">
@@ -43,32 +50,24 @@ const NavBar = () => {
             </span>
           </NavLink>
 
-          {/* Desktop nav */}
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/events" className={navLinkStyle}>
-              Events
-            </NavLink>
-            <NavLink to="/create-event" className={navLinkStyle}>
-              Create Event
-            </NavLink>
-            <NavLink to="/feedback" className={navLinkStyle}>
-              Feedback
-            </NavLink>
+            <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
+            <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
 
             {currentUser?.role === "Admin" && (
-              <NavLink to="/admin" className={navLinkStyle}>
-                Admin
-              </NavLink>
+              <NavLink to="/admin" className={navLinkStyle}>Admin</NavLink>
             )}
 
-            {/* Avatar (contains Profile & Logout) */}
+            {/* Avatar */}
             <div className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white font-semibold shadow-md focus:outline-none"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white font-semibold shadow-md"
                 aria-label="User menu"
               >
-                {initials || "U"}
+                {initials}
               </button>
 
               {avatarOpen && (
@@ -97,7 +96,7 @@ const NavBar = () => {
             </div>
           </nav>
 
-          {/* Mobile hamburger */}
+          {/* Mobile Hamburger */}
           <button
             className="md:hidden text-slate-700"
             onClick={() => setMenuOpen((v) => !v)}
@@ -116,7 +115,7 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile dropdown */}
+      {/* Mobile Dropdown */}
       {menuOpen && (
         <div className="md:hidden">
           <div className="max-w-6xl mx-auto px-4">
@@ -131,15 +130,16 @@ const NavBar = () => {
                 <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
                   Feedback
                 </NavLink>
-                {/* Mobile keeps Profile here since avatar is hidden on mobile */}
                 <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
                   Profile
                 </NavLink>
+
                 {currentUser?.role === "Admin" && (
                   <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
                     Admin
                   </NavLink>
                 )}
+
                 <button
                   onClick={() => {
                     setMenuOpen(false);
