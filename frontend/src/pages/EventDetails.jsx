@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 
-// Prefer the same base URL strategy used elsewhere
 const API_BASE =
   import.meta.env?.VITE_API_URL ||
-  (import.meta.env?.DEV ? "http://localhost:5000" : "https://your-backend-name.onrender.com");
+  (import.meta.env?.DEV
+    ? "http://localhost:5000"
+    : "https://your-backend-name.onrender.com");
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -30,7 +31,6 @@ const EventDetails = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Handle 401/403 explicitly
         if (res.status === 401 || res.status === 403) {
           toast.error("Your session expired. Please log in again.");
           navigate("/login");
@@ -38,16 +38,9 @@ const EventDetails = () => {
         }
 
         const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to fetch event details");
 
-        if (!res.ok) {
-          // Backend may return {message: "..."} on errors
-          throw new Error(data?.message || "Failed to fetch event details");
-        }
-
-        // Expect a single event object. If your API wraps it (e.g., {event: {...}})
-        // support both shapes:
-        const evt = data?.event ?? data;
-        setEvent(evt);
+        setEvent(data?.event ?? data);
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
         toast.error(err.message || "Failed to load event");
@@ -59,41 +52,91 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, navigate]);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-slate-600">Loading event details…</p>
       </div>
     );
-  }
 
-  if (!event) {
+  if (!event)
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-slate-600">Event not found.</p>
       </div>
     );
-  }
+
+  const { title, description, date, venue, time, duration, image, reminders, status } =
+    event;
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
-      <h1 className="text-3xl font-bold text-emerald-700 mb-4">{event.title}</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold text-emerald-700">{title}</h1>
+        {status && (
+          <span
+            className={`px-4 py-1 text-sm rounded-full font-semibold ${
+              status === "Approved"
+                ? "bg-green-100 text-green-700"
+                : status === "Pending"
+                ? "bg-yellow-100 text-yellow-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {status}
+          </span>
+        )}
+      </div>
 
+      {/* Image */}
+      {image && (
+        <img
+          src={image}
+          alt={title}
+          className="w-full max-h-80 object-cover rounded-xl mb-6 shadow-md"
+        />
+      )}
+
+      {/* Event Details */}
       <div className="space-y-2 text-slate-700 mb-6">
         <p>
-          <span className="font-semibold">Date:</span>{" "}
-          {event.date ? new Date(event.date).toLocaleDateString() : "—"}
+          <span className="font-semibold">📅 Date:</span>{" "}
+          {date ? new Date(date).toLocaleDateString() : "—"}
         </p>
+        {time && (
+          <p>
+            <span className="font-semibold">⏰ Time:</span> {time}
+          </p>
+        )}
+        {duration && (
+          <p>
+            <span className="font-semibold">🕒 Duration:</span> {duration}
+          </p>
+        )}
         <p>
-          {/* Use 'venue' (your list page uses it) instead of 'location' */}
-          <span className="font-semibold">Venue:</span> {event.venue || "—"}
+          <span className="font-semibold">📍 Venue:</span> {venue || "—"}
         </p>
       </div>
 
+      {/* Description */}
       <p className="text-slate-700 mb-8 whitespace-pre-line">
-        {event.description || "No description provided."}
+        {description || "No description provided."}
       </p>
 
+      {/* Reminders */}
+      {reminders && reminders.length > 0 && (
+        <div className="mb-8">
+          <h2 className="font-semibold text-lg mb-2">Reminders:</h2>
+          <ul className="list-disc list-inside text-slate-700 space-y-1">
+            {reminders.map((reminder, idx) => (
+              <li key={idx}>{reminder}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Feedback Button */}
       <button
         onClick={() => navigate(`/feedback/${id}`)}
         className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
