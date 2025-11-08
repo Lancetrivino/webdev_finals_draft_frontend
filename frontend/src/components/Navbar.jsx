@@ -61,7 +61,7 @@ const NavBar = () => {
               </NavLink>
             )}
 
-            {/* Avatar */}
+            {/* Avatar (contains Profile & Logout) */}
             <div className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
@@ -71,7 +71,6 @@ const NavBar = () => {
                 {initials || "U"}
               </button>
 
-              {/* Avatar dropdown */}
               {avatarOpen && (
                 <div
                   className="absolute right-0 mt-3 w-48 rounded-xl border border-slate-100 bg-white py-2 shadow-lg"
@@ -117,7 +116,7 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile dropdown (inside pill) */}
+      {/* Mobile dropdown */}
       {menuOpen && (
         <div className="md:hidden">
           <div className="max-w-6xl mx-auto px-4">
@@ -131,6 +130,10 @@ const NavBar = () => {
                 </NavLink>
                 <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
                   Feedback
+                </NavLink>
+                {/* Mobile keeps Profile here since avatar is hidden on mobile */}
+                <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                  Profile
                 </NavLink>
                 {currentUser?.role === "Admin" && (
                   <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>

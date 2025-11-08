@@ -1,13 +1,9 @@
+// frontend/src/pages/EventDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../App";
 import { useAuth } from "../contexts/AuthContext";
-
-const API_BASE =
-  import.meta.env?.VITE_API_URL ||
-  (import.meta.env?.DEV
-    ? "http://localhost:5000"
-    : "https://your-backend-name.onrender.com");
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -19,16 +15,13 @@ const EventDetails = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          toast.error("Please log in to view event details.");
-          navigate("/login");
-          return;
-        }
 
-        const res = await fetch(`${API_BASE}/api/events/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // Fetch event details
+        const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
         if (res.status === 401 || res.status === 403) {
@@ -37,32 +30,41 @@ const EventDetails = () => {
           return;
         }
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || "Failed to fetch event details");
+        const text = await res.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          throw new Error(`Unexpected response from server (status ${res.status}).`);
+        }
+
+        if (!res.ok) {
+          throw new Error(data?.message || `Failed to fetch event. (${res.status})`);
+        }
 
         setEvent(data?.event ?? data);
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
-        toast.error(err.message || "Failed to load event");
+        toast.error(err.message || "Failed to load event details.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvent();
-  }, [id, navigate]);
+  }, [id, navigate, currentUser]);
 
   if (loading)
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-slate-600">Loading event details…</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600 text-lg font-medium">Loading event details...</p>
       </div>
     );
 
   if (!event)
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-slate-600">Event not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600 text-lg">Event not found.</p>
       </div>
     );
 
