@@ -116,7 +116,7 @@ function Login() {
             </button>
 
             <p className="text-sm text-[#7A6C5D] mt-2 cursor-pointer hover:underline">
-              Forgot email?
+              Forgot Password?
             </p>
           </form>
 

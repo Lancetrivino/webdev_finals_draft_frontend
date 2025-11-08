@@ -22,50 +22,39 @@ import EventDetails from "./pages/EventDetails";
 // Components
 import Navbar from "./components/Navbar";
 
-// ✅ API Base URL configuration
+// API base url (unchanged)
 let API_BASE = import.meta.env?.VITE_API_URL;
-
 if (!API_BASE) {
   if (import.meta.env.DEV) {
-    API_BASE = "http://localhost:5000"; // ✅ Local development
+    API_BASE = "http://localhost:5000";
   } else {
-    // ⚠️ Replace this with your actual Render backend URL
-    API_BASE = "https://your-backend-name.onrender.com"; 
+    API_BASE = "https://your-backend-name.onrender.com";
   }
 }
-
 export const API_BASE_URL = API_BASE;
 console.log("🌐 API_BASE =", API_BASE);
 
-// ✅ Global Styles for Toasts and fonts
+// Global styles (unchanged)
 const GlobalStyles = () => (
-  <style>
-    {`
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-      .Toastify__toast-container {
-        top: 3em;
-        right: 1em;
-      }
-      .Toastify__toast {
-        border-radius: 0.75rem;
-        font-weight: 600;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
-                    0 4px 6px -2px rgba(0,0,0,0.05);
-      }
-      .Toastify__toast--success { background-color: #10B981; color: white; }
-      .Toastify__toast--error   { background-color: #EF4444; color: white; }
-    `}
-  </style>
+  <style>{`
+    body { font-family: 'Inter', sans-serif; }
+    .Toastify__toast-container { top: 3em; right: 1em; }
+    .Toastify__toast {
+      border-radius: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                  0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .Toastify__toast--success { background-color: #10B981; color: white; }
+    .Toastify__toast--error   { background-color: #EF4444; color: white; }
+  `}</style>
 );
 
-// ✅ Private and Admin route guards
+// Route guards (unchanged)
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
 };
-
 const AdminRoute = ({ children }) => {
   const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
@@ -73,25 +62,25 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-// ✅ Main app content
 const AppContent = () => {
-  const { currentUser } = useAuth();
-
   return (
     <>
       <GlobalStyles />
-      <div className="min-h-screen bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500">
-        <ToastContainer position="top-center" />
-        {currentUser && <Navbar />}
+      <ToastContainer position="top-center" />
+      {/* Always mount Navbar; it will hide itself on /login and /register */}
+      <Navbar />
 
-        <main className="pt-6 pb-12">
+      {/* Soft app background */}
+      <div className="min-h-screen bg-slate-50">
+        {/* Add small top padding so content doesn't hug the floating nav */}
+        <main className="pt-4 pb-12">
           <Routes>
-            {/* Public Routes */}
+            {/* Public */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
 
-            {/* Event & Feedback Dynamic Routes */}
+            {/* Dynamic */}
             <Route
               path="/events/:id"
               element={
@@ -109,7 +98,7 @@ const AppContent = () => {
               }
             />
 
-            {/* Protected User Routes */}
+            {/* Protected */}
             <Route
               path="/dashboard"
               element={
@@ -143,7 +132,7 @@ const AppContent = () => {
               }
             />
 
-            {/* Admin Route */}
+            {/* Admin */}
             <Route
               path="/admin"
               element={
@@ -153,7 +142,7 @@ const AppContent = () => {
               }
             />
 
-            {/* Default & Not Found */}
+            {/* Default */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -163,7 +152,6 @@ const AppContent = () => {
   );
 };
 
-// ✅ Wrap with AuthProvider
 const App = () => (
   <AuthProvider>
     <AppContent />

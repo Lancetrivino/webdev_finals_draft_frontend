@@ -27,16 +27,14 @@ function Events() {
         });
 
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // ✅ Show only approved events
         const approved = data.filter(
           (event) => event.status?.toLowerCase() === "approved"
         );
         setEvents(approved);
       } catch (error) {
-        console.error("Error:", error);
+        console.error(error);
         toast.error("Failed to load events. Check your connection or permissions.");
       } finally {
         setLoading(false);
@@ -48,7 +46,7 @@ function Events() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <p className="text-gray-600 text-lg font-medium">Loading events...</p>
       </div>
     );
@@ -56,47 +54,55 @@ function Events() {
 
   if (events.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <h2 className="text-2xl font-semibold text-gray-700">
-          No approved events yet.
-        </h2>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <h2 className="text-2xl font-semibold text-gray-700">No approved events yet.</h2>
         <p className="text-gray-500 mt-2">Check back later!</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-6">
-      <h2 className="text-3xl font-bold text-center text-green-600 mb-6">
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
+      <h2 className="text-3xl font-bold text-center text-emerald-600 mb-8">
         Approved Events
       </h2>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {events.map((event) => (
-          <div
+          <article
             key={event._id}
-            className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
+            className="group rounded-2xl bg-white shadow-[0_10px_25px_-10px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_35px_-15px_rgba(0,0,0,0.25)] transition-all overflow-hidden"
           >
-            <h3 className="text-xl font-bold text-green-700 mb-2">
-              {event.title}
-            </h3>
-            <p className="text-gray-700 mb-1">
-              📅 <strong>Date:</strong>{" "}
-              {new Date(event.date).toLocaleDateString()}
-            </p>
-            <p className="text-gray-700 mb-1">
-              📍 <strong>Venue:</strong> {event.venue}
-            </p>
-            <p className="text-gray-600 mb-3">{event.description}</p>
+            {/* Image/hero area (gradient placeholder so it always looks good) */}
+            <div className="h-40 w-full overflow-hidden">
+              <div className="h-full w-full bg-gradient-to-tr from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
+            </div>
 
-            {/* ✅ Dynamic event detail link */}
-            <Link
-              to={`/events/${event._id}`}
-              className="inline-block mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:scale-95 transition-transform"
-            >
-              View Details
-            </Link>
-          </div>
+            {/* Content */}
+            <div className="p-5">
+              <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                {event.title}
+              </h3>
+
+              <p className="text-slate-700 mb-1">
+                <span className="mr-1">📅</span>
+                <strong>Date:</strong> {new Date(event.date).toLocaleDateString()}
+              </p>
+              <p className="text-slate-700 mb-2">
+                <span className="mr-1">📍</span>
+                <strong>Venue:</strong> {event.venue}
+              </p>
+
+              <p className="text-slate-600 line-clamp-3">{event.description}</p>
+
+              <Link
+                to={`/events/${event._id}`}
+                className="mt-4 inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-white font-medium shadow-md hover:shadow-lg active:scale-95 transition"
+              >
+                View Details
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
     </div>

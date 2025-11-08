@@ -1,216 +1,163 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 const NavBar = () => {
   const { currentUser, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Hide on auth pages
+  if (location.pathname === "/login" || location.pathname === "/register") return null;
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // 🔸 Hide NavBar on login/register pages
-  if (location.pathname === "/login" || location.pathname === "/register") {
-    return null;
-  }
+  const initials = useMemo(() => {
+    const name = currentUser?.name || "U";
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((n) => n[0]?.toUpperCase())
+      .join("");
+  }, [currentUser]);
 
-  // 🔸 Consistent active link styling
   const navLinkStyle = ({ isActive }) =>
-    `font-medium transition ${
-      isActive
-        ? "text-orange-700 font-semibold"
-        : "text-gray-700 hover:text-orange-700"
+    `px-2 md:px-3 py-1 font-medium transition ${
+      isActive ? "text-slate-800" : "text-slate-600 hover:text-slate-800"
     }`;
 
   return (
-    <nav className="bg-white/90 backdrop-blur-md shadow-md sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto flex items-center justify-between px-5 py-3">
-        {/* 🔹 Logo */}
-        <NavLink
-          to="/"
-          className="text-2xl font-extrabold text-orange-700 tracking-wide hover:text-orange-800 transition"
-        >
-          Eventure
-        </NavLink>
-
-        {/* 🔹 Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
-          <NavLink to="/events" className={navLinkStyle}>
-            Events
+    <header className="sticky top-0 z-50 bg-transparent/30 backdrop-blur-sm">
+      {/* Pill container */}
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
+          {/* Brand */}
+          <NavLink to="/" className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight">
+              Eventure
+            </span>
           </NavLink>
 
-          {currentUser && (
-            <>
-              <NavLink to="/create-event" className={navLinkStyle}>
-                Create Event
-              </NavLink>
-
-              <NavLink to="/feedback" className={navLinkStyle}>
-                Feedback
-              </NavLink>
-
-              <NavLink to="/profile" className={navLinkStyle}>
-                Profile
-              </NavLink>
-            </>
-          )}
-
-          {currentUser?.role === "Admin" && (
-            <NavLink to="/admin" className={navLinkStyle}>
-              Admin Dashboard
-            </NavLink>
-          )}
-
-          {currentUser ? (
-            <>
-              <span className="text-gray-600 text-sm">
-                Hello, <strong>{currentUser.name}</strong>
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className={navLinkStyle}>
-                Login
-              </NavLink>
-              <NavLink to="/register" className={navLinkStyle}>
-                Register
-              </NavLink>
-            </>
-          )}
-        </div>
-
-        {/* 🔹 Mobile Menu Button */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-gray-700 focus:outline-none"
-        >
-          {menuOpen ? (
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* 🔹 Mobile Dropdown Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white/95 border-t border-gray-200 shadow-md animate-fadeIn">
-          <div className="flex flex-col items-center gap-4 py-4">
-            <NavLink
-              to="/events"
-              onClick={() => setMenuOpen(false)}
-              className={navLinkStyle}
-            >
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            <NavLink to="/events" className={navLinkStyle}>
               Events
             </NavLink>
-
-            {currentUser && (
-              <>
-                <NavLink
-                  to="/create-event"
-                  onClick={() => setMenuOpen(false)}
-                  className={navLinkStyle}
-                >
-                  Create Event
-                </NavLink>
-                <NavLink
-                  to="/feedback"
-                  onClick={() => setMenuOpen(false)}
-                  className={navLinkStyle}
-                >
-                  Feedback
-                </NavLink>
-                <NavLink
-                  to="/profile"
-                  onClick={() => setMenuOpen(false)}
-                  className={navLinkStyle}
-                >
-                  Profile
-                </NavLink>
-              </>
-            )}
+            <NavLink to="/create-event" className={navLinkStyle}>
+              Create Event
+            </NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>
+              Feedback
+            </NavLink>
+            <NavLink to="/profile" className={navLinkStyle}>
+              Profile
+            </NavLink>
 
             {currentUser?.role === "Admin" && (
-              <NavLink
-                to="/admin"
-                onClick={() => setMenuOpen(false)}
-                className={navLinkStyle}
-              >
-                Admin Dashboard
+              <NavLink to="/admin" className={navLinkStyle}>
+                Admin
               </NavLink>
             )}
 
-            {currentUser ? (
-              <>
-                <span className="text-gray-600 text-sm">
-                  Hello, <strong>{currentUser.name}</strong>
-                </span>
+            {/* Avatar */}
+            <div className="relative">
+              <button
+                onClick={() => setAvatarOpen((v) => !v)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white font-semibold shadow-md focus:outline-none"
+                aria-label="User menu"
+              >
+                {initials || "U"}
+              </button>
+
+              {/* Avatar dropdown */}
+              {avatarOpen && (
+                <div
+                  className="absolute right-0 mt-3 w-48 rounded-xl border border-slate-100 bg-white py-2 shadow-lg"
+                  onMouseLeave={() => setAvatarOpen(false)}
+                >
+                  <div className="px-4 py-2 text-xs text-slate-500">
+                    Hello, {currentUser?.name || "User"}
+                  </div>
+                  <NavLink
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    onClick={() => setAvatarOpen(false)}
+                  >
+                    Profile
+                  </NavLink>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden text-slate-700"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown (inside pill) */}
+      {menuOpen && (
+        <div className="md:hidden">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="rounded-3xl bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] px-6 py-4 mb-3">
+              <div className="flex flex-col gap-3">
+                <NavLink to="/events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                  Events
+                </NavLink>
+                <NavLink to="/create-event" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                  Create Event
+                </NavLink>
+                <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                  Feedback
+                </NavLink>
+                <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                  Profile
+                </NavLink>
+                {currentUser?.role === "Admin" && (
+                  <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
+                    Admin
+                  </NavLink>
+                )}
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     handleLogout();
                   }}
-                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
+                  className="mt-2 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-white"
                 >
                   Logout
                 </button>
-              </>
-            ) : (
-              <>
-                <NavLink
-                  to="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className={navLinkStyle}
-                >
-                  Login
-                </NavLink>
-                <NavLink
-                  to="/register"
-                  onClick={() => setMenuOpen(false)}
-                  className={navLinkStyle}
-                >
-                  Register
-                </NavLink>
-              </>
-            )}
+              </div>
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
