@@ -131,7 +131,7 @@ function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-bottom from-slate-50 to-slate-100 px-4 py-12">
       {/* Header */}
       <div className="mx-auto max-w-5xl mb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">
