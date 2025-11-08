@@ -1,12 +1,9 @@
+// frontend/src/pages/EventDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../App";
 import { useAuth } from "../contexts/AuthContext";
-
-// Prefer the same base URL strategy used elsewhere
-const API_BASE =
-  import.meta.env?.VITE_API_URL ||
-  (import.meta.env?.DEV ? "http://localhost:5000" : "https://your-backend-name.onrender.com");
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -18,59 +15,65 @@ const EventDetails = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          toast.error("Please log in to view event details.");
-          navigate("/login");
-          return;
-        }
 
-        const res = await fetch(`${API_BASE}/api/events/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // Hit the single-event endpoint
+        const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
-        // Handle 401/403 explicitly
-        if (res.status === 401 || res.status === 403) {
-          toast.error("Your session expired. Please log in again.");
-          navigate("/login");
-          return;
+        // Read as text first so we can show nice errors if it isn't JSON
+        const text = await res.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          // Server returned HTML or other non-JSON (e.g., a 401 HTML page)
+          throw new Error(
+            `Unexpected response from server (status ${res.status}).`
+          );
         }
-
-        const data = await res.json();
 
         if (!res.ok) {
-          // Backend may return {message: "..."} on errors
-          throw new Error(data?.message || "Failed to fetch event details");
+          if (res.status === 401) {
+            toast.error("Your session has expired. Please log in again.");
+            navigate("/login");
+            return;
+          }
+          throw new Error(data?.message || `Failed to fetch event. (${res.status})`);
         }
 
-        // Expect a single event object. If your API wraps it (e.g., {event: {...}})
-        // support both shapes:
-        const evt = data?.event ?? data;
-        setEvent(evt);
+        // If your backend returns the event object directly:
+        setEvent(data);
+
+        // If your backend instead returns { event: {...} }, use:
+        // setEvent(data.event);
+
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
-        toast.error(err.message || "Failed to load event");
+        toast.error(err.message || "Failed to load event details.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvent();
-  }, [id, navigate]);
+  }, [id, navigate, currentUser]);
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-slate-600">Loading event details…</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600 text-lg font-medium">Loading event details...</p>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-slate-600">Event not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600 text-lg">Event not found.</p>
       </div>
     );
   }
@@ -79,20 +82,17 @@ const EventDetails = () => {
     <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
       <h1 className="text-3xl font-bold text-emerald-700 mb-4">{event.title}</h1>
 
-      <div className="space-y-2 text-slate-700 mb-6">
-        <p>
-          <span className="font-semibold">Date:</span>{" "}
-          {event.date ? new Date(event.date).toLocaleDateString() : "—"}
-        </p>
-        <p>
-          {/* Use 'venue' (your list page uses it) instead of 'location' */}
-          <span className="font-semibold">Venue:</span> {event.venue || "—"}
-        </p>
-      </div>
-
-      <p className="text-slate-700 mb-8 whitespace-pre-line">
-        {event.description || "No description provided."}
+      <p className="text-gray-700 mb-2">
+        <span className="font-semibold">Date:</span>{" "}
+        {event.date ? new Date(event.date).toLocaleDateString() : "—"}
       </p>
+
+      <p className="text-gray-700 mb-2">
+        <span className="font-semibold">Venue:</span>{" "}
+        {event.venue || "—"}
+      </p>
+
+      <p className="text-gray-700 mb-6">{event.description}</p>
 
       <button
         onClick={() => navigate(`/feedback/${id}`)}
