@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import data from "../data/events.json";
+import data from "../data/event.json";
 
 export default function BookEvent() {
   const { id } = useParams();

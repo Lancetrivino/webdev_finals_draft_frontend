@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import data from "../data/events.json";
+import data from "../data/event.json";
 
 export default function AvailableEvents() {
   const [q, setQ] = useState("");
