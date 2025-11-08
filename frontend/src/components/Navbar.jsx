@@ -54,9 +54,6 @@ const NavBar = () => {
             <NavLink to="/feedback" className={navLinkStyle}>
               Feedback
             </NavLink>
-            <NavLink to="/profile" className={navLinkStyle}>
-              Profile
-            </NavLink>
 
             {currentUser?.role === "Admin" && (
               <NavLink to="/admin" className={navLinkStyle}>
@@ -134,9 +131,6 @@ const NavBar = () => {
                 </NavLink>
                 <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
                   Feedback
-                </NavLink>
-                <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Profile
                 </NavLink>
                 {currentUser?.role === "Admin" && (
                   <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
