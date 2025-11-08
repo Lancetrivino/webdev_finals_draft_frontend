@@ -19,10 +19,14 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import EventDetails from "./pages/EventDetails";
 
+// NEW: Available events & booking pages
+import AvailableEvents from "./pages/AvailableEvents";
+import BookEvent from "./pages/BookEvent";
+
 // Components
 import Navbar from "./components/Navbar";
 
-// API base url (unchanged)
+// ✅ API base url
 let API_BASE = import.meta.env?.VITE_API_URL;
 if (!API_BASE) {
   if (import.meta.env.DEV) {
@@ -34,7 +38,7 @@ if (!API_BASE) {
 export const API_BASE_URL = API_BASE;
 console.log("🌐 API_BASE =", API_BASE);
 
-// Global styles (unchanged)
+// ✅ Global styles
 const GlobalStyles = () => (
   <style>{`
     body { font-family: 'Inter', sans-serif; }
@@ -50,11 +54,12 @@ const GlobalStyles = () => (
   `}</style>
 );
 
-// Route guards (unchanged)
+// ✅ Route guards
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
 };
+
 const AdminRoute = ({ children }) => {
   const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
@@ -62,17 +67,18 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// ✅ App Content
 const AppContent = () => {
   return (
     <>
       <GlobalStyles />
       <ToastContainer position="top-center" />
-      {/* Always mount Navbar; it will hide itself on /login and /register */}
+
+      {/* Navbar hides itself on /login and /register */}
       <Navbar />
 
-      {/* Soft app background */}
+      {/* Soft background for all pages */}
       <div className="min-h-screen bg-slate-50">
-        {/* Add small top padding so content doesn't hug the floating nav */}
         <main className="pt-4 pb-12">
           <Routes>
             {/* Public */}
@@ -80,7 +86,7 @@ const AppContent = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/home" element={<Home />} />
 
-            {/* Dynamic */}
+            {/* Dynamic (protected) */}
             <Route
               path="/events/:id"
               element={
@@ -94,6 +100,26 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <Feedback />
+                </PrivateRoute>
+              }
+            />
+
+            {/* NEW: Available Events (listing) */}
+            <Route
+              path="/available-events"
+              element={
+                <PrivateRoute>
+                  <AvailableEvents />
+                </PrivateRoute>
+              }
+            />
+
+            {/* NEW: Book specific available event */}
+            <Route
+              path="/book/:placeId"
+              element={
+                <PrivateRoute>
+                  <BookEvent />
                 </PrivateRoute>
               }
             />
@@ -152,6 +178,7 @@ const AppContent = () => {
   );
 };
 
+// ✅ Provider wrapper
 const App = () => (
   <AuthProvider>
     <AppContent />
