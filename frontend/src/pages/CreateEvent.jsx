@@ -154,7 +154,7 @@ function CreateEvent() {
                 placeholder="Event name"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-300">✏️</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-300"></span>
             </div>
           </div>
 
