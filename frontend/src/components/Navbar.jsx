@@ -9,7 +9,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide on auth pages
+  // hide on auth pages
   if (location.pathname === "/login" || location.pathname === "/register") return null;
 
   const handleLogout = () => {
@@ -45,28 +45,18 @@ const NavBar = () => {
             </span>
           </NavLink>
 
-          {/* Desktop Nav */}
+          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/available-events" className={navLinkStyle}>
-              Available Events
-            </NavLink>
-            <NavLink to="/events" className={navLinkStyle}>
-              Events
-            </NavLink>
-            <NavLink to="/create-event" className={navLinkStyle}>
-              Create Event
-            </NavLink>
-            <NavLink to="/feedback" className={navLinkStyle}>
-              Feedback
-            </NavLink>
+            <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
+            <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
+            <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
 
             {currentUser?.role === "Admin" && (
-              <NavLink to="/admin" className={navLinkStyle}>
-                Admin
-              </NavLink>
+              <NavLink to="/admin" className={navLinkStyle}>Admin</NavLink>
             )}
 
-            {/* Avatar */}
+            {/* Avatar menu */}
             <div className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
@@ -102,7 +92,7 @@ const NavBar = () => {
             </div>
           </nav>
 
-          {/* Mobile Hamburger */}
+          {/* Mobile hamburger */}
           <button
             className="md:hidden text-slate-700"
             onClick={() => setMenuOpen((v) => !v)}
@@ -121,32 +111,22 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile dropdown */}
       {menuOpen && (
         <div className="md:hidden">
           <div className="max-w-6xl mx-auto px-4">
             <div className="rounded-3xl bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] px-6 py-4 mb-3">
               <div className="flex flex-col gap-3">
-                <NavLink to="/available-events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Available Events
-                </NavLink>
-                <NavLink to="/events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Events
-                </NavLink>
-                <NavLink to="/create-event" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Create Event
-                </NavLink>
-                <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Feedback
-                </NavLink>
-                <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                  Profile
-                </NavLink>
+                <NavLink to="/events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Events</NavLink>
+                <NavLink to="/available-events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Available Events</NavLink>
+                <NavLink to="/create-event" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Create Event</NavLink>
+                <NavLink to="/feedback" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Feedback</NavLink>
+                <NavLink to="/profile" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Profile</NavLink>
+
                 {currentUser?.role === "Admin" && (
-                  <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>
-                    Admin
-                  </NavLink>
+                  <NavLink to="/admin" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Admin</NavLink>
                 )}
+
                 <button
                   onClick={() => {
                     setMenuOpen(false);
