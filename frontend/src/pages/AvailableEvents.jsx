@@ -29,7 +29,7 @@ export default function AvailableEvents() {
               placeholder="Search events or city…"
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pl-11 text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40"
             />
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">🔎</span>
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"></span>
           </div>
         </div>
 

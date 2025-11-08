@@ -16,11 +16,11 @@ function CreateEvent() {
     title: "",
     description: "",
     date: "",
-    time: "",        // NEW
-    duration: "",    // NEW (user-entered)
+    time: "",
+    typeOfEvent: "",     // 1 new field
     venue: "",
-    imageData: "",   // NEW (base64, optional)
-    reminders: [],   // NEW (array of strings)
+    imageData: "",
+    reminders: [],
   });
 
   const [imagePreview, setImagePreview] = useState("");
@@ -96,15 +96,13 @@ function CreateEvent() {
         return;
       }
 
-      // Body keeps your original fields and adds optional ones.
       const body = {
         title: eventData.title,
         description: eventData.description,
         date: eventData.date,
         venue: eventData.venue,
-        // Optional extras (backend may ignore if not supported)
         time: eventData.time || undefined,
-        duration: eventData.duration || undefined,
+        typeOfEvent: eventData.typeOfEvent || undefined,   // 1 new
         image: eventData.imageData || undefined,
         reminders: eventData.reminders.length ? eventData.reminders : undefined,
       };
@@ -156,13 +154,13 @@ function CreateEvent() {
                 placeholder="Event name"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              {/* Decorative icon */}
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-300">✏️</span>
             </div>
           </div>
 
-          {/* Date / Time / Duration */}
+          {/* Date / Time / Type */}
           <div className="grid gap-4 md:grid-cols-3">
+
             {/* Date */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Date *</label>
@@ -170,28 +168,12 @@ function CreateEvent() {
                 <input
                   type="date"
                   name="date"
-                    /* calendar icon changed below */
                   value={eventData.date}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
-                {/* NEW calendar SVG icon */}
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
+                  📅
                 </span>
               </div>
             </div>
@@ -208,19 +190,20 @@ function CreateEvent() {
               />
             </div>
 
-            {/* Duration (user-entered) */}
+            {/* ✅ Type of Event */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Duration</label>
+              <label className="text-sm font-medium text-slate-700">Type of Event</label>
               <input
                 type="text"
-                name="duration"
-                value={eventData.duration}
+                name="typeOfEvent"
+                value={eventData.typeOfEvent}
                 onChange={handleChange}
-                placeholder="e.g., 2h 15m"
+                placeholder="e.g., Car meet, Charity event, Seminar"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <p className="text-xs text-slate-400">Enter any format you prefer (e.g., “1h”, “45m”, “1h 30m”).</p>
+              <p className="text-xs text-slate-400">Describe the type of event you are hosting.</p>
             </div>
+
           </div>
 
           {/* Location */}
@@ -252,7 +235,7 @@ function CreateEvent() {
             />
           </div>
 
-          {/* Image Upload (no drag & drop) */}
+          {/* Image Upload */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-slate-700">Event Image (optional)</label>
             <input
@@ -270,28 +253,24 @@ function CreateEvent() {
                 />
               </div>
             )}
-            <p className="text-xs text-slate-400">
-              PNG/JPG up to 4MB. (If your backend doesn’t yet store images, this will still submit as base64 under <code>image</code>.)
-            </p>
           </div>
 
-          {/* Reminders Card */}
+          {/* Reminders */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-700">Reminders (optional)</h3>
-            </div>
+            <h3 className="text-sm font-semibold text-slate-700">Reminders (optional)</h3>
+
             <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
               <input
                 type="text"
                 value={reminderInput}
                 onChange={(e) => setReminderInput(e.target.value)}
-                placeholder="Add a reminder (e.g., ‘Email attendees 1 day before’)"
+                placeholder="Add a reminder..."
                 className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
               <button
                 type="button"
                 onClick={addReminder}
-                className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700 active:scale-[.99]"
+                className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700 active:scale-95"
               >
                 Add
               </button>
@@ -301,14 +280,14 @@ function CreateEvent() {
               <ul className="mt-4 space-y-2">
                 {eventData.reminders.map((r, idx) => (
                   <li
-                    key={`${r}-${idx}`}
+                    key={idx}
                     className="flex items-center justify-between rounded-xl bg-white px-4 py-2 ring-1 ring-slate-200"
                   >
                     <span className="text-slate-700 text-sm">{r}</span>
                     <button
                       type="button"
                       onClick={() => removeReminder(idx)}
-                      className="text-slate-400 hover:text-rose-500 text-sm"
+                      className="text-slate-400 hover:text-red-500 text-sm"
                     >
                       Remove
                     </button>
@@ -323,16 +302,16 @@ function CreateEvent() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full rounded-xl px-5 py-3 text-white font-semibold shadow-md transition
-                ${
-                  loading
-                    ? "bg-slate-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 active:scale-[.99]"
-                }`}
+              className={`w-full rounded-xl px-5 py-3 text-white font-semibold shadow-md transition ${
+                loading
+                  ? "bg-slate-400 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 active:scale-95"
+              }`}
             >
               {loading ? "Creating..." : "Create Event"}
             </button>
           </div>
+
         </form>
       </div>
     </div>
