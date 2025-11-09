@@ -9,8 +9,8 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // hide on auth pages
-  if (location.pathname === "/login" || location.pathname === "/register") return null;
+  // Hide navbar on login/register pages
+  if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") return null;
 
   const handleLogout = () => {
     logout();
@@ -26,7 +26,6 @@ const NavBar = () => {
       .join("");
   }, [currentUser]);
 
-  // underline + hover animation
   const navLinkStyle = ({ isActive }) =>
     `relative px-2 md:px-3 py-1 font-medium transition text-slate-700
      ${isActive ? "text-slate-900" : "hover:text-slate-900"}
@@ -40,7 +39,7 @@ const NavBar = () => {
         <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
           {/* Brand */}
           <NavLink to="/" className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight">
+            <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-right from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight">
               Eventure
             </span>
           </NavLink>

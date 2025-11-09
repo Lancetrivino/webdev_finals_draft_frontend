@@ -13,6 +13,7 @@ import CreateEvent from "./pages/CreateEvent";
 import AdminDashboard from "./pages/AdminDashboard";
 import Events from "./pages/Events";
 import Feedback from "./pages/Feedback";
+import FeedbackList from "./pages/FeedbackList"; // <- new page
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
@@ -52,117 +53,134 @@ const GlobalStyles = () => (
 
 // Route guards
 const PrivateRoute = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
+  if (loading) return <div className="text-center mt-20">Loading...</div>;
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
+  if (loading) return <div className="text-center mt-20">Loading...</div>;
   if (!currentUser) return <Navigate to="/login" replace />;
   if (currentUser.role !== "Admin") return <Navigate to="/" replace />;
   return children;
 };
 
 // Main app routes
-const AppContent = () => (
-  <>
-    <GlobalStyles />
-    <ToastContainer position="top-center" />
-    <Navbar />
+const AppContent = () => {
+  const { loading } = useAuth();
+  if (loading) return <div className="text-center mt-20">Loading App...</div>;
 
-    <div className="min-h-screen bg-slate-50">
-      <main className="pt-4 pb-12">
-        <Routes>
-          {/* Public Landing Page */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+  return (
+    <>
+      <GlobalStyles />
+      <ToastContainer position="top-center" />
+      <Navbar />
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/events"
-            element={
-              <PrivateRoute>
-                <Events />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/create-event"
-            element={
-              <PrivateRoute>
-                <CreateEvent />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/events/:id"
-            element={
-              <PrivateRoute>
-                <EventDetails />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/feedback/:eventId"
-            element={
-              <PrivateRoute>
-                <Feedback />
-              </PrivateRoute>
-            }
-          />
+      <div className="min-h-screen bg-slate-50">
+        <main className="pt-4 pb-12">
+          <Routes>
+            {/* Public Landing Page */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Available Events & Booking */}
-          <Route
-            path="/available-events"
-            element={
-              <PrivateRoute>
-                <AvailableEvents />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/book/:placeId"
-            element={
-              <PrivateRoute>
-                <BookEvent />
-              </PrivateRoute>
-            }
-          />
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <Events />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-event"
+              element={
+                <PrivateRoute>
+                  <CreateEvent />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events/:id"
+              element={
+                <PrivateRoute>
+                  <EventDetails />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Admin */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
+            {/* Feedback */}
+            <Route
+              path="/feedback"
+              element={
+                <PrivateRoute>
+                  <FeedbackList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/feedback/:eventId"
+              element={
+                <PrivateRoute>
+                  <Feedback />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Not Found */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-    </div>
-  </>
-);
+            {/* Available Events & Booking */}
+            <Route
+              path="/available-events"
+              element={
+                <PrivateRoute>
+                  <AvailableEvents />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/book/:placeId"
+              element={
+                <PrivateRoute>
+                  <BookEvent />
+                </PrivateRoute>
+              }
+            />
+
+            {/* Admin */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+
+            {/* Not Found */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </>
+  );
+};
 
 // Provider wrapper
 const App = () => (
