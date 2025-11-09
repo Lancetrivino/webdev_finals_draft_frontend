@@ -22,7 +22,7 @@ function Profile() {
         name: currentUser.name || "",
         email: currentUser.email || "",
       });
-      setAvatarPreview(currentUser.avatar || ""); // Optional: existing avatar URL
+      setAvatarPreview(currentUser.avatar || ""); // Show existing avatar if any
     }
   }, [currentUser, navigate]);
 
@@ -59,9 +59,8 @@ function Profile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update profile.");
 
-      // ✅ Update context & localStorage without logout
+      // Update context & localStorage without forcing logout
       updateCurrentUser(data.user);
-
       toast.success("✅ Profile updated successfully!");
     } catch (err) {
       toast.error(err.message || "Error updating profile.");
@@ -143,9 +142,7 @@ function Profile() {
                   : "bg-gradient-to-right from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
               }`}
             >
-              {loading && (
-                <div className="w-5 h-5 border-2 border-t-white border-gray-200 rounded-full animate-spin"></div>
-              )}
+              {loading && <div className="w-5 h-5 border-2 border-t-white border-gray-200 rounded-full animate-spin"></div>}
               {loading ? "Saving..." : "Update Profile"}
             </button>
           </form>

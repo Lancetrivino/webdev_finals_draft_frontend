@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import jwt_decode from "jwt-decode"; // install via `npm i jwt-decode`
 import { API_BASE_URL } from "../App";
 
 const AuthContext = createContext();
@@ -10,25 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage and validate token
+  // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-
-    if (storedUser && token) {
-      try {
-        const decoded = jwt_decode(token);
-        const currentTime = Date.now() / 1000;
-
-        if (decoded.exp && decoded.exp < currentTime) {
-          // Token expired
-          logout(false);
-        } else {
-          setCurrentUser(JSON.parse(storedUser));
-        }
-      } catch (err) {
-        logout(false);
-      }
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
@@ -81,15 +66,12 @@ export const AuthProvider = ({ children }) => {
     if (showToast) toast.success("👋 Logged out successfully.");
   };
 
-  // Update current user after profile changes
   const updateCurrentUser = (updatedUser) => {
     setCurrentUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
-  const isAuthenticated = () => {
-    return !!localStorage.getItem("token");
-  };
+  const isAuthenticated = () => !!localStorage.getItem("token");
 
   const value = {
     currentUser,
@@ -97,7 +79,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAuthenticated,
-    updateCurrentUser, // ✅ allows profile page to update context without logout
+    updateCurrentUser,
   };
 
   return (

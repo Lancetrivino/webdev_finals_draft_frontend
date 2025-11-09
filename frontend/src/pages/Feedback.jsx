@@ -30,10 +30,16 @@ function Feedback() {
       return;
     }
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You are not authorized. Please log in again.");
+      navigate("/login");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/feedback/${eventId}`, {
         method: "POST",
         headers: {
@@ -70,14 +76,14 @@ function Feedback() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Star Rating */}
           <div className="flex flex-col items-center">
-            <label className="block text-gray-700 font-semibold mb-2">
-              Rating
-            </label>
+            <label className="block text-gray-700 font-semibold mb-2">Rating</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
+                  aria-label={`${star} star`}
+                  disabled={loading}
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
@@ -95,9 +101,7 @@ function Feedback() {
 
           {/* Comment */}
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Your Feedback
-            </label>
+            <label className="block text-gray-700 font-semibold mb-2">Your Feedback</label>
             <textarea
               name="comment"
               value={comment}
@@ -107,9 +111,7 @@ function Feedback() {
               placeholder="Write your feedback here..."
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none resize-none"
             ></textarea>
-            <p className="text-sm text-gray-400 text-right">
-              {comment.length}/{maxChars}
-            </p>
+            <p className="text-sm text-gray-400 text-right">{comment.length}/{maxChars}</p>
           </div>
 
           {/* Submit Button */}
@@ -117,9 +119,7 @@ function Feedback() {
             type="submit"
             disabled={loading}
             className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
             }`}
           >
             {loading ? "Submitting..." : "Submit Feedback"}
