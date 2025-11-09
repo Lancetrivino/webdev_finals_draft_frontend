@@ -154,7 +154,7 @@ function CreateEvent() {
     capacity: 1,
   });
   const [imagePreview, setImagePreview] = useState("");
-  const [imageFile, setImageFile] = useState(null); // store actual file
+  const [imageFile, setImageFile] = useState(null);
   const [reminderInput, setReminderInput] = useState("");
 
   useEffect(() => {
@@ -177,7 +177,7 @@ function CreateEvent() {
     if (file.size > 4 * 1024 * 1024)
       return toast.error("Max image size is 4MB.");
 
-    setImageFile(file); // save actual file
+    setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result?.toString() || "");
     reader.readAsDataURL(file);
@@ -201,10 +201,10 @@ function CreateEvent() {
     e.preventDefault();
 
     if (
-      !eventData.title ||
-      !eventData.description ||
+      !eventData.title?.trim() ||
+      !eventData.description?.trim() ||
       !eventData.date ||
-      !eventData.venue ||
+      !eventData.venue?.trim() ||
       !eventData.capacity
     ) {
       toast.error("Please fill all required fields.");
@@ -225,13 +225,13 @@ function CreateEvent() {
       }
 
       const formData = new FormData();
-      formData.append("title", eventData.title);
-      formData.append("description", eventData.description);
+      formData.append("title", eventData.title.trim());
+      formData.append("description", eventData.description.trim());
       formData.append("date", eventData.date);
-      formData.append("venue", eventData.venue);
+      formData.append("venue", eventData.venue.trim());
       if (eventData.time) formData.append("time", eventData.time);
       if (eventData.typeOfEvent)
-        formData.append("typeOfEvent", eventData.typeOfEvent);
+        formData.append("typeOfEvent", eventData.typeOfEvent.trim());
       formData.append("capacity", Number(eventData.capacity));
       formData.append("reminders", JSON.stringify(eventData.reminders));
       if (imageFile) formData.append("image", imageFile);
@@ -266,170 +266,73 @@ function CreateEvent() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <div>
-            <label className="text-sm font-medium text-slate-700">
-              Title *
-            </label>
-            <input
-              name="title"
-              value={eventData.title}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-              placeholder="Event name"
-            />
-          </div>
-
-          {/* Date / Time / Type */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Date *
-              </label>
-              <input
-                type="date"
-                name="date"
-                value={eventData.date}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700">Time</label>
-              <TimePicker
-                value={eventData.time || null} // start as null
-                onChange={(t) =>
-                  setEventData((prev) => ({ ...prev, time: t || undefined }))
-                }
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Type of Event
-              </label>
-              <input
-                name="typeOfEvent"
-                value={eventData.typeOfEvent}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-                placeholder="Car meet, seminar..."
-              />
-            </div>
-          </div>
-
-          {/* Venue */}
-          <div>
-            <label className="text-sm font-medium text-slate-700">
-              Venue *
-            </label>
-            <input
-              name="venue"
-              value={eventData.venue}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-              placeholder="Event location"
-            />
-          </div>
-
-          {/* Capacity */}
-          <div>
-            <label className="text-sm font-medium text-slate-700">
-              Capacity *
-            </label>
-            <input
-              type="number"
-              name="capacity"
-              min={1}
-              value={eventData.capacity}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-              placeholder="Number of slots"
-            />
-          </div>
-
+          <input
+            name="title"
+            value={eventData.title}
+            onChange={handleChange}
+            placeholder="Event name"
+          />
           {/* Description */}
-          <div>
-            <label className="text-sm font-medium text-slate-700">
-              Description *
-            </label>
-            <textarea
-              name="description"
-              value={eventData.description}
-              onChange={handleChange}
-              rows={4}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-              placeholder="Brief event description"
-            />
-          </div>
-
+          <textarea
+            name="description"
+            value={eventData.description}
+            onChange={handleChange}
+            placeholder="Description"
+          />
+          {/* Date */}
+          <input
+            type="date"
+            name="date"
+            value={eventData.date}
+            onChange={handleChange}
+          />
+          {/* Venue */}
+          <input
+            name="venue"
+            value={eventData.venue}
+            onChange={handleChange}
+            placeholder="Venue"
+          />
+          {/* Capacity */}
+          <input
+            type="number"
+            name="capacity"
+            min={1}
+            value={eventData.capacity}
+            onChange={handleChange}
+            placeholder="Capacity"
+          />
+          {/* Type of Event */}
+          <input
+            name="typeOfEvent"
+            value={eventData.typeOfEvent}
+            onChange={handleChange}
+            placeholder="Type of Event"
+          />
           {/* Image */}
-          <div>
-            <label className="text-sm font-medium text-slate-700">
-              Event Image (optional)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-full cursor-pointer text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-white hover:file:bg-emerald-700"
-            />
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="mt-3 h-40 w-full max-w-md rounded-xl object-cover"
-              />
-            )}
-          </div>
-
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+          {imagePreview && (
+            <img src={imagePreview} alt="Preview" className="h-40" />
+          )}
           {/* Reminders */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-            <h3 className="mb-3 text-sm font-semibold text-slate-700">
-              Reminders (optional)
-            </h3>
-            <div className="flex gap-3">
-              <input
-                value={reminderInput}
-                onChange={(e) => setReminderInput(e.target.value)}
-                className="flex-1 rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
-                placeholder="Add a reminder..."
-              />
-              <button
-                type="button"
-                onClick={addReminder}
-                className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700"
-              >
-                Add
-              </button>
-            </div>
-            {eventData.reminders.length > 0 && (
-              <ul className="mt-4 space-y-1">
-                {eventData.reminders.map((r, i) => (
-                  <li
-                    key={i}
-                    className="flex justify-between rounded-lg bg-white px-4 py-2 shadow-sm"
-                  >
-                    <span>{r}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeReminder(i)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div>
+            <input
+              value={reminderInput}
+              onChange={(e) => setReminderInput(e.target.value)}
+              placeholder="Add reminder"
+            />
+            <button type="button" onClick={addReminder}>
+              Add
+            </button>
+            <ul>
+              {eventData.reminders.map((r, i) => (
+                <li key={i}>
+                  {r} <button onClick={() => removeReminder(i)}>✕</button>
+                </li>
+              ))}
+            </ul>
           </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
-          >
+          <button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Create Event"}
           </button>
         </form>
@@ -437,5 +340,4 @@ function CreateEvent() {
     </div>
   );
 }
-
 export default CreateEvent;
