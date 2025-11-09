@@ -260,7 +260,7 @@ function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-bottom from-slate-50 to-slate-100 px-4 py-10">
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-lg ring-1 ring-black/5">
         <h1 className="mb-6 text-3xl font-bold text-slate-800">Create Event</h1>
 
