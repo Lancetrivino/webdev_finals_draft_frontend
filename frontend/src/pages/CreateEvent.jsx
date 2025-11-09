@@ -44,6 +44,10 @@ function TimePicker({ value, onChange }) {
   const to24h = (h12, p) =>
     p === "am" ? (h12 === 12 ? 0 : h12) : h12 === 12 ? 12 : h12 + 12;
   const commitChange = (h = hour, m = minute, p = period) => {
+    if (h == null || m == null || !p) {
+      onChange(null); // don't set empty string
+      return;
+    }
     onChange(
       `${String(to24h(h, p)).padStart(2, "0")}:${String(m).padStart(2, "0")}`
     );
@@ -210,7 +214,6 @@ function CreateEvent() {
     setLoading(true);
 
     try {
-      // 🔹 Safely get token from either localStorage or context
       const storedUser = localStorage.getItem("user");
       const parsedUser = storedUser ? JSON.parse(storedUser) : null;
       const token = parsedUser?.token || currentUser?.token;
@@ -226,15 +229,16 @@ function CreateEvent() {
       formData.append("description", eventData.description);
       formData.append("date", eventData.date);
       formData.append("venue", eventData.venue);
-      formData.append("time", eventData.time);
-      formData.append("typeOfEvent", eventData.typeOfEvent);
-      formData.append("capacity", eventData.capacity);
+      if (eventData.time) formData.append("time", eventData.time);
+      if (eventData.typeOfEvent)
+        formData.append("typeOfEvent", eventData.typeOfEvent);
+      formData.append("capacity", Number(eventData.capacity));
       formData.append("reminders", JSON.stringify(eventData.reminders));
       if (imageFile) formData.append("image", imageFile);
 
       const res = await fetch(`${API_BASE}/api/events`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` }, // ✅ No Content-Type for FormData
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -254,6 +258,7 @@ function CreateEvent() {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-bottom from-slate-50 to-slate-100 px-4 py-10">
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-lg ring-1 ring-black/5">
@@ -292,8 +297,10 @@ function CreateEvent() {
             <div>
               <label className="text-sm font-medium text-slate-700">Time</label>
               <TimePicker
-                value={eventData.time}
-                onChange={(t) => setEventData((p) => ({ ...p, time: t }))}
+                value={eventData.time || null} // start as null
+                onChange={(t) =>
+                  setEventData((prev) => ({ ...prev, time: t || undefined }))
+                }
               />
             </div>
 
