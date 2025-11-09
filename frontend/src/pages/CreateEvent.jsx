@@ -280,19 +280,9 @@ function CreateEvent() {
             placeholder="Description"
           />
           {/* Date */}
-          <input
-            type="date"
-            name="date"
-            value={eventData.date}
-            onChange={handleChange}
-          />
+          <input type="date" name="date" value={eventData.date} onChange={handleChange} />
           {/* Venue */}
-          <input
-            name="venue"
-            value={eventData.venue}
-            onChange={handleChange}
-            placeholder="Venue"
-          />
+          <input name="venue" value={eventData.venue} onChange={handleChange} placeholder="Venue" />
           {/* Capacity */}
           <input
             type="number"
@@ -311,9 +301,7 @@ function CreateEvent() {
           />
           {/* Image */}
           <input type="file" accept="image/*" onChange={handleImageChange} />
-          {imagePreview && (
-            <img src={imagePreview} alt="Preview" className="h-40" />
-          )}
+          {imagePreview && <img src={imagePreview} alt="Preview" className="h-40" />}
           {/* Reminders */}
           <div>
             <input
