@@ -55,9 +55,7 @@ function TimePicker({ value, onChange }) {
         onClick={() => setOpen((o) => !o)}
         className="w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
-        {value
-          ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}`
-          : "Select time"}
+        {value ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}` : "Select time"}
       </button>
       <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
         <ClockIcon />
@@ -127,11 +125,11 @@ function CreateEvent() {
     time: "",
     typeOfEvent: "",
     venue: "",
-    imageData: "",
     reminders: [],
     capacity: 1,
   });
   const [imagePreview, setImagePreview] = useState("");
+  const [imageFile, setImageFile] = useState(null); // store actual file
   const [reminderInput, setReminderInput] = useState("");
 
   useEffect(() => {
@@ -151,12 +149,10 @@ function CreateEvent() {
     if (!file) return;
     if (!file.type.startsWith("image/")) return toast.error("Select a valid image file.");
     if (file.size > 4 * 1024 * 1024) return toast.error("Max image size is 4MB.");
+
+    setImageFile(file); // save actual file
     const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result?.toString() || "";
-      setEventData((p) => ({ ...p, imageData: base64 }));
-      setImagePreview(base64);
-    };
+    reader.onload = () => setImagePreview(reader.result?.toString() || "");
     reader.readAsDataURL(file);
   };
 
@@ -187,21 +183,28 @@ function CreateEvent() {
         return;
       }
 
-      const payload = { ...eventData, createdBy: currentUser._id }; // Attach creator
+      const formData = new FormData();
+      formData.append("title", eventData.title);
+      formData.append("description", eventData.description);
+      formData.append("date", eventData.date);
+      formData.append("venue", eventData.venue);
+      formData.append("time", eventData.time);
+      formData.append("typeOfEvent", eventData.typeOfEvent);
+      formData.append("capacity", eventData.capacity);
+      formData.append("reminders", JSON.stringify(eventData.reminders));
+      if (imageFile) formData.append("image", imageFile);
+
       const res = await fetch(`${API_BASE}/api/events`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Error creating event.");
 
       toast.success("Event created successfully!");
-      navigate(`/events/${data.event._id}`); // Redirect to event details
+      navigate(`/events/${data.event._id}`);
     } catch (err) {
       toast.error(err.message || "Server error.");
     } finally {
@@ -242,10 +245,7 @@ function CreateEvent() {
 
             <div>
               <label className="text-sm font-medium text-slate-700">Time</label>
-              <TimePicker
-                value={eventData.time}
-                onChange={(t) => setEventData((p) => ({ ...p, time: t }))}
-              />
+              <TimePicker value={eventData.time} onChange={(t) => setEventData((p) => ({ ...p, time: t }))} />
             </div>
 
             <div>
@@ -309,11 +309,7 @@ function CreateEvent() {
               className="block w-full cursor-pointer text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-white hover:file:bg-emerald-700"
             />
             {imagePreview && (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="mt-3 h-40 w-full max-w-md rounded-xl object-cover"
-              />
+              <img src={imagePreview} alt="Preview" className="mt-3 h-40 w-full max-w-md rounded-xl object-cover" />
             )}
           </div>
 
@@ -327,11 +323,7 @@ function CreateEvent() {
                 className="flex-1 rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
                 placeholder="Add a reminder..."
               />
-              <button
-                type="button"
-                onClick={addReminder}
-                className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700"
-              >
+              <button type="button" onClick={addReminder} className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700">
                 Add
               </button>
             </div>
@@ -348,11 +340,7 @@ function CreateEvent() {
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
-          >
+          <button type="submit" disabled={loading} className="w-full rounded-xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60">
             {loading ? "Creating..." : "Create Event"}
           </button>
         </form>
