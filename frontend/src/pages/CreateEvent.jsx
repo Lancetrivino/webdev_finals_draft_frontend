@@ -34,15 +34,19 @@ function TimePicker({ value, onChange }) {
 
   useEffect(() => {
     const onDocClick = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target))
+        setOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const to24h = (h12, p) => (p === "am" ? (h12 === 12 ? 0 : h12) : h12 === 12 ? 12 : h12 + 12);
+  const to24h = (h12, p) =>
+    p === "am" ? (h12 === 12 ? 0 : h12) : h12 === 12 ? 12 : h12 + 12;
   const commitChange = (h = hour, m = minute, p = period) => {
-    onChange(`${String(to24h(h, p)).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    onChange(
+      `${String(to24h(h, p)).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+    );
   };
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -55,7 +59,12 @@ function TimePicker({ value, onChange }) {
         onClick={() => setOpen((o) => !o)}
         className="w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
-        {value ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}` : "Select time"}
+        {value
+          ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+              2,
+              "0"
+            )} ${period}`
+          : "Select time"}
       </button>
       <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
         <ClockIcon />
@@ -72,7 +81,11 @@ function TimePicker({ value, onChange }) {
                     setHour(h);
                     commitChange(h, minute, period);
                   }}
-                  className={`block w-full px-3 py-2 text-sm ${h === hour ? "bg-emerald-600 text-white" : "hover:bg-slate-50"}`}
+                  className={`block w-full px-3 py-2 text-sm ${
+                    h === hour
+                      ? "bg-emerald-600 text-white"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
                   {String(h).padStart(2, "0")}
                 </button>
@@ -86,7 +99,11 @@ function TimePicker({ value, onChange }) {
                     setMinute(m);
                     commitChange(hour, m, period);
                   }}
-                  className={`block w-full px-3 py-2 text-sm ${m === minute ? "bg-emerald-600 text-white" : "hover:bg-slate-50"}`}
+                  className={`block w-full px-3 py-2 text-sm ${
+                    m === minute
+                      ? "bg-emerald-600 text-white"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
                   {String(m).padStart(2, "0")}
                 </button>
@@ -100,7 +117,11 @@ function TimePicker({ value, onChange }) {
                     setPeriod(p);
                     commitChange(hour, minute, p);
                   }}
-                  className={`flex-1 px-3 py-2 text-sm ${p === period ? "bg-emerald-600 text-white" : "hover:bg-slate-50"}`}
+                  className={`flex-1 px-3 py-2 text-sm ${
+                    p === period
+                      ? "bg-emerald-600 text-white"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
                   {p}
                 </button>
@@ -147,8 +168,10 @@ function CreateEvent() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Select a valid image file.");
-    if (file.size > 4 * 1024 * 1024) return toast.error("Max image size is 4MB.");
+    if (!file.type.startsWith("image/"))
+      return toast.error("Select a valid image file.");
+    if (file.size > 4 * 1024 * 1024)
+      return toast.error("Max image size is 4MB.");
 
     setImageFile(file); // save actual file
     const reader = new FileReader();
@@ -164,21 +187,36 @@ function CreateEvent() {
   };
 
   const removeReminder = (i) => {
-    setEventData((p) => ({ ...p, reminders: p.reminders.filter((_, idx) => idx !== i) }));
+    setEventData((p) => ({
+      ...p,
+      reminders: p.reminders.filter((_, idx) => idx !== i),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!eventData.title || !eventData.description || !eventData.date || !eventData.venue || !eventData.capacity) {
+
+    if (
+      !eventData.title ||
+      !eventData.description ||
+      !eventData.date ||
+      !eventData.venue ||
+      !eventData.capacity
+    ) {
       toast.error("Please fill all required fields.");
       return;
     }
 
     setLoading(true);
+
     try {
-      const token = localStorage.getItem("token") || currentUser?.token;
+      // 🔹 Safely get token from either localStorage or context
+      const storedUser = localStorage.getItem("user");
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      const token = parsedUser?.token || currentUser?.token;
+
       if (!token) {
-        toast.error("Login first.");
+        toast.error("Please log in first.");
         navigate("/login");
         return;
       }
@@ -196,22 +234,26 @@ function CreateEvent() {
 
       const res = await fetch(`${API_BASE}/api/events`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ No Content-Type for FormData
         body: formData,
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Error creating event.");
 
-      toast.success("Event created successfully!");
+      if (!res.ok) {
+        console.error("❌ Server Error:", data);
+        throw new Error(data.message || "Error creating event.");
+      }
+
+      toast.success("✅ Event created successfully!");
       navigate(`/events/${data.event._id}`);
     } catch (err) {
+      console.error("❌ Create Event Error:", err);
       toast.error(err.message || "Server error.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-bottom from-slate-50 to-slate-100 px-4 py-10">
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-lg ring-1 ring-black/5">
@@ -220,7 +262,9 @@ function CreateEvent() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Title *</label>
+            <label className="text-sm font-medium text-slate-700">
+              Title *
+            </label>
             <input
               name="title"
               value={eventData.title}
@@ -233,7 +277,9 @@ function CreateEvent() {
           {/* Date / Time / Type */}
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label className="text-sm font-medium text-slate-700">Date *</label>
+              <label className="text-sm font-medium text-slate-700">
+                Date *
+              </label>
               <input
                 type="date"
                 name="date"
@@ -245,11 +291,16 @@ function CreateEvent() {
 
             <div>
               <label className="text-sm font-medium text-slate-700">Time</label>
-              <TimePicker value={eventData.time} onChange={(t) => setEventData((p) => ({ ...p, time: t }))} />
+              <TimePicker
+                value={eventData.time}
+                onChange={(t) => setEventData((p) => ({ ...p, time: t }))}
+              />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-slate-700">Type of Event</label>
+              <label className="text-sm font-medium text-slate-700">
+                Type of Event
+              </label>
               <input
                 name="typeOfEvent"
                 value={eventData.typeOfEvent}
@@ -262,7 +313,9 @@ function CreateEvent() {
 
           {/* Venue */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Venue *</label>
+            <label className="text-sm font-medium text-slate-700">
+              Venue *
+            </label>
             <input
               name="venue"
               value={eventData.venue}
@@ -274,7 +327,9 @@ function CreateEvent() {
 
           {/* Capacity */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Capacity *</label>
+            <label className="text-sm font-medium text-slate-700">
+              Capacity *
+            </label>
             <input
               type="number"
               name="capacity"
@@ -288,7 +343,9 @@ function CreateEvent() {
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Description *</label>
+            <label className="text-sm font-medium text-slate-700">
+              Description *
+            </label>
             <textarea
               name="description"
               value={eventData.description}
@@ -301,7 +358,9 @@ function CreateEvent() {
 
           {/* Image */}
           <div>
-            <label className="text-sm font-medium text-slate-700">Event Image (optional)</label>
+            <label className="text-sm font-medium text-slate-700">
+              Event Image (optional)
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -309,13 +368,19 @@ function CreateEvent() {
               className="block w-full cursor-pointer text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-white hover:file:bg-emerald-700"
             />
             {imagePreview && (
-              <img src={imagePreview} alt="Preview" className="mt-3 h-40 w-full max-w-md rounded-xl object-cover" />
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="mt-3 h-40 w-full max-w-md rounded-xl object-cover"
+              />
             )}
           </div>
 
           {/* Reminders */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-            <h3 className="mb-3 text-sm font-semibold text-slate-700">Reminders (optional)</h3>
+            <h3 className="mb-3 text-sm font-semibold text-slate-700">
+              Reminders (optional)
+            </h3>
             <div className="flex gap-3">
               <input
                 value={reminderInput}
@@ -323,16 +388,29 @@ function CreateEvent() {
                 className="flex-1 rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-emerald-500"
                 placeholder="Add a reminder..."
               />
-              <button type="button" onClick={addReminder} className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700">
+              <button
+                type="button"
+                onClick={addReminder}
+                className="rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold hover:bg-emerald-700"
+              >
                 Add
               </button>
             </div>
             {eventData.reminders.length > 0 && (
               <ul className="mt-4 space-y-1">
                 {eventData.reminders.map((r, i) => (
-                  <li key={i} className="flex justify-between rounded-lg bg-white px-4 py-2 shadow-sm">
+                  <li
+                    key={i}
+                    className="flex justify-between rounded-lg bg-white px-4 py-2 shadow-sm"
+                  >
                     <span>{r}</span>
-                    <button type="button" onClick={() => removeReminder(i)} className="text-red-500 hover:text-red-700">✕</button>
+                    <button
+                      type="button"
+                      onClick={() => removeReminder(i)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -340,7 +418,11 @@ function CreateEvent() {
           </div>
 
           {/* Submit */}
-          <button type="submit" disabled={loading} className="w-full rounded-xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-emerald-600 py-3 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
+          >
             {loading ? "Creating..." : "Create Event"}
           </button>
         </form>
