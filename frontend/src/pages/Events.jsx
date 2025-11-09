@@ -29,10 +29,13 @@ function Events() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        const approved = data.filter(
-          (event) => event.status?.toLowerCase() === "approved"
-        );
-        setEvents(approved);
+        // Admin sees all, users see only their own events
+        const filteredEvents =
+          currentUser.role === "Admin"
+            ? data
+            : data.filter(event => event.createdBy._id === currentUser._id);
+
+        setEvents(filteredEvents);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load events. Check your connection or permissions.");
@@ -43,6 +46,30 @@ function Events() {
 
     fetchEvents();
   }, [currentUser, navigate]);
+
+  // DELETE handler
+  const handleDelete = async (eventId) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL;
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_BASE}/api/events/${eventId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to delete event");
+
+      toast.success("Event deleted successfully.");
+      setEvents(prev => prev.filter(event => event._id !== eventId));
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete event.");
+    }
+  };
 
   if (loading) {
     return (
@@ -55,7 +82,11 @@ function Events() {
   if (events.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <h2 className="text-2xl font-semibold text-gray-700">No approved events yet.</h2>
+        <h2 className="text-2xl font-semibold text-gray-700">
+          {currentUser.role === "Admin"
+            ? "No events available."
+            : "You haven't created any events yet."}
+        </h2>
         <p className="text-gray-500 mt-2">Check back later!</p>
       </div>
     );
@@ -64,46 +95,82 @@ function Events() {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6">
       <h2 className="text-3xl font-bold text-center text-emerald-600 mb-8">
-        Approved Events
+        {currentUser.role === "Admin" ? "All Events" : "My Events"}
       </h2>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {events.map((event) => (
-          <article
-            key={event._id}
-            className="group rounded-2xl bg-white shadow-[0_10px_25px_-10px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_35px_-15px_rgba(0,0,0,0.25)] transition-all overflow-hidden"
-          >
-            {/* Image/hero area (gradient placeholder so it always looks good) */}
-            <div className="h-40 w-full overflow-hidden">
-              <div className="h-full w-full bg-gradient-to-tr from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
-            </div>
+        {events.map((event) => {
+          const remainingSlots = event.capacity - (event.participants?.length || 0);
 
-            {/* Content */}
-            <div className="p-5">
-              <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                {event.title}
-              </h3>
+          return (
+            <article
+              key={event._id}
+              className="group rounded-2xl bg-white shadow-[0_10px_25px_-10px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_35px_-15px_rgba(0,0,0,0.25)] transition-all overflow-hidden"
+            >
+              {/* Image */}
+              <div className="h-40 w-full overflow-hidden">
+                {event.image ? (
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-top-right from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
+                )}
+              </div>
 
-              <p className="text-slate-700 mb-1">
-                <span className="mr-1">📅</span>
-                <strong>Date:</strong> {new Date(event.date).toLocaleDateString()}
-              </p>
-              <p className="text-slate-700 mb-2">
-                <span className="mr-1">📍</span>
-                <strong>Venue:</strong> {event.venue}
-              </p>
+              {/* Content */}
+              <div className="p-5">
+                <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                  {event.title}
+                </h3>
 
-              <p className="text-slate-600 line-clamp-3">{event.description}</p>
+                <p className="text-slate-700 mb-1">
+                  <span className="mr-1">📅</span>
+                  <strong>Date:</strong> {new Date(event.date).toLocaleDateString()}
+                </p>
+                <p className="text-slate-700 mb-1">
+                  <span className="mr-1">📍</span>
+                  <strong>Venue:</strong> {event.venue}
+                </p>
+                <p className="text-slate-700 mb-2">
+                  <span className="mr-1">🎟️</span>
+                  <strong>Remaining Slots:</strong> {remainingSlots}
+                </p>
 
-              <Link
-                to={`/events/${event._id}`}
-                className="mt-4 inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-white font-medium shadow-md hover:shadow-lg active:scale-95 transition"
-              >
-                View Details
-              </Link>
-            </div>
-          </article>
-        ))}
+                <p className="text-slate-600 line-clamp-3">{event.description}</p>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <Link
+                    to={`/events/${event._id}`}
+                    className="inline-flex items-center rounded-full bg-gradient-to-right from-emerald-500 to-teal-500 px-4 py-2 text-white font-medium shadow-md hover:shadow-lg active:scale-95 transition"
+                  >
+                    View Details
+                  </Link>
+
+                  {/* Edit/Delete for users/admin */}
+                  {currentUser.role !== "Guest" && (
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/events/edit/${event._id}`}
+                        className="rounded-full bg-blue-600 px-3 py-2 text-sm font-medium text-white"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(event._id)}
+                        className="rounded-full bg-red-600 px-3 py-2 text-sm font-medium text-white"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

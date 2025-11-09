@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App";
 import { useAuth } from "../contexts/AuthContext";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -12,14 +13,14 @@ const EventDetails = () => {
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [joined, setJoined] = useState(false);
 
+  // Fetch event details
   useEffect(() => {
     const fetchEvent = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-
-        // Fetch event details
         const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -30,19 +31,19 @@ const EventDetails = () => {
           return;
         }
 
-        const text = await res.text();
-        let data;
-        try {
-          data = text ? JSON.parse(text) : {};
-        } catch {
-          throw new Error(`Unexpected response from server (status ${res.status}).`);
-        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to fetch event");
 
-        if (!res.ok) {
-          throw new Error(data?.message || `Failed to fetch event. (${res.status})`);
-        }
+        setEvent(data.event ?? data);
 
-        setEvent(data?.event ?? data);
+        // Check if user already joined
+        if (currentUser) {
+          setJoined(
+            (data.event?.participants || data.participants || []).includes(
+              currentUser._id
+            )
+          );
+        }
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
         toast.error(err.message || "Failed to load event details.");
@@ -53,6 +54,64 @@ const EventDetails = () => {
 
     fetchEvent();
   }, [id, navigate, currentUser]);
+
+  // Handle Join
+  const handleBook = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.info("Please login first.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to join event");
+
+      toast.success(data.message || "Successfully joined the event!");
+      setJoined(true);
+      setEvent((prev) => ({
+        ...prev,
+        participants: [...(prev.participants || []), currentUser._id],
+      }));
+    } catch (err) {
+      toast.error(err.message || "Error joining event.");
+    }
+  };
+
+  // Handle Leave
+  const handleLeave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.info("Please login first.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}/leave`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to leave event");
+
+      toast.success(data.message || "Successfully left the event!");
+      setJoined(false);
+      setEvent((prev) => ({
+        ...prev,
+        participants: (prev.participants || []).filter((uid) => uid !== currentUser._id),
+      }));
+    } catch (err) {
+      toast.error(err.message || "Error leaving event.");
+    }
+  };
 
   if (loading)
     return (
@@ -68,8 +127,22 @@ const EventDetails = () => {
       </div>
     );
 
-  const { title, description, date, venue, time, duration, image, reminders, status } =
-    event;
+  const {
+    title,
+    description,
+    date,
+    venue,
+    time,
+    duration,
+    imageData,
+    reminders,
+    status,
+    capacity,
+    participants,
+  } = event;
+
+  const remainingSlots = capacity ? capacity - (participants?.length || 0) : null;
+  const isFull = remainingSlots !== null && remainingSlots <= 0;
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
@@ -92,9 +165,9 @@ const EventDetails = () => {
       </div>
 
       {/* Image */}
-      {image && (
+      {imageData && (
         <img
-          src={image}
+          src={imageData}
           alt={title}
           className="w-full max-h-80 object-cover rounded-xl mb-6 shadow-md"
         />
@@ -119,6 +192,11 @@ const EventDetails = () => {
         <p>
           <span className="font-semibold">📍 Venue:</span> {venue || "—"}
         </p>
+        {remainingSlots !== null && (
+          <p className={`font-semibold ${isFull ? "text-red-600" : "text-emerald-600"}`}>
+            {isFull ? "Event is Full" : `${remainingSlots} slots remaining`}
+          </p>
+        )}
       </div>
 
       {/* Description */}
@@ -138,13 +216,33 @@ const EventDetails = () => {
         </div>
       )}
 
-      {/* Feedback Button */}
-      <button
-        onClick={() => navigate(`/feedback/${id}`)}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
-      >
-        Give Feedback
-      </button>
+      {/* Action Buttons */}
+      <div className="flex gap-4">
+        <button
+          onClick={() => navigate(`/feedback/${id}`)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
+        >
+          Give Feedback
+        </button>
+
+        {currentUser && !isFull && !joined && (
+          <button
+            onClick={handleBook}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
+          >
+            Join Event
+          </button>
+        )}
+
+        {currentUser && joined && (
+          <button
+            onClick={handleLeave}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl transition"
+          >
+            Leave Event
+          </button>
+        )}
+      </div>
     </div>
   );
 };

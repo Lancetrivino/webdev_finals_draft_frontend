@@ -7,13 +7,14 @@ import { API_BASE_URL } from "../App";
 function Feedback() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { eventId } = useParams(); // ✅ get event ID from URL
+  const { eventId } = useParams();
 
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
   const [loading, setLoading] = useState(false);
+  const maxChars = 300;
 
-  // ✅ Redirect users who aren’t logged in
   useEffect(() => {
     if (!currentUser) {
       toast.error("Please log in to submit feedback.");
@@ -48,6 +49,7 @@ function Feedback() {
       toast.success("✅ Thank you for your feedback!");
       setComment("");
       setRating(5);
+      setHoverRating(0);
     } catch (err) {
       toast.error(err.message || "Error submitting feedback.");
     } finally {
@@ -62,29 +64,36 @@ function Feedback() {
           Event Feedback
         </h2>
         <p className="text-gray-600 text-center mb-6">
-          Your thoughts help us make future events better.
+          Your thoughts help us improve future events.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Rating Selector */}
-          <div>
+          {/* Star Rating */}
+          <div className="flex flex-col items-center">
             <label className="block text-gray-700 font-semibold mb-2">
-              Rating (1–5)
+              Rating
             </label>
-            <select
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none"
-            >
-              {[1, 2, 3, 4, 5].map((num) => (
-                <option key={num} value={num}>
-                  {num} ⭐
-                </option>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className={`text-3xl transition-transform transform ${
+                    star <= (hoverRating || rating)
+                      ? "text-yellow-400 scale-110"
+                      : "text-gray-300"
+                  }`}
+                >
+                  ★
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
-          {/* Comment box */}
+          {/* Comment */}
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Your Feedback
@@ -94,12 +103,16 @@ function Feedback() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows="5"
+              maxLength={maxChars}
               placeholder="Write your feedback here..."
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none resize-none"
             ></textarea>
+            <p className="text-sm text-gray-400 text-right">
+              {comment.length}/{maxChars}
+            </p>
           </div>
 
-          {/* Submit button */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}

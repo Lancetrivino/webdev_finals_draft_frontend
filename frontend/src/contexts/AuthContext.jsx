@@ -1,31 +1,38 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App"; // uses your dynamic API config
+import jwt_decode from "jwt-decode"; // install via `npm i jwt-decode`
+import { API_BASE_URL } from "../App";
 
-// Create context
 const AuthContext = createContext();
-
-// Hook for easy access
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* -------------------------------------------------------------
-     Load stored user from localStorage on mount
-     ------------------------------------------------------------- */
+  // Load user from localStorage and validate token
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("token");
+
+    if (storedUser && token) {
+      try {
+        const decoded = jwt_decode(token);
+        const currentTime = Date.now() / 1000;
+
+        if (decoded.exp && decoded.exp < currentTime) {
+          // Token expired
+          logout(false);
+        } else {
+          setCurrentUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        logout(false);
+      }
     }
     setLoading(false);
   }, []);
 
-  /* -------------------------------------------------------------
-     LOGIN FUNCTION
-     ------------------------------------------------------------- */
   const login = async ({ email, password }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -37,14 +44,10 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
-      // ✅ Save to localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      // ✅ Update context
       setCurrentUser(data.user);
 
-      
       return data.user;
     } catch (err) {
       toast.error(err.message || "Login failed");
@@ -52,9 +55,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /* -------------------------------------------------------------
-     REGISTER FUNCTION
-     ------------------------------------------------------------- */
   const register = async ({ name, email, password }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/register`, {
@@ -74,32 +74,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /* -------------------------------------------------------------
-     LOGOUT FUNCTION
-     ------------------------------------------------------------- */
-  const logout = () => {
+  const logout = (showToast = true) => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setCurrentUser(null);
-    toast.success("👋 Logged out successfully.");
+    if (showToast) toast.success("👋 Logged out successfully.");
   };
 
-  /* -------------------------------------------------------------
-     CHECK AUTH STATUS
-     ------------------------------------------------------------- */
+  // Update current user after profile changes
+  const updateCurrentUser = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   const isAuthenticated = () => {
     return !!localStorage.getItem("token");
   };
 
-  /* -------------------------------------------------------------
-     CONTEXT VALUE
-     ------------------------------------------------------------- */
   const value = {
     currentUser,
     login,
     register,
     logout,
     isAuthenticated,
+    updateCurrentUser, // ✅ allows profile page to update context without logout
   };
 
   return (
