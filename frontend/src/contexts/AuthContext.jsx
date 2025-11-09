@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on mount
+  // 🔹 Load user from localStorage when app starts
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // 🔹 Login user
   const login = async ({ email, password }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -29,17 +30,20 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setCurrentUser(data.user);
+      // ✅ Store token *inside* the user object
+      const userWithToken = { ...data.user, token: data.token };
 
-      return data.user;
+      localStorage.setItem("user", JSON.stringify(userWithToken));
+      setCurrentUser(userWithToken);
+
+      return userWithToken;
     } catch (err) {
       toast.error(err.message || "Login failed");
       throw err;
     }
   };
 
+  // 🔹 Register user
   const register = async ({ name, email, password }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/register`, {
@@ -59,19 +63,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Logout user
   const logout = (showToast = true) => {
-    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setCurrentUser(null);
     if (showToast) toast.success("👋 Logged out successfully.");
   };
 
+  // 🔹 Update user info locally
   const updateCurrentUser = (updatedUser) => {
     setCurrentUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
-  const isAuthenticated = () => !!localStorage.getItem("token");
+  // 🔹 Check authentication
+  const isAuthenticated = () => !!currentUser?.token;
 
   const value = {
     currentUser,
