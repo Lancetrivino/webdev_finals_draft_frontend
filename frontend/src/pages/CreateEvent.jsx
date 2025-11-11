@@ -15,6 +15,24 @@ const ClockIcon = (props) => (
   </svg>
 );
 
+const CalendarIcon = (props) => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5" {...props}>
+    <path
+      d="M7 2a1 1 0 0 0-1 1v1H5a3 3 0 0 0-3 3v1h20V7a3 3 0 0 0-3-3h-1V3a1 1 0 1 0-2 0v1H8V3a1 1 0 0 0-1-1ZM22 10H2v9a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-9Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const UploadIcon = (props) => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5" {...props}>
+    <path
+      d="M12 3a1 1 0 0 1 1 1v7.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4.007 4.007a1.25 1.25 0 0 1-1.4.243 1.25 1.25 0 0 1-.243-.243L7.05 10.707a1 1 0 0 1 1.414-1.414L10.757 11.586V4a1 1 0 0 1 1-1ZM4 15a1 1 0 1 1 0 2h-.5A1.5 1.5 0 0 0 2 18.5v.5A3 3 0 0 0 5 22h14a3 3 0 0 0 3-3v-.5a1.5 1.5 0 0 0-1.5-1.5H20a1 1 0 1 1 0-2h.5A3.5 3.5 0 0 1 24 18.5V19a5 5 0 0 1-5 5H5a5 5 0 0 1-5-5v-.5A3.5 3.5 0 0 1 3.5 15H4Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 /* ---------- Time Picker ---------- */
 function TimePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -45,7 +63,7 @@ function TimePicker({ value, onChange }) {
     p === "am" ? (h12 === 12 ? 0 : h12) : h12 === 12 ? 12 : h12 + 12;
   const commitChange = (h = hour, m = minute, p = period) => {
     if (h == null || m == null || !p) {
-      onChange(null); // don't set empty string
+      onChange(null);
       return;
     }
     onChange(
@@ -137,6 +155,22 @@ function TimePicker({ value, onChange }) {
     </div>
   );
 }
+
+/* ---------- Small UI helpers ---------- */
+const Label = ({ children, htmlFor }) => (
+  <label
+    htmlFor={htmlFor}
+    className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+  >
+    {children}
+  </label>
+);
+
+const Field = ({ children }) => (
+  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 focus-within:ring-2 focus-within:ring-emerald-500">
+    {children}
+  </div>
+);
 
 /* ---------- Main CreateEvent ---------- */
 function CreateEvent() {
@@ -260,72 +294,227 @@ function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-bottom from-slate-50 to-slate-100 px-4 py-10">
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-lg ring-1 ring-black/5">
-        <h1 className="mb-6 text-3xl font-bold text-slate-800">Create Event</h1>
+    <div className="min-h-screen bg-slate-50">
+      {/* Top bar strip for subtle depth like the screenshot */}
+      <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
-          <input
-            name="title"
-            value={eventData.title}
-            onChange={handleChange}
-            placeholder="Event name"
-          />
-          {/* Description */}
-          <textarea
-            name="description"
-            value={eventData.description}
-            onChange={handleChange}
-            placeholder="Description"
-          />
-          {/* Date */}
-          <input type="date" name="date" value={eventData.date} onChange={handleChange} />
-          {/* Venue */}
-          <input name="venue" value={eventData.venue} onChange={handleChange} placeholder="Venue" />
-          {/* Capacity */}
-          <input
-            type="number"
-            name="capacity"
-            min={1}
-            value={eventData.capacity}
-            onChange={handleChange}
-            placeholder="Capacity"
-          />
-          {/* Type of Event */}
-          <input
-            name="typeOfEvent"
-            value={eventData.typeOfEvent}
-            onChange={handleChange}
-            placeholder="Type of Event"
-          />
-          {/* Image */}
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {imagePreview && <img src={imagePreview} alt="Preview" className="h-40" />}
-          {/* Reminders */}
-          <div>
-            <input
-              value={reminderInput}
-              onChange={(e) => setReminderInput(e.target.value)}
-              placeholder="Add reminder"
-            />
-            <button type="button" onClick={addReminder}>
-              Add
-            </button>
-            <ul>
-              {eventData.reminders.map((r, i) => (
-                <li key={i}>
-                  {r} <button onClick={() => removeReminder(i)}>✕</button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <button type="submit" disabled={loading}>
-            {loading ? "Creating..." : "Create Event"}
-          </button>
-        </form>
+      <div className="mx-auto max-w-5xl px-4 pb-20">
+        <h1 className="mt-8 mb-6 text-3xl font-bold tracking-tight text-slate-800">
+          Create event
+        </h1>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Title + Description card (styled like a compact block) */}
+            <div className="space-y-3">
+              <Label htmlFor="title">Title</Label>
+              <Field>
+                <input
+                  id="title"
+                  name="title"
+                  value={eventData.title}
+                  onChange={handleChange}
+                  placeholder="Event name"
+                  className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                />
+              </Field>
+
+              <Label htmlFor="description">Description</Label>
+              <Field>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={eventData.description}
+                  onChange={handleChange}
+                  placeholder="Add a short description"
+                  rows={3}
+                  className="w-full resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                />
+              </Field>
+            </div>
+
+            {/* Date / Time / Capacity / Type */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="date">Day</Label>
+                <div className="relative">
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <span className="text-slate-400">
+                        <CalendarIcon />
+                      </span>
+                      <input
+                        type="date"
+                        id="date"
+                        name="date"
+                        value={eventData.date}
+                        onChange={handleChange}
+                        className="w-full bg-transparent text-slate-800 focus:outline-none"
+                      />
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              <div>
+                <Label>Time</Label>
+                <TimePicker
+                  value={eventData.time}
+                  onChange={(val) =>
+                    setEventData((p) => ({ ...p, time: val || "" }))
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="capacity">Capacity</Label>
+                <Field>
+                  <input
+                    type="number"
+                    id="capacity"
+                    name="capacity"
+                    min={1}
+                    value={eventData.capacity}
+                    onChange={handleChange}
+                    placeholder="Capacity"
+                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  />
+                </Field>
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="typeOfEvent">Type of event</Label>
+                <Field>
+                  <input
+                    id="typeOfEvent"
+                    name="typeOfEvent"
+                    value={eventData.typeOfEvent}
+                    onChange={handleChange}
+                    placeholder="Type of Event"
+                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  />
+                </Field>
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="venue">Location</Label>
+                <Field>
+                  <input
+                    id="venue"
+                    name="venue"
+                    value={eventData.venue}
+                    onChange={handleChange}
+                    placeholder="Venue"
+                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  />
+                </Field>
+              </div>
+            </div>
+
+            {/* Upload section styled like “drop files here” */}
+            <div className="space-y-3">
+              <Label>Upload attachments</Label>
+
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-slate-100 p-2 text-slate-500">
+                    <UploadIcon />
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    {imageFile ? imageFile.name : "No file selected"}
+                  </div>
+                </div>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  + Add files
+                </label>
+              </div>
+
+              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+                You can also drop your files here
+              </div>
+
+              {imagePreview && (
+                <div className="overflow-hidden rounded-xl border border-slate-200">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="h-48 w-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Reminders */}
+            <div className="space-y-3">
+              <Label>Reminders</Label>
+              <div className="flex gap-2">
+                <Field>
+                  <input
+                    value={reminderInput}
+                    onChange={(e) => setReminderInput(e.target.value)}
+                    placeholder="Add reminder"
+                    className="w-72 bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  />
+                </Field>
+                <button
+                  type="button"
+                  onClick={addReminder}
+                  className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white hover:bg-emerald-700"
+                >
+                  Add
+                </button>
+              </div>
+
+              {!!eventData.reminders.length && (
+                <ul className="flex flex-wrap gap-2">
+                  {eventData.reminders.map((r, i) => (
+                    <li
+                      key={i}
+                      className="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                    >
+                      {r}
+                      <button
+                        type="button"
+                        onClick={() => removeReminder(i)}
+                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                        aria-label="Remove reminder"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Submit */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {loading ? "Creating..." : "Create Event"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
+
 export default CreateEvent;

@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      toast.success("🎉 Account created! Please log in.");
+      toast.success(" Account created! Please log in.");
       return true;
     } catch (err) {
       toast.error(err.message || "Registration failed");
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   const logout = (showToast = true) => {
     localStorage.removeItem("user");
     setCurrentUser(null);
-    if (showToast) toast.success("👋 Logged out successfully.");
+    if (showToast) toast.success("Logged out successfully.");
   };
 
   // 🔹 Update user info locally
