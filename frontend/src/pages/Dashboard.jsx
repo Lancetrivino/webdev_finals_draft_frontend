@@ -22,7 +22,6 @@ function Dashboard() {
         });
 
         if (!response.ok) throw new Error("Failed to fetch backend data.");
-
         const data = await response.text();
         setMessage(data || "✅ Connected to backend successfully!");
       } catch (error) {
@@ -69,7 +68,7 @@ function Dashboard() {
   };
 
   // ===== No page scroll: lock <html> and <body>, and use a fixed viewport =====
-  const NAV_HEIGHT = 80; // Tailwind h-20
+  const NAV_HEIGHT = 80; // Tailwind h-20 (change if your navbar differs)
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
@@ -86,21 +85,18 @@ function Dashboard() {
     // Fixed container that occupies the viewport area under the navbar
     <div className="fixed left-0 right-0 bottom-0 bg-white" style={{ top: NAV_HEIGHT }}>
       <div className="h-full w-full flex items-center justify-center p-4">
-        {/* Card fills the fixed area height (no page scroll). */}
+        {/* Main card (details box) with green-poly background */}
         <div
-          className="relative w-[min(1200px,96vw)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
-          style={{ height: "100%" }}
+          className="relative w-[min(1200px,96vw)] rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
+          style={{
+            height: "100%",
+            backgroundImage: "url(/assets/green-poly.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         >
-          {/* ---------- FULL-CARD GREEN 'PAINT' BACKGROUND ---------- */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(36rem 28rem at 55% 45%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.2) 75%, transparent 100%), conic-gradient(from 90deg at 50% 50%, #bbf7d0, #86efac, #a7f3d0, #86efac, #bbf7d0)",
-              filter: "blur(26px)",
-              opacity: 0.95,
-            }}
-          />
+          {/* white veil so text stays readable */}
+          <div className="absolute inset-0 bg-white/55" />
 
           {/* ---------- CONTENT (no outer page scroll) ---------- */}
           <div className="relative flex flex-col h-full">
@@ -109,17 +105,17 @@ function Dashboard() {
               <h1 className="text-center text-[clamp(36px,5.6vw,64px)] font-extrabold tracking-tight text-emerald-600 drop-shadow-[0_1px_8px_rgba(16,185,129,0.25)]">
                 Eventure
               </h1>
-              <p className="text-center text-sm text-gray-600">
+              <p className="text-center text-sm text-gray-700">
                 {now.toLocaleDateString()} • {now.toLocaleTimeString()}
               </p>
             </div>
 
-            {/* Main grid; right side gets more space */}
+            {/* Main grid */}
             <div className="px-6 sm:px-10 pb-6 grow overflow-hidden">
               <div className="grid h-full gap-5 grid-cols-12">
                 {/* Left: avatar + facts */}
                 <div className="col-span-12 lg:col-span-4">
-                  <div className="rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md shadow-md p-5 h-full">
+                  <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-md shadow-md p-5 h-full">
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
                         {initials}
@@ -158,16 +154,16 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right: rows + status + IMAGE GALLERY */}
+                {/* Right: rows + status + TWO IMAGES */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 overflow-hidden">
-                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
+                  <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Welcome:</span>
                     <span className="font-medium text-gray-900">
                       {currentUser?.name || "User"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
+                  <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Role:</span>
                     <span className="capitalize font-medium text-gray-900">
                       {roleLabel}
@@ -175,7 +171,7 @@ function Dashboard() {
                   </div>
 
                   {/* Backend status */}
-                  <div className="rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
+                  <div className="rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
                     {loading ? (
                       <div className="w-5 h-5 border-4 border-t-emerald-500 border-white/70 rounded-full animate-spin" />
                     ) : (
@@ -194,34 +190,21 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  {/* Pale-green image gallery (replaces the icon cards) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Image 1 */}
+                  {/* Two pale-green–tinted images */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
                       <img
-                        src="/images/green-poly.jpg"
-                        alt="Soft green polygon background"
-                        className="h-40 w-full object-cover"
-                      />
-                      {/* pale green overlay */}
-                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
-                    </div>
-
-                    {/* Image 2 */}
-                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
-                      <img
-                        src="/images/event-night.jpg"
-                        alt="Event night poster"
+                        src="/assets/event-night.jpg"
+                        alt="Event Night poster"
                         className="h-40 w-full object-cover"
                       />
                       <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
                     </div>
-
-                    {/* Image 3 */}
                     <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
+                      {/* filename matches your folder (summer-festival.jpg.jpg) */}
                       <img
-                        src="/images/summer-festival.jpg"
-                        alt="Summer music festival"
+                        src="/assets/summer-festival.jpg.jpg"
+                        alt="Summer Music Festival"
                         className="h-40 w-full object-cover"
                       />
                       <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
