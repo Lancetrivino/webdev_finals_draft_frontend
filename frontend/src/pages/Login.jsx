@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth, AuthProvider } from "../contexts/AuthContext";
+import { useAuth, AuthProvider } from "./contexts/AuthContext";
 
 function Login() {
   const { login } = useAuth();
