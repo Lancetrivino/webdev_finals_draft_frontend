@@ -68,9 +68,6 @@ const AdminRoute = ({ children }) => {
 
 // Main app routes
 const AppContent = () => {
-  const { loading } = useAuth();
-  if (loading) return <div className="text-center mt-20">Loading App...</div>;
-
   return (
     <>
       <GlobalStyles />
