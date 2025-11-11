@@ -69,10 +69,9 @@ function Dashboard() {
   };
 
   // ===== No page scroll: lock <html> and <body>, and use a fixed viewport =====
-  const NAV_HEIGHT = 80; // px (Tailwind h-20). Change if your navbar height differs.
+  const NAV_HEIGHT = 80; // Tailwind h-20
 
   useEffect(() => {
-    // lock page scroll while this page is mounted
     const prevHtml = document.documentElement.style.overflow;
     const prevBody = document.body.style.overflow;
     document.documentElement.style.overflow = "hidden";
@@ -86,7 +85,6 @@ function Dashboard() {
   return (
     // Fixed container that occupies the viewport area under the navbar
     <div className="fixed left-0 right-0 bottom-0 bg-white" style={{ top: NAV_HEIGHT }}>
-      {/* Center the card; give a tiny padding without causing page scroll */}
       <div className="h-full w-full flex items-center justify-center p-4">
         {/* Card fills the fixed area height (no page scroll). */}
         <div
@@ -116,10 +114,10 @@ function Dashboard() {
               </p>
             </div>
 
-            {/* Main grid; right side gets more space to “maximize” content */}
+            {/* Main grid; right side gets more space */}
             <div className="px-6 sm:px-10 pb-6 grow overflow-hidden">
               <div className="grid h-full gap-5 grid-cols-12">
-                {/* Left: avatar + facts (4/12) */}
+                {/* Left: avatar + facts */}
                 <div className="col-span-12 lg:col-span-4">
                   <div className="rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md shadow-md p-5 h-full">
                     <div className="flex items-center gap-4">
@@ -160,7 +158,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right: rows + status + green feature gallery (8/12) */}
+                {/* Right: rows + status + IMAGE GALLERY */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 overflow-hidden">
                   <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Welcome:</span>
@@ -196,58 +194,41 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  {/* GREEN FEATURE GALLERY — purely client-side, no backend */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-1">
-                    {/* Card 1: Create Event */}
-                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
-                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
-                        {/* calendar icon */}
-                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
-                          <path fill="currentColor" d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v3H3V6a2 2 0 0 1 2-2h2V2Zm14 9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9h18ZM7 15h4v4H7v-4Z"/>
-                        </svg>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-800">Create Event</div>
-                      <p className="text-xs text-emerald-700/80 mt-1">Plan details, date & venue.</p>
+                  {/* Pale-green image gallery (replaces the icon cards) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Image 1 */}
+                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
+                      <img
+                        src="/images/green-poly.jpg"
+                        alt="Soft green polygon background"
+                        className="h-40 w-full object-cover"
+                      />
+                      {/* pale green overlay */}
+                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
                     </div>
 
-                    {/* Card 2: Promote */}
-                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
-                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
-                        {/* megaphone icon */}
-                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
-                          <path fill="currentColor" d="M3 10v4a1 1 0 0 0 1 1h2l4 4v-14l-4 4H4a1 1 0 0 0-1 1Zm14-4v12l4 2V4l-4 2Z"/>
-                        </svg>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-800">Promote</div>
-                      <p className="text-xs text-emerald-700/80 mt-1">Share links & updates.</p>
+                    {/* Image 2 */}
+                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
+                      <img
+                        src="/images/event-night.jpg"
+                        alt="Event night poster"
+                        className="h-40 w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
                     </div>
 
-                    {/* Card 3: Track RSVPs */}
-                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
-                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
-                        {/* ticket icon */}
-                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
-                          <path fill="currentColor" d="M3 7h18v4a2 2 0 0 0 0 2v4H3v-4a2 2 0 0 0 0-2V7Zm12 2v6h2V9h-2Z"/>
-                        </svg>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-800">Track RSVPs</div>
-                      <p className="text-xs text-emerald-700/80 mt-1">Monitor attendees live.</p>
-                    </div>
-
-                    {/* Card 4: Discover Nearby */}
-                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
-                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
-                        {/* map pin icon */}
-                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
-                          <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"/>
-                        </svg>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-800">Discover Nearby</div>
-                      <p className="text-xs text-emerald-700/80 mt-1">Find events around you.</p>
+                    {/* Image 3 */}
+                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
+                      <img
+                        src="/images/summer-festival.jpg"
+                        alt="Summer music festival"
+                        className="h-40 w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
                     </div>
                   </div>
 
-                  {/* Logout pinned to the bottom-right of right column */}
+                  {/* Logout pinned to the bottom-right */}
                   <div className="mt-auto flex">
                     <button
                       onClick={handleLogout}
