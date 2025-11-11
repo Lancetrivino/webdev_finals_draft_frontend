@@ -123,7 +123,7 @@ export default function EventFeedbackPage() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{event?.name || "Event"}</h1>
+          <h1 className="text-2xl font-bold">{event?.name || "Customers Feedback"}</h1>
           {event?.date && <p className="text-sm text-gray-500">{new Date(event.date).toLocaleString()}</p>}
         </div>
         <Link
