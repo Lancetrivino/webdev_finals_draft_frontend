@@ -1,26 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext"; // ✅ Correct relative path
 
 function Login() {
-  const { login, currentUser } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect logged-in users automatically
-  useEffect(() => {
-    if (currentUser) {
-      if (currentUser.role === "Admin") navigate("/admin", { replace: true });
-      else navigate("/dashboard", { replace: true });
-    }
-  }, [currentUser, navigate]);
-
-  // Email validation
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -41,19 +32,15 @@ function Login() {
     try {
       const user = await login(formData);
 
-      toast.success("Welcome back!", {
-        autoClose: 1500,
-        toastId: "login-success",
-      });
+      // ✅ Show toast
+      toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
 
-      // Navigate immediately
+      // ✅ Navigate immediately
       if (user.role === "Admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Login failed. Please check your credentials.", {
-        autoClose: 2000,
-      });
+      toast.error(err.message || "Login failed. Please check your credentials.", { autoClose: 2000 });
     } finally {
       setLoading(false);
     }
@@ -127,12 +114,12 @@ function Login() {
 
           <p className="text-center text-gray-600 mt-6 text-sm">
             Don’t have an account?{" "}
-            <Link
-              to="/register"
+            <a
+              href="/register"
               className="text-[#7A6C5D] font-medium hover:underline"
             >
               Register
-            </Link>
+            </a>
           </p>
         </div>
       </div>
