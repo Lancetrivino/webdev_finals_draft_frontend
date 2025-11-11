@@ -9,7 +9,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide navbar only on login/register pages (NOT home anymore)
+  // Hide navbar only on login/register pages (not home)
   if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") return null;
 
   const handleLogout = () => {
@@ -51,7 +51,7 @@ const NavBar = () => {
                 </defs>
                 <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
               </svg>
-              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight drop-shadow">
+              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-right from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight drop-shadow">
                 Eventure
               </span>
             </span>
@@ -59,9 +59,6 @@ const NavBar = () => {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-
-            <NavLink to="/" end className={navLinkStyle}>Home</NavLink>
-
             <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
             <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
             <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
@@ -132,10 +129,6 @@ const NavBar = () => {
           <div className="max-w-6xl mx-auto px-4">
             <div className="rounded-3xl bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] px-6 py-4 mb-3">
               <div className="flex flex-col gap-3">
-
-                {/* ✅ Home added */}
-                <NavLink to="/" end className={navLinkStyle} onClick={() => setMenuOpen(false)}>Home</NavLink>
-
                 <NavLink to="/events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Events</NavLink>
                 <NavLink to="/available-events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Available Events</NavLink>
                 <NavLink to="/create-event" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Create Event</NavLink>
