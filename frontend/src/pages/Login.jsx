@@ -13,8 +13,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Email validation
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,10 +32,10 @@ function Login() {
     try {
       const user = await login(formData);
 
-      // ✅ Show toast
+      // Show toast
       toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
 
-      // ✅ Navigate immediately
+      // Navigate immediately with replace
       if (user.role === "Admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -63,7 +62,7 @@ function Login() {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <div>
-              <label className="text-sm text-gray-600">Email</label>
+              <label className="text-sm text-gray-600">Email or phone</label>
               <input
                 type="text"
                 name="email"
