@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Context
-import { useAuth, AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Pages
 import Login from "./pages/Login";
@@ -52,84 +52,53 @@ const GlobalStyles = () => (
 
 // Route guards
 const PrivateRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Checking authentication...
-      </div>
-    );
-  }
-
+  const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Checking authentication...
-      </div>
-    );
-  }
-
+  const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
   if (currentUser.role !== "Admin") return <Navigate to="/" replace />;
   return children;
 };
 
 // App content
-const AppContent = () => {
-  const { loading } = useAuth(); // get loading from context
+const AppContent = () => (
+  <>
+    <GlobalStyles />
+    <ToastContainer position="top-center" />
+    <Navbar />
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Loading App...
-      </div>
-    );
-  }
+    <div className="min-h-screen bg-slate-50">
+      <main className="pt-4 pb-12">
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-  return (
-    <>
-      <GlobalStyles />
-      <ToastContainer position="top-center" />
-      <Navbar />
+          {/* Protected */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
+          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
+          <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
+          <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
+          <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
 
-      <div className="min-h-screen bg-slate-50">
-        <main className="pt-4 pb-12">
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          {/* Admin */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-            {/* Protected */}
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
-            <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
-            <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
-            <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
-            <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
-            <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
-
-            {/* Admin */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-
-            {/* Not Found */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-      </div>
-    </>
-  );
-};
-
+          {/* Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  </>
+);
 
 // Main app
 const App = () => (

@@ -1,20 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../App";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Synchronously get the user from localStorage on app start
+const getInitialUser = () => {
+  const storedUser = localStorage.getItem("user");
+  return storedUser ? JSON.parse(storedUser) : null;
+};
 
-  // Load user from localStorage on app start
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setCurrentUser(JSON.parse(storedUser));
-    setLoading(false);
-  }, []);
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(getInitialUser());
 
   // Login
   const login = async ({ email, password }) => {
@@ -58,40 +56,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout
-  const logout = (showToast = true) => {
+  const logout = () => {
     localStorage.removeItem("user");
     setCurrentUser(null);
-    if (showToast) toast.success("Logged out successfully.");
-  };
-
-  // Update user locally
-  const updateCurrentUser = (updatedUser) => {
-    setCurrentUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
-
-  // Check authentication
-  const isAuthenticated = () => !!currentUser?.token;
-
-  const value = {
-    currentUser,
-    login,
-    register,
-    logout,
-    isAuthenticated,
-    updateCurrentUser,
-    loading, // important: expose loading
+    toast.success("Logged out successfully.");
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-          Loading...
-        </div>
-      ) : (
-        children
-      )}
+    <AuthContext.Provider value={{ currentUser, login, register, logout, setCurrentUser }}>
+      {children}
     </AuthContext.Provider>
   );
 };
