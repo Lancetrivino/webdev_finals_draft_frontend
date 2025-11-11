@@ -82,41 +82,54 @@ const AdminRoute = ({ children }) => {
 };
 
 // App content
-const AppContent = () => (
-  <>
-    <GlobalStyles />
-    <ToastContainer position="top-center" />
-    <Navbar />
+const AppContent = () => {
+  const { loading } = useAuth(); // get loading from context
 
-    <div className="min-h-screen bg-slate-50">
-      <main className="pt-4 pb-12">
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Loading App...
+      </div>
+    );
+  }
 
-          {/* Protected */}
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
-          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
-          <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
-          <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
-          <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
-          <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
+  return (
+    <>
+      <GlobalStyles />
+      <ToastContainer position="top-center" />
+      <Navbar />
 
-          {/* Admin */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+      <div className="min-h-screen bg-slate-50">
+        <main className="pt-4 pb-12">
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Not Found */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-    </div>
-  </>
-);
+            {/* Protected */}
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
+            <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
+            <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
+            <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+            <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
+            <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
+
+            {/* Admin */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+            {/* Not Found */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </>
+  );
+};
+
 
 // Main app
 const App = () => (
