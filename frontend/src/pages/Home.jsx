@@ -92,7 +92,7 @@ export default function Home() {
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-30 blur" />
                 <div className="relative h-28 w-28 overflow-hidden rounded-full ring-4 ring-white/70">
                   <img
-                    src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe"
+                    src= " "
                     alt="profile"
                     className="h-full w-full object-cover"
                   />
@@ -162,22 +162,22 @@ export default function Home() {
         <section>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {/* CARD 1 */}
-            <Email
-              title=""
+            <ShortcutCard
+              title="Eventure Email"
               desc="Contact support or request event help."
               icon={<MailIcon className="h-5 w-5" />}
             />
 
             {/* CARD 2 */}
-            <Contact
-              title=" "
+            <ShortcutCard
+              title="Number"
               desc="Your registered phone number or alerts."
               icon={<PhoneIcon className="h-5 w-5" />}
             />
 
             {/* CARD 3 */}
-            <Location
-              title=""
+            <ShortcutCard
+              title="Location"
               desc="Your saved home or discovery region."
               icon={<MapPinIcon className="h-5 w-5" />}
             />
