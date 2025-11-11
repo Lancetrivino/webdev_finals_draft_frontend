@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+
 export default function AvailableEvents() {
   const [events, setEvents] = useState([]);
   const [q, setQ] = useState("");
@@ -8,19 +9,20 @@ export default function AvailableEvents() {
   const [joinedEventIds, setJoinedEventIds] = useState([]);
   const [sortOption, setSortOption] = useState("date"); // default sort by date
 
-
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-        const token = localStorage.getItem("token");
-
-        if (!token) {
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) {
           toast.info("Please login to see available events.");
           setLoading(false);
           return;
         }
+
+        const { token, _id: userId } = JSON.parse(storedUser);
+        const API_BASE = import.meta.env.VITE_API_URL;
 
         const res = await fetch(`${API_BASE}/api/events`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -34,10 +36,9 @@ export default function AvailableEvents() {
         );
         setEvents(approvedEvents);
 
+        // Mark events the user already joined
         const joined = approvedEvents
-          .filter((e) =>
-            e.participants?.includes(localStorage.getItem("userId"))
-          )
+          .filter((e) => e.participants?.includes(userId))
           .map((e) => e._id);
         setJoinedEventIds(joined);
       } catch (error) {
@@ -53,7 +54,7 @@ export default function AvailableEvents() {
     fetchEvents();
   }, []);
 
-  // Search + filter
+  // 🔎 Search + Sort
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     let filteredEvents = term
@@ -64,7 +65,6 @@ export default function AvailableEvents() {
         )
       : [...events];
 
-    // Sorting
     if (sortOption === "date") {
       filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (sortOption === "slots") {
@@ -79,10 +79,13 @@ export default function AvailableEvents() {
     return filteredEvents;
   }, [q, events, sortOption]);
 
+  // ✅ Handle Book Event
   const handleBook = async (eventId) => {
-    const API_BASE = import.meta.env.VITE_API_URL;
-    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) return toast.info("Please login first.");
+    const { token, _id: userId } = storedUser;
 
+    const API_BASE = import.meta.env.VITE_API_URL;
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/join`, {
         method: "POST",
@@ -102,10 +105,7 @@ export default function AvailableEvents() {
           e._id === eventId
             ? {
                 ...e,
-                participants: [
-                  ...(e.participants || []),
-                  localStorage.getItem("userId"),
-                ],
+                participants: [...(e.participants || []), userId],
               }
             : e
         )
@@ -116,10 +116,13 @@ export default function AvailableEvents() {
     }
   };
 
+  // ✅ Handle Leave Event
   const handleLeave = async (eventId) => {
-    const API_BASE = import.meta.env.VITE_API_URL;
-    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) return toast.info("Please login first.");
+    const { token, _id: userId } = storedUser;
 
+    const API_BASE = import.meta.env.VITE_API_URL;
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/leave`, {
         method: "POST",
@@ -140,7 +143,7 @@ export default function AvailableEvents() {
             ? {
                 ...e,
                 participants: (e.participants || []).filter(
-                  (id) => id !== localStorage.getItem("userId")
+                  (id) => id !== userId
                 ),
               }
             : e
@@ -152,6 +155,7 @@ export default function AvailableEvents() {
     }
   };
 
+  // 🌀 Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -160,6 +164,7 @@ export default function AvailableEvents() {
     );
   }
 
+  // 📭 No results
   if (filtered.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -173,6 +178,7 @@ export default function AvailableEvents() {
     );
   }
 
+  // 🎟️ Events display
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-6xl">
