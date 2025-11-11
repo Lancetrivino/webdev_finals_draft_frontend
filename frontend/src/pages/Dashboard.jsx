@@ -69,8 +69,20 @@ function Dashboard() {
     navigate("/login");
   };
 
-  // 👇 adjust if your navbar height differs
-  const NAV_HEIGHT = 80; // px, matches Tailwind h-20 from your navbar
+  // ===== No page scroll: lock <html> and <body>, and use a fixed viewport =====
+  const NAV_HEIGHT = 80; // px (Tailwind h-20). Change if your navbar is a different height.
+
+  useEffect(() => {
+    // lock page scroll while this page is mounted
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, []);
 
   return (
     // Fixed container that occupies the viewport area under the navbar
@@ -78,10 +90,13 @@ function Dashboard() {
       className="fixed left-0 right-0 bottom-0 bg-white"
       style={{ top: NAV_HEIGHT }}
     >
-      {/* Center the card inside the fixed viewport */}
-      <div className="h-full w-full flex items-center justify-center px-4">
-        {/* Card fills nicely; inner can scroll if ever needed */}
-        <div className="relative w-[min(1100px,94vw)] h-[min(760px,90vh)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden">
+      {/* Center the card; give a tiny padding without causing page scroll */}
+      <div className="h-full w-full flex items-center justify-center p-4">
+        {/* Card fills the fixed area height (no page scroll). */}
+        <div
+          className="relative w-[min(1100px,94vw)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
+          style={{ height: "100%" }} // fill the fixed viewport area
+        >
           {/* ---------- FULL-CARD 'PAINT' BACKGROUND ---------- */}
           <div
             className="pointer-events-none absolute inset-0"
@@ -105,21 +120,21 @@ function Dashboard() {
             }}
           />
 
-          {/* ---------- CONTENT (scrolls inside card only if necessary) ---------- */}
-          <div className="relative h-full overflow-auto">
+          {/* ---------- CONTENT (no outer page scroll; keep content compact) ---------- */}
+          <div className="relative flex flex-col h-full">
             {/* Header */}
-            <div className="px-6 sm:px-10 pt-6 pb-2">
+            <div className="px-6 sm:px-10 pt-6 pb-2 shrink-0">
               <h1 className="text-center text-5xl sm:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.25)]">
                 Welcome
               </h1>
             </div>
 
-            {/* Grid */}
-            <div className="px-6 sm:px-10 pb-6">
-              <div className="grid gap-5 lg:grid-cols-3">
+            {/* Main grid; allow INTERNAL scroll only if content ever overflows */}
+            <div className="px-6 sm:px-10 pb-6 grow overflow-hidden">
+              <div className="grid h-full gap-5 lg:grid-cols-3">
                 {/* Left: avatar + facts */}
                 <div className="lg:col-span-1">
-                  <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-md shadow-md p-5">
+                  <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-md shadow-md p-5 h-full">
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
                         {initials}
@@ -159,7 +174,7 @@ function Dashboard() {
                 </div>
 
                 {/* Right: rows + status + logout */}
-                <div className="lg:col-span-2 space-y-4">
+                <div className="lg:col-span-2 flex flex-col gap-4 overflow-hidden">
                   <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Welcome:</span>
                     <span className="font-medium text-gray-900">
@@ -193,7 +208,8 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="pt-1 flex">
+                  {/* Push button to bottom but keep inside the card */}
+                  <div className="mt-auto flex">
                     <button
                       onClick={handleLogout}
                       className="ml-auto px-8 py-3 rounded-full bg-red-600 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-red-700 transition transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-red-300"
@@ -204,9 +220,9 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-            {/* /Grid */}
+            {/* /grid */}
           </div>
-          {/* /Content */}
+          {/* /content */}
         </div>
       </div>
     </div>
