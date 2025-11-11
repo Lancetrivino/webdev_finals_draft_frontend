@@ -1,98 +1,161 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function Home() {
-  const { currentUser } = useAuth();
-  const [nearestEvent] = useState({
-    name: "Community Tech Expo 2025",
-    date: "March 12, 2025",
-    time: "10:00 AM",
-    location: "San Diego Convention Hall",
-  });
+  const [isClient, setIsClient] = useState(false);
+  const featuresRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => setIsClient(true), []);
+
+  // derive a friendly name from localStorage user (if your auth stores it there)
+  const username = useMemo(() => {
+    if (!isClient) return "";
+    try {
+      const raw = localStorage.getItem("user");
+      const obj = raw ? JSON.parse(raw) : null;
+      const name = obj?.name || obj?.username || obj?.email || "";
+      if (!name) return "";
+      const first = String(name).trim().split(" ")[0];
+      return first.charAt(0).toUpperCase() + first.slice(1);
+    } catch {
+      return "";
+    }
+  }, [isClient]);
+
+  const scrollToContent = () =>
+    featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-10">
+    <div className="min-h-screen bg-white">
+      {/* HERO */}
+      <header className="relative overflow-hidden">
+        {/* pastel spectrum background (no images) */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 opacity-90 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100" />
+          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl opacity-40 bg-indigo-300" />
+          <div className="absolute -bottom-32 right-0 h-96 w-96 rounded-full blur-3xl opacity-40 bg-pink-300" />
+        </div>
 
-      {/* HELLO BLOCK */}
-      <section className="max-w-5xl mx-auto text-center mb-14">
-        <div className="bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl py-12 px-6">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Hello, {currentUser?.name || "Guest"}
-          </h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            {/* LEFT: welcome copy */}
+            <div>
+              <p className="inline-flex items-center rounded-full bg-white/70 ring-1 ring-slate-200 px-3 py-1 text-xs font-medium text-slate-600 shadow-sm mb-5">
+                Eventure • Plan, promote, attend
+              </p>
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900">
+                Welcome{username ? `, ${username}` : ""} 👋
+              </h1>
+              <p className="mt-5 text-lg md:text-xl text-slate-600">
+                Your hub for effortless event discovery and organizing — designed with a
+                clean, modern look inspired by soft gradients and subtle glass effects.
+              </p>
 
-          {/* ROUND IMAGE */}
-          <div className="flex justify-center mb-6">
-            <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg ring-4 ring-purple-300/40">
-              <img
-                src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe"
-                alt="profile"
-                className="w-full h-full object-cover"
-              />
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a
+                  href="/create-event"
+                  className="px-6 py-3 rounded-full bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition"
+                >
+                  Create an Event
+                </a>
+                <a
+                  href="/available-events"
+                  className="px-6 py-3 rounded-full bg-white/80 ring-1 ring-slate-200 text-slate-800 font-semibold hover:bg-white transition"
+                >
+                  Explore Events
+                </a>
+                <button
+                  onClick={scrollToContent}
+                  className="px-4 py-3 rounded-full text-slate-600 hover:text-indigo-700"
+                  aria-label="Scroll to images"
+                >
+                  Learn more ↓
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT: three rectangles (you will insert images) */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-5">
+              {/* Card 1 */}
+              <div className="relative h-44 md:h-52 rounded-2xl ring-1 ring-slate-200 bg-white/60 backdrop-blur shadow-[0_15px_35px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+                {/* Insert image in this div (as background or <img>) */}
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                  Insert Image #1
+                </div>
+              </div>
+              {/* Card 2 */}
+              <div className="relative h-44 md:h-52 rounded-2xl ring-1 ring-slate-200 bg-white/60 backdrop-blur shadow-[0_15px_35px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                  Insert Image #2
+                </div>
+              </div>
+              {/* Card 3 */}
+              <div className="relative h-44 md:h-52 rounded-2xl ring-1 ring-slate-200 bg-white/60 backdrop-blur shadow-[0_15px_35px_-15px_rgba(0,0,0,0.25)] overflow-hidden sm:col-span-2 lg:col-span-1">
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                  Insert Image #3
+                </div>
+              </div>
             </div>
           </div>
-
-          <p className="text-gray-600 max-w-lg mx-auto">
-            Welcome back to Eventure. Your next event is coming up soon!
-          </p>
         </div>
-      </section>
+      </header>
 
-      {/* UPCOMING EVENT CARD */}
-      <section className="max-w-3xl mx-auto mb-16">
-        <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            {nearestEvent.name}
-          </h2>
-
-          <p className="text-gray-600">Date: {nearestEvent.date}</p>
-          <p className="text-gray-600">Time: {nearestEvent.time}</p>
-          <p className="text-gray-600">Location: {nearestEvent.location}</p>
-
-          <Link
-            to="/events"
-            className="inline-block mt-6 px-6 py-3 bg-purple-600 text-white rounded-full shadow-md hover:bg-purple-700 transition"
-          >
-            View Event Details
-          </Link>
-        </div>
-      </section>
-
-      {/* THREE SHORTCUT CARDS */}
-      <section className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-
-          {/* CARD 1 */}
-          <div className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-lg hover:shadow-2xl transition">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Eventure Email
-            </h3>
-            <p className="text-gray-500 text-sm">
-              Contact support or request event help.
+      {/* CONTENT / FEATURE BLURB (optional anchor for "Learn more") */}
+      <section ref={featuresRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="rounded-2xl bg-white/80 ring-1 ring-slate-200 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Create</h3>
+            <p className="text-slate-600">
+              Set up public or private events with categories, RSVPs, and sharing tools.
             </p>
           </div>
-
-          {/* CARD 2 */}
-          <div className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-lg hover:shadow-2xl transition">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Number
-            </h3>
-            <p className="text-gray-500 text-sm">
-              Your registered phone number or alerts.
+          <div className="rounded-2xl bg-white/80 ring-1 ring-slate-200 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Discover</h3>
+            <p className="text-slate-600">
+              Find gatherings near you and filter by interests, date, or location.
             </p>
           </div>
-
-          {/* CARD 3 */}
-          <div className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-lg hover:shadow-2xl transition">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Location
-            </h3>
-            <p className="text-gray-500 text-sm">
-              Your saved home or event discovery region.
+          <div className="rounded-2xl bg-white/80 ring-1 ring-slate-200 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Promote</h3>
+            <p className="text-slate-600">
+              Share links, send updates, and track attendance effortlessly.
             </p>
           </div>
         </div>
       </section>
+
+      {/* CONTACT TOAST */}
+      <section className="pb-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-2xl bg-white/90 ring-1 ring-slate-200 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-6 md:p-8">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white font-semibold">✉</span>
+                <div>
+                  <div className="text-sm text-slate-500">Email</div>
+                  <div className="text-slate-900 font-medium">contact@eventure.app</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white font-semibold">☎</span>
+                <div>
+                  <div className="text-sm text-slate-500">Phone</div>
+                  <div className="text-slate-900 font-medium">+1 (000) 000-0000</div>
+                </div>
+              </div>
+            </div>
+
+            {/* subtle decorative bar */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 h-3 w-48 rounded-full bg-gradient-to-r from-indigo-400/40 via-purple-400/40 to-pink-400/40 blur-md" />
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-white border-t border-slate-100 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+          © {new Date().getFullYear()} Eventure. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }
