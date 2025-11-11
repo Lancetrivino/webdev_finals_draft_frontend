@@ -38,9 +38,22 @@ const NavBar = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
           {/* Brand */}
-          <NavLink to="/" className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-right from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight">
-              Eventure
+          <NavLink to="/" className="flex items-center gap-2" aria-label="Eventure Home">
+            <span className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 bg-white/90 ring-1 ring-slate-200 shadow-sm">
+              {/* Optional tiny logo mark */}
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#3B82F6" />
+                    <stop offset="50%" stopColor="#A855F7" />
+                    <stop offset="100%" stopColor="#EC4899" />
+                  </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
+              </svg>
+              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight drop-shadow">
+                Eventure
+              </span>
             </span>
           </NavLink>
 
