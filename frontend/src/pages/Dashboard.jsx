@@ -4,44 +4,17 @@ import { useAuth } from "../contexts/AuthContext";
 
 function Dashboard() {
   const { currentUser } = useAuth();
-  const [message, setMessage] = useState("Connecting to backend...");
-  const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
   const sessionStartRef = useRef(new Date());
   const navigate = useNavigate();
 
-  // ---- Original backend connectivity check (unchanged) ----
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(`${API_BASE}/`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch backend data.");
-        const data = await response.text();
-        setMessage(data || "✅ Connected to backend successfully!");
-      } catch (error) {
-        console.error("Error:", error);
-        setMessage("❌ Cannot connect to backend. Check API URL and CORS.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Live clock
+  // live clock
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Avatar initials
+  // initials for avatar
   const initials = useMemo(() => {
     const name = currentUser?.name || currentUser?.email || "User";
     return name
@@ -56,7 +29,7 @@ function Dashboard() {
 
   const roleLabel = (currentUser?.role || "User").toString();
 
-  // Pretty role badge (purple theme)
+  // role badge tint (purple family)
   const roleBadge = useMemo(() => {
     const r = roleLabel.toLowerCase();
     if (r.includes("admin")) return "bg-rose-50 text-rose-700 border-rose-200";
@@ -65,8 +38,8 @@ function Dashboard() {
     return "bg-violet-50 text-violet-700 border-violet-200";
   }, [roleLabel]);
 
-  // ===== No page scroll =====
-  const NAV_HEIGHT = 80; // adjust if your navbar differs
+  // ===== No page scroll: fixed under navbar =====
+  const NAV_HEIGHT = 80; // adjust if your navbar height differs
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
     const prevBody = document.body.style.overflow;
@@ -78,54 +51,67 @@ function Dashboard() {
     };
   }, []);
 
+  // navigate to profile when avatar or name is clicked
+  const goProfile = () => navigate("/profile");
+
   return (
-    // Fixed area under navbar
-    <div className="fixed left-0 right-0 bottom-0 bg-[#fbfbff]" style={{ top: NAV_HEIGHT }}>
-      <div className="h-full w-full flex items-center justify-center p-2 sm:p-4">
+    // Fixed area under navbar; soft page background
+    <div
+      className="fixed left-0 right-0 bottom-0"
+      style={{ top: NAV_HEIGHT, background: "linear-gradient(180deg,#ffffff 0%, #fbf7ff 35%, #f7f4ff 100%)" }}
+    >
+      <div className="h-full w-full flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6">
         {/* Main Card */}
         <div
-          className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)] rounded-[30px] overflow-hidden border border-white/60 shadow-[0_25px_80px_rgba(30,27,75,0.10)]"
-          style={{
-            background:
-              "radial-gradient(1200px 600px at 50% -10%, rgba(233,213,255,0.55), transparent 60%), radial-gradient(1200px 600px at 50% 110%, rgba(191,219,254,0.55), transparent 60%), linear-gradient(180deg, #ffffff 0%, #f9f7ff 100%)",
-          }}
+          className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)] rounded-[28px] overflow-hidden border border-white/60 shadow-[0_25px_80px_rgba(30,27,75,0.10)] bg-white/70 backdrop-blur-xl"
         >
-          {/* top accent bar like your reference */}
+          {/* top accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-pink-400" />
 
-          {/* soft decorative glow */}
-          <div className="pointer-events-none absolute -top-24 right-16 w-56 h-56 rounded-full bg-white/35 backdrop-blur-xl shadow-[0_10px_35px_rgba(99,102,241,0.25)]" />
-          <div className="pointer-events-none absolute -bottom-24 left-10 w-72 h-72 rounded-full bg-white/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(236,72,153,0.20)]" />
+          {/* faint decor glows */}
+          <div className="pointer-events-none absolute -top-20 right-10 w-56 h-56 rounded-full bg-white/40 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-10 w-72 h-72 rounded-full bg-white/30 blur-[72px]" />
 
           {/* CONTENT */}
           <div className="relative flex flex-col h-full">
             {/* Header */}
-            <div className="px-8 pt-10 pb-4">
-              <h1 className="text-center text-[clamp(36px,5vw,60px)] font-extrabold tracking-tight text-[#0b1220]">
-                Eventure
-              </h1>
+            <div className="px-6 sm:px-10 pt-8 pb-3">
+              <div className="flex items-center justify-center gap-3 select-none">
+                <span className="h-4 w-4 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-500 shadow" />
+                <h1 className="text-center text-[clamp(34px,5vw,60px)] font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
+                  Eventure
+                </h1>
+              </div>
               <p className="mt-2 text-center text-sm text-gray-500">
                 {now.toLocaleDateString()} • {now.toLocaleTimeString()}
               </p>
             </div>
 
             {/* Main Grid */}
-            <div className="px-8 pb-10 flex-grow overflow-hidden">
-              <div className="grid h-full gap-8 grid-cols-12">
-                {/* Left Panel */}
+            <div className="px-6 sm:px-10 pb-8 flex-grow overflow-hidden">
+              <div className="grid h-full gap-6 grid-cols-12">
+                {/* Left: Profile card */}
                 <div className="col-span-12 lg:col-span-4">
-                  <div className="h-full rounded-3xl border border-white/70 bg-white/70 backdrop-blur-md shadow-[0_10px_30px_rgba(17,24,39,0.06)] p-7">
+                  <div className="h-full rounded-3xl border border-white/70 bg-white/80 backdrop-blur-md shadow-[0_10px_30px_rgba(17,24,39,0.06)] p-6">
                     <div className="flex items-center gap-5">
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-[0_10px_25px_rgba(99,102,241,0.35)]">
+                      <button
+                        onClick={goProfile}
+                        className="h-16 w-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-[0_10px_25px_rgba(99,102,241,0.35)] hover:scale-[1.03] transition"
+                        aria-label="Open profile"
+                      >
                         {initials}
-                      </div>
+                      </button>
                       <div>
-                        <div className="text-xs uppercase tracking-wide text-gray-500">
+                        <div className="text-[10px] uppercase tracking-[0.15em] text-gray-500">
                           Welcome
                         </div>
-                        <div className="text-lg font-semibold text-gray-900">
+                        <button
+                          onClick={goProfile}
+                          className="text-lg font-extrabold bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent hover:opacity-90 transition"
+                          title="Open profile"
+                        >
                           {currentUser?.name || "User"}
-                        </div>
+                        </button>
                       </div>
                     </div>
 
@@ -152,13 +138,32 @@ function Dashboard() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Mini quick stats (engaging, no backend needed) */}
+                    <div className="mt-8 grid grid-cols-3 gap-3">
+                      {[
+                        { label: "Saved", val: "12" },
+                        { label: "Joined", val: "8" },
+                        { label: "Nearby", val: "5" },
+                      ].map((s) => (
+                        <div
+                          key={s.label}
+                          className="rounded-2xl bg-white/80 border border-white/70 text-center py-3 shadow-sm"
+                        >
+                          <div className="text-xl font-bold text-gray-900">{s.val}</div>
+                          <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                            {s.label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Panel */}
+                {/* Right: Engaging panels */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
                   {/* Welcome row */}
-                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
+                  <div className="rounded-3xl border border-white/70 bg-white/85 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
                     <span className="text-base sm:text-lg font-semibold text-gray-800">
                       Welcome:
                     </span>
@@ -168,7 +173,7 @@ function Dashboard() {
                   </div>
 
                   {/* Role row */}
-                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
+                  <div className="rounded-3xl border border-white/70 bg-white/85 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
                     <span className="text-base sm:text-lg font-semibold text-gray-800">
                       Role:
                     </span>
@@ -177,34 +182,78 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  {/* Backend status row */}
-                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center gap-4">
-                    {loading ? (
-                      <div className="w-5 h-5 border-4 border-t-indigo-500 border-gray-200 rounded-full animate-spin" />
-                    ) : (
-                      <span
-                        className={`inline-block h-3 w-3 rounded-full ${
-                          message.startsWith("❌") ? "bg-rose-500" : "bg-indigo-500"
-                        }`}
-                      />
-                    )}
-                    <span
-                      className={`text-base sm:text-lg font-medium ${
-                        message.startsWith("❌") ? "text-rose-600" : "text-indigo-600"
-                      }`}
-                    >
-                      {loading ? "Connecting..." : message}
-                    </span>
+                  {/* Highlights section (engaging without backend) */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* highlight card */}
+                    <div className="rounded-3xl border border-white/70 bg-white/85 backdrop-blur-md px-5 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)]">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white flex items-center justify-center font-bold shadow">
+                          1
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          Upcoming this week
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm text-gray-500">
+                        Don’t miss community meetups and small workshops tailored for you.
+                      </p>
+                      <a
+                        href="/events"
+                        className="inline-flex mt-4 rounded-full px-3 py-1.5 text-sm font-medium bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500 text-white shadow hover:opacity-95 transition"
+                      >
+                        Explore events
+                      </a>
+                    </div>
+
+                    <div className="rounded-3xl border border-white/70 bg-white/85 backdrop-blur-md px-5 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)]">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 text-white flex items-center justify-center font-bold shadow">
+                          2
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          Your saved picks
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm text-gray-500">
+                        Quick access to your bookmarked events and creators.
+                      </p>
+                      <a
+                        href="/available-events"
+                        className="inline-flex mt-4 rounded-full px-3 py-1.5 text-sm font-medium bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition"
+                      >
+                        View saved
+                      </a>
+                    </div>
+
+                    <div className="rounded-3xl border border-white/70 bg-white/85 backdrop-blur-md px-5 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)]">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white flex items-center justify-center font-bold shadow">
+                          3
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          Trending around you
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm text-gray-500">
+                        See what’s buzzing nearby based on time and popularity.
+                      </p>
+                      <a
+                        href="/events"
+                        className="inline-flex mt-4 rounded-full px-3 py-1.5 text-sm font-medium bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition"
+                      >
+                        See what’s trending
+                      </a>
+                    </div>
                   </div>
 
-                  {/* spacer */}
+                  {/* keep balance within the fixed viewport */}
                   <div className="flex-grow" />
                 </div>
               </div>
             </div>
           </div>
+          {/* /CONTENT */}
         </div>
-        {/* /card */}
       </div>
     </div>
   );
