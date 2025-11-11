@@ -39,41 +39,84 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md text-center">
-        <h2 className="text-3xl font-bold text-green-600 mb-6">Dashboard</h2>
+    <div className="min-h-screen flex items-center justify-center bg-[#E8DAFF] px-4">
+      {/* Card */}
+      <div className="relative w-full max-w-4xl rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden px-6 sm:px-10 py-14">
+        {/* Subtle label */}
+        <span className="absolute top-6 left-6 text-sm font-semibold text-violet-700/70">
+          Fleeped
+        </span>
 
-        {currentUser && (
-          <div className="mb-6 text-gray-700 space-y-2">
-            <p>
-              <strong>Welcome:</strong> {currentUser.name}
-            </p>
-            <p>
-              <strong>Role:</strong>{" "}
-              <span className="capitalize font-medium">{currentUser.role}</span>
-            </p>
-          </div>
-        )}
-
-        <div className="p-4 border rounded-xl bg-gray-50 mb-6 flex items-center justify-center gap-2">
-          {loading ? (
-            <div className="w-6 h-6 border-4 border-t-orange-500 border-gray-200 rounded-full animate-spin"></div>
-          ) : null}
-          <span
-            className={`font-medium ${
-              message.startsWith("❌") ? "text-red-600" : "text-green-600"
-            }`}
-          >
-            {loading ? "Connecting..." : message}
-          </span>
+        {/* Soft rainbow blob */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div
+            className="w-72 h-72 sm:w-[26rem] sm:h-[26rem] rounded-full blur-3xl opacity-90"
+            style={{
+              background:
+                "radial-gradient(closest-side, rgba(255,255,255,0.9), transparent 65%), conic-gradient(from 90deg at 50% 50%, #FDE68A, #F0ABFC, #93C5FD, #86EFAC, #FDE68A)"
+            }}
+          />
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition w-full"
-        >
-          Logout
-        </button>
+        {/* Center title */}
+        <div className="relative flex items-center justify-center">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white drop-shadow-md select-none">
+            Welcome
+          </h1>
+        </div>
+
+        {/* Info panel */}
+        <div className="relative mt-10 mx-auto max-w-2xl">
+          {/* Rows */}
+          <div className="grid gap-3 text-[15px] sm:text-base text-gray-700">
+            {currentUser && (
+              <>
+                <div className="flex items-center justify-between rounded-xl bg-violet-50/60 border border-violet-100 px-4 py-3">
+                  <span className="font-semibold text-gray-700">Welcome:</span>
+                  <span className="font-medium text-gray-800">
+                    {currentUser.name}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-violet-50/60 border border-violet-100 px-4 py-3">
+                  <span className="font-semibold text-gray-700">Role:</span>
+                  <span className="capitalize font-medium text-gray-800">
+                    {currentUser.role}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* Backend status */}
+            <div className="rounded-xl border px-4 py-3 bg-white/70 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {loading ? (
+                  <div className="w-5 h-5 border-4 border-t-violet-500 border-gray-200 rounded-full animate-spin" />
+                ) : (
+                  <span
+                    className={`inline-block h-2.5 w-2.5 rounded-full ${
+                      message.startsWith("❌") ? "bg-red-500" : "bg-green-500"
+                    }`}
+                  />
+                )}
+                <span
+                  className={`font-medium ${
+                    message.startsWith("❌") ? "text-red-600" : "text-green-600"
+                  }`}
+                >
+                  {loading ? "Connecting..." : message}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="mt-8 w-full sm:w-auto px-8 py-3 rounded-full bg-red-600 text-white font-semibold shadow-xl transition duration-300 hover:bg-red-700 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-red-300"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
