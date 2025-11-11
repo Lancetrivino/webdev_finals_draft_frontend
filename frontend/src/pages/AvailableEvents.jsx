@@ -232,7 +232,7 @@ export default function AvailableEvents() {
                         isFull ? "text-red-600" : "text-emerald-600"
                       }`}
                     >
-                      {isFull ? "Approved" : `${remaining} slots left`}
+                      {isFull ? "Full" : `${remaining} slots left`}
                     </span>
 
                     {joined ? (
@@ -252,7 +252,7 @@ export default function AvailableEvents() {
                             : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
                       >
-                        See Details
+                        Book
                       </button>
                     )}
                   </div>
