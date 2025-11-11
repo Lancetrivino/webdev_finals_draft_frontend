@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 function Dashboard() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout } = useAuth(); // logout kept but unused per request
   const [message, setMessage] = useState("Connecting to backend...");
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
@@ -62,13 +62,8 @@ function Dashboard() {
     return "bg-emerald-50 text-emerald-700 border-emerald-200";
   }, [roleLabel]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   // ===== No page scroll: lock <html> and <body>, and use a fixed viewport =====
-  const NAV_HEIGHT = 80; // Tailwind h-20 (change if your navbar differs)
+  const NAV_HEIGHT = 80; // Tailwind h-20; change if your navbar differs
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
@@ -85,43 +80,39 @@ function Dashboard() {
     // Fixed container that occupies the viewport area under the navbar
     <div className="fixed left-0 right-0 bottom-0 bg-white" style={{ top: NAV_HEIGHT }}>
       <div className="h-full w-full flex items-center justify-center p-4">
-        {/* Main card (details box) with green-poly background */}
+        {/* Minimal, impactful card */}
         <div
-          className="relative w-[min(1200px,96vw)] rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
-          style={{
-            height: "100%",
-            backgroundImage: "url(/assets/green-poly.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+          className="relative w-[min(1180px,96vw)] h-[min(680px,90vh)] rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden"
         >
-          {/* white veil so text stays readable */}
-          <div className="absolute inset-0 bg-white/55" />
+          {/* Subtle green corner glows */}
+          <div className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-300/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-emerald-200/30 blur-[72px]" />
 
-          {/* ---------- CONTENT (no outer page scroll) ---------- */}
+          {/* Content */}
           <div className="relative flex flex-col h-full">
             {/* Header */}
-            <div className="px-6 sm:px-10 pt-6 pb-2 shrink-0">
-              <h1 className="text-center text-[clamp(36px,5.6vw,64px)] font-extrabold tracking-tight text-emerald-600 drop-shadow-[0_1px_8px_rgba(16,185,129,0.25)]">
+            <div className="px-8 pt-8 pb-3 shrink-0 text-center">
+              <h1 className="text-[clamp(34px,5.2vw,56px)] font-extrabold tracking-tight text-emerald-600">
                 Eventure
               </h1>
-              <p className="text-center text-sm text-gray-700">
+              <div className="mx-auto mt-3 h-[3px] w-32 rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400" />
+              <p className="mt-3 text-sm text-gray-600">
                 {now.toLocaleDateString()} • {now.toLocaleTimeString()}
               </p>
             </div>
 
-            {/* Main grid */}
-            <div className="px-6 sm:px-10 pb-6 grow overflow-hidden">
-              <div className="grid h-full gap-5 grid-cols-12">
-                {/* Left: avatar + facts */}
+            {/* Main area */}
+            <div className="px-8 pb-8 grow overflow-hidden">
+              <div className="grid h-full gap-6 grid-cols-12">
+                {/* Left: avatar + quick facts */}
                 <div className="col-span-12 lg:col-span-4">
-                  <div className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur-md shadow-md p-5 h-full">
+                  <div className="h-full rounded-2xl border border-gray-200 shadow-sm bg-white p-6">
                     <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-white flex items-center justify-center font-bold text-lg shadow">
                         {initials}
                       </div>
                       <div>
-                        <div className="text-sm text-gray-700">Welcome:</div>
+                        <div className="text-sm text-gray-600">Welcome:</div>
                         <div className="font-semibold text-gray-900">
                           {currentUser?.name || "User"}
                         </div>
@@ -137,15 +128,15 @@ function Dashboard() {
                       </span>
                     </div>
 
-                    <div className="mt-5 space-y-3 text-sm">
+                    <div className="mt-6 space-y-3 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Local time</span>
+                        <span className="text-gray-600">Local time</span>
                         <span className="font-medium text-gray-900">
                           {now.toLocaleTimeString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Session start</span>
+                        <span className="text-gray-600">Session start</span>
                         <span className="font-medium text-gray-900">
                           {sessionStartRef.current.toLocaleTimeString()}
                         </span>
@@ -154,26 +145,25 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right: rows + status + TWO IMAGES */}
-                <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 overflow-hidden">
-                  <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
-                    <span className="font-semibold text-gray-900">Welcome:</span>
+                {/* Right: data rows */}
+                <div className="col-span-12 lg:col-span-8 flex flex-col gap-5 overflow-hidden">
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+                    <span className="font-semibold text-gray-800">Welcome:</span>
                     <span className="font-medium text-gray-900">
                       {currentUser?.name || "User"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
-                    <span className="font-semibold text-gray-900">Role:</span>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+                    <span className="font-semibold text-gray-800">Role:</span>
                     <span className="capitalize font-medium text-gray-900">
                       {roleLabel}
                     </span>
                   </div>
 
-                  {/* Backend status */}
-                  <div className="rounded-xl border border-white/70 bg-white/70 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
+                  <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm flex items-center gap-3">
                     {loading ? (
-                      <div className="w-5 h-5 border-4 border-t-emerald-500 border-white/70 rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-4 border-t-emerald-500 border-gray-200 rounded-full animate-spin" />
                     ) : (
                       <span
                         className={`inline-block h-3 w-3 rounded-full ${
@@ -183,50 +173,21 @@ function Dashboard() {
                     )}
                     <span
                       className={`font-medium ${
-                        message.startsWith("❌") ? "text-red-700" : "text-emerald-700"
+                        message.startsWith("❌") ? "text-red-600" : "text-emerald-600"
                       }`}
                     >
                       {loading ? "Connecting..." : message}
                     </span>
                   </div>
 
-                  {/* Two pale-green–tinted images */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
-                      <img
-                        src="/assets/event-night.jpg"
-                        alt="Event Night poster"
-                        className="h-40 w-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
-                    </div>
-                    <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm">
-                      {/* filename matches your folder (summer-festival.jpg.jpg) */}
-                      <img
-                        src="/assets/summer-festival.jpg.jpg"
-                        alt="Summer Music Festival"
-                        className="h-40 w-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-emerald-400/25 mix-blend-multiply" />
-                    </div>
-                  </div>
-
-                  {/* Logout pinned to the bottom-right */}
-                  <div className="mt-auto flex">
-                    <button
-                      onClick={handleLogout}
-                      className="ml-auto px-8 py-3 rounded-full bg-red-600 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-red-700 transition transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-red-300"
-                    >
-                      Logout
-                    </button>
-                  </div>
+                  {/* Spacer to keep balance */}
+                  <div className="grow" />
                 </div>
               </div>
             </div>
-            {/* /grid */}
           </div>
-          {/* /content */}
         </div>
+        {/* /card */}
       </div>
     </div>
   );
