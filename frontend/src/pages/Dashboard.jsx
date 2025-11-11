@@ -39,84 +39,89 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#E8DAFF] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-10">
       {/* Card */}
-      <div className="relative w-full max-w-4xl rounded-3xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden px-6 sm:px-10 py-14">
-        {/* Subtle label */}
-        <span className="absolute top-6 left-6 text-sm font-semibold text-violet-700/70">
-          Fleeped
-        </span>
+      <div className="relative w-full max-w-4xl rounded-3xl bg-white shadow-xl border border-gray-100 overflow-hidden p-10">
 
-        {/* Soft rainbow blob */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        {/* Decorative hero section */}
+        <div className="relative flex flex-col items-center text-center mb-10">
+          {/* Rainbow glow */}
           <div
-            className="w-72 h-72 sm:w-[26rem] sm:h-[26rem] rounded-full blur-3xl opacity-90"
+            className="absolute inset-0 flex items-center justify-center opacity-90"
             style={{
-              background:
-                "radial-gradient(closest-side, rgba(255,255,255,0.9), transparent 65%), conic-gradient(from 90deg at 50% 50%, #FDE68A, #F0ABFC, #93C5FD, #86EFAC, #FDE68A)"
+              maskImage: "radial-gradient(circle, white 40%, transparent 75%)",
+              WebkitMaskImage: "radial-gradient(circle, white 40%, transparent 75%)",
             }}
-          />
-        </div>
+          >
+            <div
+              className="w-[32rem] h-[32rem] blur-3xl"
+              style={{
+                background:
+                  "conic-gradient(from 90deg at 50% 50%, #FDE68A, #F0ABFC, #93C5FD, #86EFAC, #FDE68A)"
+              }}
+            />
+          </div>
 
-        {/* Center title */}
-        <div className="relative flex items-center justify-center">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white drop-shadow-md select-none">
+          {/* Title */}
+          <h1 className="relative text-5xl font-extrabold text-gray-800 drop-shadow-sm">
             Welcome
           </h1>
+          <p className="relative mt-2 text-sm font-semibold text-violet-700/70">
+            Fleeped Dashboard
+          </p>
         </div>
 
-        {/* Info panel */}
-        <div className="relative mt-10 mx-auto max-w-2xl">
-          {/* Rows */}
-          <div className="grid gap-3 text-[15px] sm:text-base text-gray-700">
-            {currentUser && (
-              <>
-                <div className="flex items-center justify-between rounded-xl bg-violet-50/60 border border-violet-100 px-4 py-3">
-                  <span className="font-semibold text-gray-700">Welcome:</span>
-                  <span className="font-medium text-gray-800">
-                    {currentUser.name}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl bg-violet-50/60 border border-violet-100 px-4 py-3">
-                  <span className="font-semibold text-gray-700">Role:</span>
-                  <span className="capitalize font-medium text-gray-800">
-                    {currentUser.role}
-                  </span>
-                </div>
-              </>
-            )}
+        {/* Information Section */}
+        <div className="relative space-y-5">
 
-            {/* Backend status */}
-            <div className="rounded-xl border px-4 py-3 bg-white/70 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                {loading ? (
-                  <div className="w-5 h-5 border-4 border-t-violet-500 border-gray-200 rounded-full animate-spin" />
-                ) : (
-                  <span
-                    className={`inline-block h-2.5 w-2.5 rounded-full ${
-                      message.startsWith("❌") ? "bg-red-500" : "bg-green-500"
-                    }`}
-                  />
-                )}
-                <span
-                  className={`font-medium ${
-                    message.startsWith("❌") ? "text-red-600" : "text-green-600"
-                  }`}
-                >
-                  {loading ? "Connecting..." : message}
+          {currentUser && (
+            <>
+              <div className="flex items-center justify-between rounded-xl bg-gray-50 px-5 py-3 border border-gray-200 shadow-sm">
+                <span className="font-semibold text-gray-700">Welcome:</span>
+                <span className="font-medium text-gray-800">{currentUser.name}</span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl bg-gray-50 px-5 py-3 border border-gray-200 shadow-sm">
+                <span className="font-semibold text-gray-700">Role:</span>
+                <span className="capitalize font-medium text-gray-800">
+                  {currentUser.role}
                 </span>
               </div>
-            </div>
+            </>
+          )}
+
+          {/* Backend status */}
+          <div className="rounded-xl bg-gray-50 px-5 py-4 border border-gray-200 shadow-sm flex items-center gap-3">
+            {loading ? (
+              <div className="w-5 h-5 border-4 border-t-violet-500 border-gray-200 rounded-full animate-spin" />
+            ) : (
+              <span
+                className={`inline-block h-3 w-3 rounded-full ${
+                  message.startsWith("❌") ? "bg-red-500" : "bg-green-500"
+                }`}
+              />
+            )}
+
+            <span
+              className={`font-medium ${
+                message.startsWith("❌") ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {loading ? "Connecting..." : message}
+            </span>
           </div>
 
           {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="mt-8 w-full sm:w-auto px-8 py-3 rounded-full bg-red-600 text-white font-semibold shadow-xl transition duration-300 hover:bg-red-700 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-red-300"
-          >
-            Logout
-          </button>
+          <div className="pt-4 flex justify-center">
+            <button
+              onClick={handleLogout}
+              className="px-8 py-3 rounded-full bg-red-600 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-red-700 transition transform hover:scale-105"
+            >
+              Logout
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   );
