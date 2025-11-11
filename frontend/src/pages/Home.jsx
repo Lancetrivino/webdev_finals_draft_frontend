@@ -1,203 +1,161 @@
-import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
-
-// Inline icons (no extra deps)
-const MailIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
-    <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>
-    <path d="m3 7 9 6 9-6"/>
-  </svg>
-);
-const PhoneIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
-    <path d="M22 16.92v2a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 5.18 2 2 0 0 1 4.11 3h2a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L7.1 10.9a16 16 0 0 0 6 6l1.47-1.18a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92Z"/>
-  </svg>
-);
-const MapPinIcon = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
-    <path d="M12 22s7-4.35 7-11A7 7 0 0 0 5 11c0 6.65 7 11 7 11Z"/>
-    <circle cx="12" cy="11" r="3"/>
-  </svg>
-);
-
-// Tiny logo pill to mirror your brand mark
-const LogoPill = () => (
-  <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 shadow-sm backdrop-blur">
-    <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
-    <span className="bg-clip-text text-transparent bg-gradient-to-tr from-indigo-500 via-blue-500 to-pink-500 font-semibold">Eventure</span>
-  </div>
-);
+import { useEffect, useState, useRef } from "react";
 
 export default function Home() {
-  const { currentUser } = useAuth();
-  const [nearestEvent] = useState({
-    name: "Community Tech Expo 2025",
-    date: "March 12, 2025",
-    time: "10:00 AM",
-    location: "San Diego Convention Hall",
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const featuresRef = useRef(null); // Scroll target
 
-  // --- Countdown (professional feel, graceful fallback) ---
-  const eventDate = useMemo(() => new Date(`${nearestEvent.date} ${nearestEvent.time}`), [nearestEvent]);
-  const [now, setNow] = useState(new Date());
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
+    setIsClient(true);
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
   }, []);
 
-  const diff = Math.max(0, eventDate.getTime() - now.getTime());
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50">
-      {/* Decorative background blobs */}
-      <div className="pointer-events-none absolute -top-32 -left-32 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/20 via-purple-400/20 to-pink-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 translate-x-1/2 translate-y-1/2 rounded-full bg-gradient-to-tr from-fuchsia-400/20 via-purple-400/20 to-indigo-400/20 blur-3xl" />
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-      {/* Page container */}
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-        {/* Top bar */}
-        <div className="mb-8 flex items-center justify-between">
-          <LogoPill />
-          <Link
-            to="/events"
-            className="group inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur transition hover:shadow-md"
-          >
-            Explore events
-            <svg viewBox="0 0 24 24" className="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="1.75">
-              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-            </svg>
-          </Link>
-        </div>
+  // --- NavLinks Component (Unchanged, already clean) ---
+  const NavLinks = () => {
+    if (!isClient) return null;
 
-        {/* HELLO BLOCK */}
-        <section className="mb-12 text-center">
-          <div className="relative rounded-3xl border border-white/60 bg-white/70 p-8 shadow-xl backdrop-blur-xl sm:p-12">
-            {/* gradient ring */}
-            <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-to-tr from-indigo-500/10 via-purple-500/10 to-pink-500/10" />
+    const baseLinkClass = "relative text-gray-700 font-medium transition duration-150 group";
+    const hoverEffect = "group-hover:text-green-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-green-600 after:transition-all after:duration-300 group-hover:after:w-full";
 
-            <h1 className="mb-3 text-4xl font-bold text-gray-900 sm:text-5xl">
-              Welcome, <span className="bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">{currentUser?.name || "Guest"}</span>
-            </h1>
-            <p className="mx-auto max-w-xl text-gray-600">
-              Great to see you back in <span className="font-semibold">Eventure</span>. Your next event is around the corner.
-            </p>
-
-            {/* profile */}
-            <div className="mt-8 flex justify-center">
-              <div className="relative">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-30 blur" />
-                <div className="relative h-28 w-28 overflow-hidden rounded-full ring-4 ring-white/70">
-                  <img
-                    src= " "
-                    alt="profile"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* UPCOMING EVENT CARD */}
-        <section className="mb-16">
-          <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 text-center shadow-xl backdrop-blur-xl">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-pink-500" />
-
-            <h2 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl">{nearestEvent.name}</h2>
-            <p className="text-gray-600">{nearestEvent.location}</p>
-
-            {/* Meta chips */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
-              <span className="rounded-full border border-indigo-200/70 bg-indigo-50 px-3 py-1 text-indigo-700">
-                {nearestEvent.date}
-              </span>
-              <span className="rounded-full border border-fuchsia-200/70 bg-fuchsia-50 px-3 py-1 text-fuchsia-700">
-                {nearestEvent.time}
-              </span>
-            </div>
-
-            {/* Countdown */}
-            <div className="mt-6 flex items-center justify-center gap-3">
-              {diff > 0 ? (
-                [
-                  { label: "Days", value: days },
-                  { label: "Hours", value: hours },
-                  { label: "Mins", value: minutes },
-                ].map((item) => (
-                  <div key={item.label} className="min-w-[80px] rounded-2xl border border-white/70 bg-white/60 px-4 py-3 shadow-sm">
-                    <div className="text-2xl font-bold text-gray-900">{String(item.value).padStart(2, "0")}</div>
-                    <div className="text-xs uppercase tracking-wide text-gray-500">{item.label}</div>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-full bg-green-50 px-4 py-2 text-green-700">Happening now</div>
-              )}
-            </div>
-
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                to="/events"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 px-6 py-3 text-white shadow-lg transition hover:brightness-110"
-              >
-                View details
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.75">
-                  <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-                </svg>
-              </Link>
-              <Link
-                to="/create"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-6 py-3 text-indigo-700 shadow-sm backdrop-blur transition hover:shadow"
-              >
-                Create event
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* SHORTCUTS */}
-        <section>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            {/* CARD 1 */}
-            <ShortcutCard
-              title="Email"
-              desc="eventure@gmail.com"
-              icon={<MailIcon className="h-5 w-5" />}
-            />
-
-            {/* CARD 2 */}
-            <ShortcutCard
-              title="Number"
-              desc="09078889999"
-              icon={<PhoneIcon className="h-5 w-5" />}
-            />
-
-            {/* CARD 3 */}
-            <ShortcutCard
-              title="Location"
-              desc="Philippines"
-              icon={<MapPinIcon className="h-5 w-5" />}
-            />
-          </div>
-        </section>
+    return isAuthenticated ? (
+      <>
+        <a href="/dashboard" className={`${baseLinkClass} ${hoverEffect}`}>
+          Dashboard
+        </a>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 text-red-500 border border-red-500 rounded-full hover:bg-red-500 hover:text-white transition duration-150 shadow-sm hover:shadow-md"
+        >
+          Logout
+        </button>
+      </>
+    ) : (
+      <div className="flex items-center space-x-6">
+        <button onClick={scrollToFeatures} className={`${baseLinkClass} ${hoverEffect}`}>
+          Features
+        </button>
+        <a href="/login" className={`${baseLinkClass} ${hoverEffect}`}>
+          Login
+        </a>
+        <a
+          href="/register"
+          className="px-5 py-2 bg-green-600 text-white rounded-full font-semibold shadow-md hover:bg-green-700 transition duration-200 transform hover:scale-105"
+        >
+          Sign Up Free
+        </a>
       </div>
-    </div>
+    );
+  };
+
+  // --- Main Button Design (Unchanged) ---
+  const mainButtonClass = "px-10 py-4 text-xl font-bold rounded-full shadow-xl transition duration-300 transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-green-300";
+
+  const mainButton = isAuthenticated ? (
+    <a
+      href="/dashboard"
+      className={`${mainButtonClass} bg-green-600 text-white hover:bg-green-700`}
+    >
+      Go to Dashboard
+    </a>
+  ) : (
+    <button
+      onClick={scrollToFeatures}
+      className={`${mainButtonClass} bg-green-600 text-white hover:bg-green-700`}
+    >
+      Explore Features
+    </button>
   );
-}
 
-function ShortcutCard({ title, desc, icon }) {
   return (
-    <div className="group relative rounded-3xl border border-white/60 bg-white/70 p-6 shadow-lg backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-2xl">
-      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-to-tr from-indigo-500/0 via-purple-500/0 to-pink-500/0 opacity-0 transition group-hover:opacity-10" />
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-tr from-indigo-100 to-pink-100 px-3 py-1 text-xs font-medium text-indigo-700">
-        <span className="text-indigo-700">{icon}</span>
-        <span className="bg-clip-text text-transparent bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600">Shortcut</span>
-      </div>
-      <h3 className="mb-1 text-lg font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-500">{desc}</p>
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      
+      {/* --- Sticky Navbar --- */}
+      <nav className="sticky top-0 bg-white bg-opacity-95 backdrop-blur-sm z-30 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20"> 
+            <a href="/" className="text-3xl font-black text-green-600 tracking-wider">
+              Eventure
+            </a>
+            <div className="flex items-center space-x-6">
+              <NavLinks />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* --- REVISED: Hero Section Tagline --- */}
+      <header className="relative pt-16 pb-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-bottom-right from-green-50 to-white opacity-80 z-0"></div>
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-0"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-0"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
+          <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Plan, Promote, and Attend <span className="text-green-600 block sm:inline-block">Any Event</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mb-12 font-light">
+            Eventure is the ultimate platform for community organizers and attendees, whether you’re hosting a car meet, food festival, or local gathering.
+          </p>
+          {mainButton}
+          <button 
+             onClick={scrollToFeatures} 
+             className="mt-16 text-gray-400 hover:text-green-600 transition duration-300" 
+             aria-label="Scroll down to features">
+            <svg className="w-6 h-6 animate-bounce" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* --- REVISED: Features Section (For General Events) --- */}
+      <section ref={featuresRef} id="features" className="max-w-7xl mx-auto px-6 py-24">
+        <h2 className="text-4xl font-bold text-center text-gray-800 mb-16">Key Features for Every Event</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Feature Card 1: Organizer Focused */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+            <div className="text-green-600 mb-4 text-3xl">🛠️</div> 
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Event Creation Hub</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Quickly set up any type of public or private event—from music festivals and workshops to local car meets and charity runs.
+            </p>
+          </div>
+          {/* Feature Card 2: Participant Focused */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+             <div className="text-green-600 mb-4 text-3xl">📍</div> 
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Discover Local Gatherings</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Explore events near you with filtering options by category (e.g., Food, Sports, Arts). RSVP and get instant directions.
+            </p>
+          </div>
+          {/* Feature Card 3: Management Focused */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+             <div className="text-green-600 mb-4 text-3xl">📣</div> 
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Built-in Promotion Tools</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Generate shareable links, send bulk updates to registered attendees, and track ticket sales or RSVP numbers in real time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 mt-16 py-8 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+            <p>&copy; {new Date().getFullYear()} Eventure. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
