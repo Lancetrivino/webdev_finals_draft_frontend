@@ -21,13 +21,6 @@ const MapPinIcon = (props) => (
   </svg>
 );
 
-// Tiny logo pill to mirror your brand mark
-const LogoPill = () => (
-  <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 shadow-sm backdrop-blur">
-    <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
-    <span className="bg-clip-text text-transparent bg-gradient-to-tr from-indigo-500 via-blue-500 to-pink-500 font-semibold">Eventure</span>
-  </div>
-);
 
 export default function Home() {
   const { currentUser } = useAuth();
@@ -92,7 +85,7 @@ export default function Home() {
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-30 blur" />
                 <div className="relative h-28 w-28 overflow-hidden rounded-full ring-4 ring-white/70">
                   <img
-                    src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe"
+                    src=" "
                     alt="profile"
                     className="h-full w-full object-cover"
                   />
