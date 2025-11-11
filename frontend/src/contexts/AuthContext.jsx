@@ -1,70 +1,122 @@
-import React, { createContext, useContext, useState } from "react";
-import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
-// Synchronously get the user from localStorage on app start
-const getInitialUser = () => {
-  const storedUser = localStorage.getItem("user");
-  return storedUser ? JSON.parse(storedUser) : null;
+// Pages
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import CreateEvent from "./pages/CreateEvent";
+import AdminDashboard from "./pages/AdminDashboard";
+import Events from "./pages/Events";
+import Feedback from "./pages/Feedback";
+import FeedbackList from "./pages/FeedbackList";
+import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import EventDetails from "./pages/EventDetails";
+import AvailableEvents from "./pages/AvailableEvents";
+import BookEvent from "./pages/BookEvent";
+
+// Components
+import Navbar from "./components/Navbar";
+
+// API Base
+let API_BASE = import.meta.env?.VITE_API_URL;
+if (!API_BASE) {
+  API_BASE = import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://webdev-finals-draft-backend.onrender.com";
+}
+export const API_BASE_URL = API_BASE;
+
+// Global styles
+const GlobalStyles = () => (
+  <style>{`
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .Toastify__toast-container { top: 3em; right: 1em; }
+    .Toastify__toast {
+      border-radius: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                  0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .Toastify__toast--success { background-color: #10B981; color: white; }
+    .Toastify__toast--error   { background-color: #EF4444; color: white; }
+  `}</style>
+);
+
+// Route guards
+const PrivateRoute = ({ children }) => {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/login" replace />;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(getInitialUser());
-
-  // Login
-  const login = async ({ email, password }) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials");
-
-      const userWithToken = { ...data.user, token: data.token };
-      localStorage.setItem("user", JSON.stringify(userWithToken));
-      setCurrentUser(userWithToken);
-
-      return userWithToken;
-    } catch (err) {
-      toast.error(err.message || "Login failed");
-      throw err;
-    }
-  };
-
-  // Register
-  const register = async ({ name, email, password }) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-
-      toast.success("Account created! Please log in.");
-      return true;
-    } catch (err) {
-      toast.error(err.message || "Registration failed");
-      throw err;
-    }
-  };
-
-  // Logout
-  const logout = () => {
-    localStorage.removeItem("user");
-    setCurrentUser(null);
-    toast.success("Logged out successfully.");
-  };
-
-  return (
-    <AuthContext.Provider value={{ currentUser, login, register, logout, setCurrentUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+const AdminRoute = ({ children }) => {
+  const { currentUser } = useAuth();
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (currentUser.role !== "Admin") return <Navigate to="/" replace />;
+  return children;
 };
+
+// App Content
+const AppContent = () => (
+  <>
+    <GlobalStyles />
+    <ToastContainer position="top-center" />
+    <Navbar />
+
+    <div className="min-h-screen bg-slate-50">
+      <main className="pt-4 pb-12">
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginRedirect />} />
+          <Route path="/register" element={<RegisterRedirect />} />
+
+          {/* Protected */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
+          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
+          <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
+          <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
+          <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
+
+          {/* Admin */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+          {/* Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  </>
+);
+
+// Redirect logged-in users away from login/register
+const LoginRedirect = () => {
+  const { currentUser } = useAuth();
+  if (currentUser) return <Navigate to={currentUser.role === "Admin" ? "/admin" : "/dashboard"} replace />;
+  return <Login />;
+};
+
+const RegisterRedirect = () => {
+  const { currentUser } = useAuth();
+  if (currentUser) return <Navigate to={currentUser.role === "Admin" ? "/admin" : "/dashboard"} replace />;
+  return <Register />;
+};
+
+// Main App
+const App = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
+
+export default App;
