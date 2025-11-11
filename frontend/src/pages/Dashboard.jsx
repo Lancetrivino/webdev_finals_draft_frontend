@@ -69,23 +69,27 @@ function Dashboard() {
     navigate("/login");
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-4 overflow-hidden">
-      {/* Card (fit viewport, prevent scroll) */}
-      <div className="relative w-full max-w-6xl max-h-[88vh] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden">
+  // If your navbar height is NOT 80px, change this number.
+  const containerStyle = { height: "calc(100svh - 80px)" };
 
+  return (
+    // Window must not scroll; container height = viewport minus navbar
+    <div
+      className="w-full bg-white flex items-center justify-center overflow-hidden"
+      style={containerStyle}
+    >
+      {/* Card fits within container; inner content can scroll if needed */}
+      <div className="relative w-[min(1100px,94vw)] h-[min(100%,760px)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden">
         {/* ---------- FULL-CARD 'PAINT' BACKGROUND ---------- */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            // big soft wash that covers the whole card
             background:
               "radial-gradient(40rem 28rem at 55% 45%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 35%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.15) 75%, transparent 100%), conic-gradient(from 90deg at 50% 50%, #FDE68A, #F0ABFC, #93C5FD, #86EFAC, #FDE68A)",
             filter: "blur(28px)",
             opacity: 0.95,
           }}
         />
-        {/* subtle inner fade so edges stay clean */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -98,10 +102,10 @@ function Dashboard() {
           }}
         />
 
-        {/* ---------- CONTENT ---------- */}
+        {/* ---------- CONTENT (scrolls only inside the card if necessary) ---------- */}
         <div className="relative h-full overflow-auto">
-          {/* Header */}
-          <div className="px-6 sm:px-10 pt-8 pb-4">
+          {/* Header (compact to help fit) */}
+          <div className="px-6 sm:px-10 pt-6 pb-2">
             <h1 className="text-center text-5xl sm:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.25)]">
               Welcome
             </h1>
@@ -109,16 +113,16 @@ function Dashboard() {
 
           {/* Grid */}
           <div className="px-6 sm:px-10 pb-6">
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-5 lg:grid-cols-3">
               {/* Left: avatar + facts */}
               <div className="lg:col-span-1">
-                <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-md shadow-md p-6">
+                <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-md shadow-md p-5">
                   <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
                       {initials}
                     </div>
                     <div>
-                      <div className="text-sm text-gray-600">Welcome:</div>
+                      <div className="text-sm text-gray-700">Welcome:</div>
                       <div className="font-semibold text-gray-900">
                         {currentUser?.name || "User"}
                       </div>
@@ -134,15 +138,15 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="mt-6 space-y-3 text-sm">
+                  <div className="mt-5 space-y-2.5 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Local time</span>
+                      <span className="text-gray-700">Local time</span>
                       <span className="font-medium text-gray-900">
                         {now.toLocaleTimeString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Session start</span>
+                      <span className="text-gray-700">Session start</span>
                       <span className="font-medium text-gray-900">
                         {sessionStartRef.current.toLocaleTimeString()}
                       </span>
@@ -152,24 +156,21 @@ function Dashboard() {
               </div>
 
               {/* Right: rows + status + logout */}
-              <div className="lg:col-span-2 space-y-5">
-                {/* Welcome row */}
+              <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-3 shadow-sm">
-                  <span className="font-semibold text-gray-800">Welcome:</span>
+                  <span className="font-semibold text-gray-900">Welcome:</span>
                   <span className="font-medium text-gray-900">
                     {currentUser?.name || "User"}
                   </span>
                 </div>
 
-                {/* Role row */}
                 <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-3 shadow-sm">
-                  <span className="font-semibold text-gray-800">Role:</span>
+                  <span className="font-semibold text-gray-900">Role:</span>
                   <span className="capitalize font-medium text-gray-900">
                     {roleLabel}
                   </span>
                 </div>
 
-                {/* Backend status */}
                 <div className="rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
                   {loading ? (
                     <div className="w-5 h-5 border-4 border-t-violet-500 border-white/70 rounded-full animate-spin" />
@@ -180,7 +181,6 @@ function Dashboard() {
                       }`}
                     />
                   )}
-
                   <span
                     className={`font-medium ${
                       message.startsWith("❌") ? "text-red-700" : "text-green-700"
@@ -190,7 +190,6 @@ function Dashboard() {
                   </span>
                 </div>
 
-                {/* Logout */}
                 <div className="pt-1 flex">
                   <button
                     onClick={handleLogout}
