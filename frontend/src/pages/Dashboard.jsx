@@ -10,7 +10,7 @@ function Dashboard() {
   const sessionStartRef = useRef(new Date());
   const navigate = useNavigate();
 
-  // Fetch backend connectivity
+  // ---- Original backend connectivity check (unchanged) ----
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,15 +35,17 @@ function Dashboard() {
     fetchData();
   }, []);
 
-  // live clock update
+  // Live clock
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // Avatar initials
   const initials = useMemo(() => {
     const name = currentUser?.name || currentUser?.email || "User";
     return name
+      .toString()
       .trim()
       .split(/\s+/)
       .map((n) => n[0])
@@ -52,18 +54,19 @@ function Dashboard() {
       .toUpperCase();
   }, [currentUser]);
 
-  const roleLabel = currentUser?.role || "User";
+  const roleLabel = (currentUser?.role || "User").toString();
 
+  // Pretty role badge (purple theme)
   const roleBadge = useMemo(() => {
     const r = roleLabel.toLowerCase();
     if (r.includes("admin")) return "bg-rose-50 text-rose-700 border-rose-200";
     if (r.includes("organizer") || r.includes("host"))
-      return "bg-amber-50 text-amber-700 border-amber-200";
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200";
+    return "bg-violet-50 text-violet-700 border-violet-200";
   }, [roleLabel]);
 
-  // Disable page scroll
-  const NAV_HEIGHT = 80;
+  // ===== No page scroll =====
+  const NAV_HEIGHT = 80; // adjust if your navbar differs
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
     const prevBody = document.body.style.overflow;
@@ -76,60 +79,74 @@ function Dashboard() {
   }, []);
 
   return (
-    <div className="fixed left-0 right-0 bottom-0 bg-white" style={{ top: NAV_HEIGHT }}>
+    // Fixed area under navbar
+    <div className="fixed left-0 right-0 bottom-0 bg-[#fbfbff]" style={{ top: NAV_HEIGHT }}>
       <div className="h-full w-full flex items-center justify-center p-2 sm:p-4">
+        {/* Main Card */}
         <div
-          className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)] rounded-[32px] bg-white shadow-[0_25px_80px_rgba(0,0,0,0.07)] border border-gray-100 overflow-hidden"
+          className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)] rounded-[30px] overflow-hidden border border-white/60 shadow-[0_25px_80px_rgba(30,27,75,0.10)]"
+          style={{
+            background:
+              "radial-gradient(1200px 600px at 50% -10%, rgba(233,213,255,0.55), transparent 60%), radial-gradient(1200px 600px at 50% 110%, rgba(191,219,254,0.55), transparent 60%), linear-gradient(180deg, #ffffff 0%, #f9f7ff 100%)",
+          }}
         >
-          {/* large ambient glow */}
-          <div className="pointer-events-none absolute -top-40 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-300/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-48 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-200/30 blur-[90px]" />
+          {/* top accent bar like your reference */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 via-fuchsia-500 to-pink-400" />
 
+          {/* soft decorative glow */}
+          <div className="pointer-events-none absolute -top-24 right-16 w-56 h-56 rounded-full bg-white/35 backdrop-blur-xl shadow-[0_10px_35px_rgba(99,102,241,0.25)]" />
+          <div className="pointer-events-none absolute -bottom-24 left-10 w-72 h-72 rounded-full bg-white/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(236,72,153,0.20)]" />
+
+          {/* CONTENT */}
           <div className="relative flex flex-col h-full">
             {/* Header */}
-            <div className="px-10 pt-10 pb-6">
-              <h1 className="text-[clamp(36px,5vw,62px)] text-center font-extrabold text-emerald-600 tracking-tight">
+            <div className="px-8 pt-10 pb-4">
+              <h1 className="text-center text-[clamp(36px,5vw,60px)] font-extrabold tracking-tight text-[#0b1220]">
                 Eventure
               </h1>
-              <div className="mx-auto mt-4 h-[4px] w-40 rounded-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400" />
+              <p className="mt-2 text-center text-sm text-gray-500">
+                {now.toLocaleDateString()} • {now.toLocaleTimeString()}
+              </p>
             </div>
 
-            {/* Main */}
-            <div className="px-10 pb-10 flex-grow overflow-hidden">
+            {/* Main Grid */}
+            <div className="px-8 pb-10 flex-grow overflow-hidden">
               <div className="grid h-full gap-8 grid-cols-12">
                 {/* Left Panel */}
                 <div className="col-span-12 lg:col-span-4">
-                  <div className="h-full rounded-3xl border border-gray-200 shadow-sm bg-white p-8">
-                    <div className="flex items-center gap-6">
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-white flex items-center justify-center font-bold text-3xl shadow-lg">
+                  <div className="h-full rounded-3xl border border-white/70 bg-white/70 backdrop-blur-md shadow-[0_10px_30px_rgba(17,24,39,0.06)] p-7">
+                    <div className="flex items-center gap-5">
+                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-[0_10px_25px_rgba(99,102,241,0.35)]">
                         {initials}
                       </div>
                       <div>
-                        <p className="text-gray-600 text-sm mb-1">Welcome:</p>
-                        <p className="text-xl font-semibold text-gray-900">
+                        <div className="text-xs uppercase tracking-wide text-gray-500">
+                          Welcome
+                        </div>
+                        <div className="text-lg font-semibold text-gray-900">
                           {currentUser?.name || "User"}
-                        </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-5">
                       <span
-                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${roleBadge}`}
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${roleBadge}`}
                       >
-                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-current opacity-70" />
+                        <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
                         Role: <span className="capitalize">{roleLabel}</span>
                       </span>
                     </div>
 
-                    <div className="mt-8 space-y-4 text-base">
+                    <div className="mt-7 space-y-3 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Local time</span>
+                        <span className="text-gray-500">Local time</span>
                         <span className="font-medium text-gray-900">
                           {now.toLocaleTimeString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Session start</span>
+                        <span className="text-gray-500">Session start</span>
                         <span className="font-medium text-gray-900">
                           {sessionStartRef.current.toLocaleTimeString()}
                         </span>
@@ -140,47 +157,55 @@ function Dashboard() {
 
                 {/* Right Panel */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
-                  <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 shadow-sm flex items-center justify-between">
-                    <span className="text-lg font-semibold text-gray-800">Welcome:</span>
-                    <span className="text-lg font-medium text-gray-900">
+                  {/* Welcome row */}
+                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
+                    <span className="text-base sm:text-lg font-semibold text-gray-800">
+                      Welcome:
+                    </span>
+                    <span className="text-base sm:text-lg font-medium text-gray-900">
                       {currentUser?.name || "User"}
                     </span>
                   </div>
 
-                  <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 shadow-sm flex items-center justify-between">
-                    <span className="text-lg font-semibold text-gray-800">Role:</span>
-                    <span className="capitalize text-lg font-medium text-gray-900">
+                  {/* Role row */}
+                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-4 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center justify-between">
+                    <span className="text-base sm:text-lg font-semibold text-gray-800">
+                      Role:
+                    </span>
+                    <span className="capitalize text-base sm:text-lg font-medium text-gray-900">
                       {roleLabel}
                     </span>
                   </div>
 
-                  <div className="rounded-3xl border border-gray-200 bg-white px-6 py-5 shadow-sm flex items-center gap-4">
+                  {/* Backend status row */}
+                  <div className="rounded-3xl border border-white/70 bg-white/75 backdrop-blur-md px-6 py-5 shadow-[0_10px_30px_rgba(17,24,39,0.06)] flex items-center gap-4">
                     {loading ? (
-                      <div className="w-6 h-6 border-4 border-t-emerald-500 border-gray-200 rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-4 border-t-indigo-500 border-gray-200 rounded-full animate-spin" />
                     ) : (
                       <span
-                        className={`inline-block h-4 w-4 rounded-full ${
-                          message.startsWith("❌") ? "bg-red-500" : "bg-emerald-500"
+                        className={`inline-block h-3 w-3 rounded-full ${
+                          message.startsWith("❌") ? "bg-rose-500" : "bg-indigo-500"
                         }`}
                       />
                     )}
                     <span
-                      className={`text-lg font-medium ${
-                        message.startsWith("❌") ? "text-red-600" : "text-emerald-600"
+                      className={`text-base sm:text-lg font-medium ${
+                        message.startsWith("❌") ? "text-rose-600" : "text-indigo-600"
                       }`}
                     >
                       {loading ? "Connecting..." : message}
                     </span>
                   </div>
 
-                  {/* filler for balance */}
+                  {/* spacer */}
                   <div className="flex-grow" />
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div> 
+        {/* /card */}
+      </div>
     </div>
   );
 }
