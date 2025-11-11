@@ -57,8 +57,7 @@ function Dashboard() {
   const roleLabel = (currentUser?.role || "User").toString();
   const roleBadge = useMemo(() => {
     const r = roleLabel.toLowerCase();
-    if (r.includes("admin"))
-      return "bg-rose-50 text-rose-700 border-rose-200";
+    if (r.includes("admin")) return "bg-rose-50 text-rose-700 border-rose-200";
     if (r.includes("organizer") || r.includes("host"))
       return "bg-amber-50 text-amber-700 border-amber-200";
     return "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -70,7 +69,7 @@ function Dashboard() {
   };
 
   // ===== No page scroll: lock <html> and <body>, and use a fixed viewport =====
-  const NAV_HEIGHT = 80; // px (Tailwind h-20). Change if your navbar is a different height.
+  const NAV_HEIGHT = 80; // px (Tailwind h-20). Change if your navbar height differs.
 
   useEffect(() => {
     // lock page scroll while this page is mounted
@@ -86,57 +85,45 @@ function Dashboard() {
 
   return (
     // Fixed container that occupies the viewport area under the navbar
-    <div
-      className="fixed left-0 right-0 bottom-0 bg-white"
-      style={{ top: NAV_HEIGHT }}
-    >
+    <div className="fixed left-0 right-0 bottom-0 bg-white" style={{ top: NAV_HEIGHT }}>
       {/* Center the card; give a tiny padding without causing page scroll */}
       <div className="h-full w-full flex items-center justify-center p-4">
         {/* Card fills the fixed area height (no page scroll). */}
         <div
-          className="relative w-[min(1100px,94vw)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
-          style={{ height: "100%" }} // fill the fixed viewport area
+          className="relative w-[min(1200px,96vw)] rounded-3xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
+          style={{ height: "100%" }}
         >
-          {/* ---------- FULL-CARD 'PAINT' BACKGROUND ---------- */}
+          {/* ---------- FULL-CARD GREEN 'PAINT' BACKGROUND ---------- */}
           <div
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(40rem 28rem at 55% 45%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 35%, rgba(255,255,255,0.35) 60%, rgba(255,255,255,0.15) 75%, transparent 100%), conic-gradient(from 90deg at 50% 50%, #FDE68A, #F0ABFC, #93C5FD, #86EFAC, #FDE68A)",
-              filter: "blur(28px)",
+                "radial-gradient(36rem 28rem at 55% 45%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.2) 75%, transparent 100%), conic-gradient(from 90deg at 50% 50%, #bbf7d0, #86efac, #a7f3d0, #86efac, #bbf7d0)",
+              filter: "blur(26px)",
               opacity: 0.95,
             }}
           />
-          {/* Soft inner fade so edges stay clean */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              WebkitMaskImage:
-                "radial-gradient(ellipse at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0.75) 80%, rgba(0,0,0,0) 100%)",
-              maskImage:
-                "radial-gradient(ellipse at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0.75) 80%, rgba(0,0,0,0) 100%)",
-              background:
-                "radial-gradient(closest-side, rgba(255,255,255,0.9), rgba(255,255,255,0))",
-            }}
-          />
 
-          {/* ---------- CONTENT (no outer page scroll; keep content compact) ---------- */}
+          {/* ---------- CONTENT (no outer page scroll) ---------- */}
           <div className="relative flex flex-col h-full">
             {/* Header */}
             <div className="px-6 sm:px-10 pt-6 pb-2 shrink-0">
-              <h1 className="text-center text-5xl sm:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.25)]">
-                Welcome
+              <h1 className="text-center text-[clamp(36px,5.6vw,64px)] font-extrabold tracking-tight text-emerald-600 drop-shadow-[0_1px_8px_rgba(16,185,129,0.25)]">
+                Eventure
               </h1>
+              <p className="text-center text-sm text-gray-600">
+                {now.toLocaleDateString()} • {now.toLocaleTimeString()}
+              </p>
             </div>
 
-            {/* Main grid; allow INTERNAL scroll only if content ever overflows */}
+            {/* Main grid; right side gets more space to “maximize” content */}
             <div className="px-6 sm:px-10 pb-6 grow overflow-hidden">
-              <div className="grid h-full gap-5 lg:grid-cols-3">
-                {/* Left: avatar + facts */}
-                <div className="lg:col-span-1">
-                  <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-md shadow-md p-5 h-full">
+              <div className="grid h-full gap-5 grid-cols-12">
+                {/* Left: avatar + facts (4/12) */}
+                <div className="col-span-12 lg:col-span-4">
+                  <div className="rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md shadow-md p-5 h-full">
                     <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
                         {initials}
                       </div>
                       <div>
@@ -156,7 +143,7 @@ function Dashboard() {
                       </span>
                     </div>
 
-                    <div className="mt-5 space-y-2.5 text-sm">
+                    <div className="mt-5 space-y-3 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-700">Local time</span>
                         <span className="font-medium text-gray-900">
@@ -173,42 +160,94 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right: rows + status + logout */}
-                <div className="lg:col-span-2 flex flex-col gap-4 overflow-hidden">
-                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-3 shadow-sm">
+                {/* Right: rows + status + green feature gallery (8/12) */}
+                <div className="col-span-12 lg:col-span-8 flex flex-col gap-4 overflow-hidden">
+                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Welcome:</span>
                     <span className="font-medium text-gray-900">
                       {currentUser?.name || "User"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-3 shadow-sm">
+                  <div className="flex items-center justify-between rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-3 shadow-sm">
                     <span className="font-semibold text-gray-900">Role:</span>
                     <span className="capitalize font-medium text-gray-900">
                       {roleLabel}
                     </span>
                   </div>
 
-                  <div className="rounded-xl border border-white/60 bg-white/60 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
+                  {/* Backend status */}
+                  <div className="rounded-xl border border-white/60 bg-white/70 backdrop-blur-md px-5 py-4 shadow-sm flex items-center gap-3">
                     {loading ? (
-                      <div className="w-5 h-5 border-4 border-t-violet-500 border-white/70 rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-4 border-t-emerald-500 border-white/70 rounded-full animate-spin" />
                     ) : (
                       <span
                         className={`inline-block h-3 w-3 rounded-full ${
-                          message.startsWith("❌") ? "bg-red-500" : "bg-green-500"
+                          message.startsWith("❌") ? "bg-red-500" : "bg-emerald-500"
                         }`}
                       />
                     )}
                     <span
                       className={`font-medium ${
-                        message.startsWith("❌") ? "text-red-700" : "text-green-700"
+                        message.startsWith("❌") ? "text-red-700" : "text-emerald-700"
                       }`}
                     >
                       {loading ? "Connecting..." : message}
                     </span>
                   </div>
 
-                  {/* Push button to bottom but keep inside the card */}
+                  {/* GREEN FEATURE GALLERY — purely client-side, no backend */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-1">
+                    {/* Card 1: Create Event */}
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
+                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
+                        {/* calendar icon */}
+                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
+                          <path fill="currentColor" d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v3H3V6a2 2 0 0 1 2-2h2V2Zm14 9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9h18ZM7 15h4v4H7v-4Z"/>
+                        </svg>
+                      </div>
+                      <div className="text-sm font-semibold text-emerald-800">Create Event</div>
+                      <p className="text-xs text-emerald-700/80 mt-1">Plan details, date & venue.</p>
+                    </div>
+
+                    {/* Card 2: Promote */}
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
+                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
+                        {/* megaphone icon */}
+                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
+                          <path fill="currentColor" d="M3 10v4a1 1 0 0 0 1 1h2l4 4v-14l-4 4H4a1 1 0 0 0-1 1Zm14-4v12l4 2V4l-4 2Z"/>
+                        </svg>
+                      </div>
+                      <div className="text-sm font-semibold text-emerald-800">Promote</div>
+                      <p className="text-xs text-emerald-700/80 mt-1">Share links & updates.</p>
+                    </div>
+
+                    {/* Card 3: Track RSVPs */}
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
+                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
+                        {/* ticket icon */}
+                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
+                          <path fill="currentColor" d="M3 7h18v4a2 2 0 0 0 0 2v4H3v-4a2 2 0 0 0 0-2V7Zm12 2v6h2V9h-2Z"/>
+                        </svg>
+                      </div>
+                      <div className="text-sm font-semibold text-emerald-800">Track RSVPs</div>
+                      <p className="text-xs text-emerald-700/80 mt-1">Monitor attendees live.</p>
+                    </div>
+
+                    {/* Card 4: Discover Nearby */}
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4 shadow-sm">
+                      <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center mb-3">
+                        {/* map pin icon */}
+                        <svg viewBox="0 0 24 24" className="h-6 w-6 text-emerald-600">
+                          <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"/>
+                        </svg>
+                      </div>
+                      <div className="text-sm font-semibold text-emerald-800">Discover Nearby</div>
+                      <p className="text-xs text-emerald-700/80 mt-1">Find events around you.</p>
+                    </div>
+                  </div>
+
+                  {/* Logout pinned to the bottom-right of right column */}
                   <div className="mt-auto flex">
                     <button
                       onClick={handleLogout}
