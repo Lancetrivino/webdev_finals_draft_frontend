@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth, AuthProvider } from "./contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext"; // ✅ Correct relative path
 
 function Login() {
   const { login } = useAuth();
@@ -12,8 +12,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Email validation
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,15 +32,15 @@ function Login() {
     try {
       const user = await login(formData);
 
-      // Show toast
+      // ✅ Show toast
       toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
 
-      // Navigate immediately with replace
+      // ✅ Navigate immediately
       if (user.role === "Admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error(err);
-      toast.error("Login failed. Please check your credentials.", { autoClose: 2000 });
+      toast.error(err.message || "Login failed. Please check your credentials.", { autoClose: 2000 });
     } finally {
       setLoading(false);
     }
@@ -58,11 +58,13 @@ function Login() {
         {/* Right Section */}
         <div className="w-1/2 p-12 flex flex-col justify-center">
           <h1 className="text-3xl font-semibold text-[#2C2C2C] mb-2">Eventure</h1>
-          <p className="text-sm text-gray-500 mb-8">Please enter your details to continue</p>
+          <p className="text-sm text-gray-500 mb-8">
+            Please enter your details to continue
+          </p>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <div>
-              <label className="text-sm text-gray-600">Email or phone</label>
+              <label className="text-sm text-gray-600">Email</label>
               <input
                 type="text"
                 name="email"
@@ -112,14 +114,16 @@ function Login() {
 
           <p className="text-center text-gray-600 mt-6 text-sm">
             Don’t have an account?{" "}
-            <a href="/register" className="text-[#7A6C5D] font-medium hover:underline">
+            <a
+              href="/register"
+              className="text-[#7A6C5D] font-medium hover:underline"
+            >
               Register
             </a>
           </p>
         </div>
       </div>
 
-      {/* Toasts */}
       <ToastContainer position="top-center" />
     </div>
   );
