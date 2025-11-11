@@ -21,6 +21,13 @@ const MapPinIcon = (props) => (
   </svg>
 );
 
+// Tiny logo pill to mirror your brand mark
+const LogoPill = () => (
+  <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-3 py-1 shadow-sm backdrop-blur">
+    <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
+    <span className="bg-clip-text text-transparent bg-gradient-to-tr from-indigo-500 via-blue-500 to-pink-500 font-semibold">Eventure</span>
+  </div>
+);
 
 export default function Home() {
   const { currentUser } = useAuth();
