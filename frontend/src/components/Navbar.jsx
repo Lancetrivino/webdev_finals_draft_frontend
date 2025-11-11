@@ -51,7 +51,7 @@ const NavBar = () => {
                 </defs>
                 <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
               </svg>
-              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-right from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight drop-shadow">
+              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-tight drop-shadow">
                 Eventure
               </span>
             </span>
