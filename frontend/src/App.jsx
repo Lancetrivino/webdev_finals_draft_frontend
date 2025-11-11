@@ -2,26 +2,37 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Context
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
+import CreateEvent from "./pages/CreateEvent";
 import AdminDashboard from "./pages/AdminDashboard";
 import Events from "./pages/Events";
-import CreateEvent from "./pages/CreateEvent";
+import Feedback from "./pages/Feedback";
+import FeedbackList from "./pages/FeedbackList";
 import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 import EventDetails from "./pages/EventDetails";
 import AvailableEvents from "./pages/AvailableEvents";
 import BookEvent from "./pages/BookEvent";
-import Feedback from "./pages/Feedback";
-import FeedbackList from "./pages/FeedbackList";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
 
 // Components
 import Navbar from "./components/Navbar";
+
+// API base URL setup
+let API_BASE = import.meta.env?.VITE_API_URL;
+if (!API_BASE) {
+  API_BASE = import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://webdev-finals-draft-backend.onrender.com";
+}
+export const API_BASE_URL = API_BASE;
 
 // Global styles
 const GlobalStyles = () => (
@@ -39,67 +50,57 @@ const GlobalStyles = () => (
   `}</style>
 );
 
-// Route Guards
+// Route guards
 const PrivateRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) return null; // wait until user is loaded
+  const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) return null;
+  const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
   if (currentUser.role !== "Admin") return <Navigate to="/" replace />;
-
   return children;
 };
 
 // App content
-const AppContent = () => {
-  const { loading } = useAuth();
-  if (loading) return null; // prevent white screen
+const AppContent = () => (
+  <>
+    <GlobalStyles />
+    <ToastContainer position="top-center" />
+    <Navbar />
 
-  return (
-    <>
-      <GlobalStyles />
-      <ToastContainer position="top-center" />
-      <Navbar />
+    <div className="min-h-screen bg-slate-50">
+      <main className="pt-4 pb-12">
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-      <div className="min-h-screen bg-slate-50">
-        <main className="pt-4 pb-12">
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          {/* Protected */}
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
+          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
+          <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
+          <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
+          <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
 
-            {/* Protected */}
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
-            <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
-            <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
-            <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
-            <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
-            <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          {/* Admin */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-            {/* Admin */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          {/* Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  </>
+);
 
-            {/* Not Found */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-      </div>
-    </>
-  );
-};
-
-// Main App
+// Main app
 const App = () => (
   <AuthProvider>
     <AppContent />
