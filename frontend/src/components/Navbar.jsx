@@ -9,8 +9,8 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide navbar on login/register pages
-  if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") return null;
+  // Hide navbar only on login/register pages (NOT home anymore)
+  if (location.pathname === "/login" || location.pathname === "/register") return null;
 
   const handleLogout = () => {
     logout();
@@ -37,10 +37,10 @@ const NavBar = () => {
     <header className="sticky top-0 z-50 bg-transparent/30 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4">
         <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
+          
           {/* Brand */}
           <NavLink to="/" className="flex items-center gap-2" aria-label="Eventure Home">
             <span className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 bg-white/90 ring-1 ring-slate-200 shadow-sm">
-              {/* Optional tiny logo mark */}
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <defs>
                   <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
@@ -59,6 +59,9 @@ const NavBar = () => {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
+
+            <NavLink to="/" end className={navLinkStyle}>Home</NavLink>
+
             <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
             <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
             <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
@@ -129,6 +132,10 @@ const NavBar = () => {
           <div className="max-w-6xl mx-auto px-4">
             <div className="rounded-3xl bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] px-6 py-4 mb-3">
               <div className="flex flex-col gap-3">
+
+                {/* ✅ Home added */}
+                <NavLink to="/" end className={navLinkStyle} onClick={() => setMenuOpen(false)}>Home</NavLink>
+
                 <NavLink to="/events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Events</NavLink>
                 <NavLink to="/available-events" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Available Events</NavLink>
                 <NavLink to="/create-event" className={navLinkStyle} onClick={() => setMenuOpen(false)}>Create Event</NavLink>
