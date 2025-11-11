@@ -162,22 +162,22 @@ export default function Home() {
         <section>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {/* CARD 1 */}
-            <ShortcutCard
-              title="Eventure Email"
+            <Email
+              title=""
               desc="Contact support or request event help."
               icon={<MailIcon className="h-5 w-5" />}
             />
 
             {/* CARD 2 */}
-            <ShortcutCard
-              title="Number"
+            <Contact
+              title=" "
               desc="Your registered phone number or alerts."
               icon={<PhoneIcon className="h-5 w-5" />}
             />
 
             {/* CARD 3 */}
-            <ShortcutCard
-              title="Location"
+            <Location
+              title=""
               desc="Your saved home or discovery region."
               icon={<MapPinIcon className="h-5 w-5" />}
             />
