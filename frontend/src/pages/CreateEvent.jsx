@@ -185,7 +185,7 @@ function CreateEvent() {
     typeOfEvent: "",
     venue: "",
     reminders: [],
-    capacity: 1,
+    capacity: 50,
   });
   const [imagePreview, setImagePreview] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -208,8 +208,8 @@ function CreateEvent() {
     if (!file) return;
     if (!file.type.startsWith("image/"))
       return toast.error("Select a valid image file.");
-    if (file.size > 4 * 1024 * 1024)
-      return toast.error("Max image size is 4MB.");
+    if (file.size > 5 * 1024 * 1024)
+      return toast.error("Max image size is 5MB.");
 
     setImageFile(file);
     const reader = new FileReader();
@@ -234,15 +234,14 @@ function CreateEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Frontend validation
+    // ✅ Frontend validation
     if (
       !eventData.title?.trim() ||
       !eventData.description?.trim() ||
       !eventData.date ||
-      !eventData.venue?.trim() ||
-      !eventData.capacity
+      !eventData.venue?.trim()
     ) {
-      toast.error("Please fill all required fields.");
+      toast.error("Please fill all required fields (title, description, date, venue).");
       return;
     }
 
@@ -264,39 +263,70 @@ function CreateEvent() {
         return;
       }
 
+      // ✅ Build FormData correctly
       const formData = new FormData();
+      
       formData.append("title", eventData.title.trim());
       formData.append("description", eventData.description.trim());
       formData.append("date", eventData.date); // YYYY-MM-DD
       formData.append("venue", eventData.venue.trim());
-      if (eventData.time) formData.append("time", eventData.time); // HH:mm
-      if (eventData.typeOfEvent)
-        formData.append("typeOfEvent", eventData.typeOfEvent.trim());
       formData.append("capacity", Number(eventData.capacity));
-      formData.append("reminders", JSON.stringify(eventData.reminders)); // JSON string
-      if (imageFile) formData.append("image", imageFile); // Multer req.file
+      formData.append("reminders", JSON.stringify(eventData.reminders));
+      
+      // ✅ Only append optional fields if they have values
+      if (eventData.time) {
+        formData.append("time", eventData.time);
+      }
+      if (eventData.typeOfEvent?.trim()) {
+        formData.append("typeOfEvent", eventData.typeOfEvent.trim());
+      }
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      // ✅ Debug log (remove in production)
+      console.log("📤 Sending event data:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
 
       const res = await fetch(`${API_BASE}/api/events`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          // Do NOT set Content-Type; fetch auto-sets multipart/form-data boundary
+          // ✅ Do NOT set Content-Type - browser sets it automatically with boundary
         },
         body: formData,
       });
 
       const data = await res.json();
+      console.log("📥 Server response:", data);
 
       if (!res.ok) {
         console.error("❌ Server Error:", data);
-        throw new Error(data.message || "Error creating event.");
+        const errorMessage = data.message || data.details || "Error creating event.";
+        toast.error(errorMessage);
+        return;
+      }
+
+      // ✅ Validate response structure
+      if (!data?.event?._id) {
+        console.error("❌ Invalid response structure:", data);
+        toast.error("Server returned invalid response");
+        return;
       }
 
       toast.success("✅ Event created successfully!");
       navigate(`/events/${data.event._id}`);
+      
     } catch (err) {
       console.error("❌ Create Event Error:", err);
-      toast.error(err.message || "Server error.");
+      
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error(err.message || "Server error.");
+      }
     } finally {
       setLoading(false);
     }
@@ -304,7 +334,7 @@ function CreateEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Top bar strip for subtle depth like the screenshot */}
+      {/* Top bar strip for subtle depth */}
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
       <div className="mx-auto max-w-5xl px-4 pb-20">
@@ -314,9 +344,9 @@ function CreateEvent() {
 
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Title + Description card (styled like a compact block) */}
+            {/* Title + Description */}
             <div className="space-y-3">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Title *</Label>
               <Field>
                 <input
                   id="title"
@@ -325,10 +355,11 @@ function CreateEvent() {
                   onChange={handleChange}
                   placeholder="Event name"
                   className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  required
                 />
               </Field>
 
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description *</Label>
               <Field>
                 <textarea
                   id="description"
@@ -338,6 +369,7 @@ function CreateEvent() {
                   placeholder="Add a short description"
                   rows={3}
                   className="w-full resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  required
                 />
               </Field>
             </div>
@@ -345,7 +377,7 @@ function CreateEvent() {
             {/* Date / Time / Capacity / Type */}
             <div className="grid gap-4 md:grid-cols-4">
               <div className="md:col-span-2">
-                <Label htmlFor="date">Day</Label>
+                <Label htmlFor="date">Day *</Label>
                 <div className="relative">
                   <Field>
                     <div className="flex items-center gap-3">
@@ -359,6 +391,7 @@ function CreateEvent() {
                         value={eventData.date}
                         onChange={handleChange}
                         className="w-full bg-transparent text-slate-800 focus:outline-none"
+                        required
                       />
                     </div>
                   </Field>
@@ -385,7 +418,7 @@ function CreateEvent() {
                     min={1}
                     value={eventData.capacity}
                     onChange={handleChange}
-                    placeholder="Capacity"
+                    placeholder="50"
                     className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
                 </Field>
@@ -399,14 +432,14 @@ function CreateEvent() {
                     name="typeOfEvent"
                     value={eventData.typeOfEvent}
                     onChange={handleChange}
-                    placeholder="Type of Event"
+                    placeholder="e.g., Conference, Workshop, Seminar"
                     className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
                 </Field>
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="venue">Location</Label>
+                <Label htmlFor="venue">Location *</Label>
                 <Field>
                   <input
                     id="venue"
@@ -415,12 +448,13 @@ function CreateEvent() {
                     onChange={handleChange}
                     placeholder="Venue"
                     className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                    required
                   />
                 </Field>
               </div>
             </div>
 
-            {/* Upload section styled like “drop files here” */}
+            {/* Upload section */}
             <div className="space-y-3">
               <Label>Upload attachments</Label>
 
@@ -467,6 +501,12 @@ function CreateEvent() {
                   <input
                     value={reminderInput}
                     onChange={(e) => setReminderInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addReminder();
+                      }
+                    }}
                     placeholder="Add reminder"
                     className="w-72 bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
