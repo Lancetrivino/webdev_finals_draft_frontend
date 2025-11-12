@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-    setLoading(false); // done checking
+    setLoading(false);
   }, []);
 
   const login = async ({ email, password }) => {
@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }) => {
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
       const userWithToken = { ...data.user, token: data.token };
-
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setCurrentUser(userWithToken);
 
@@ -80,8 +79,18 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateCurrentUser,
     isAuthenticated,
-    loading, // important
+    loading,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? (
+        <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
+          Loading...
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 };
