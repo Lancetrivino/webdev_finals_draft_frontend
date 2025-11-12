@@ -39,7 +39,7 @@ const NavBar = () => {
         <div className="mt-4 mb-3 rounded-[2rem] bg-white shadow-[0_15px_30px_-15px_rgba(0,0,0,0.15)] flex items-center justify-between px-5 sm:px-7 py-3">
           
           {/* Brand */}
-          <NavLink to="/" className="flex items-center gap-2" aria-label="Eventure Home">
+          <NavLink to="/dashboard" className="flex items-center gap-2" aria-label="Eventure Home">
             <span className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 bg-white/90 ring-1 ring-slate-200 shadow-sm">
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <defs>
