@@ -96,7 +96,7 @@ export default function Home() {
 
       {/* --- REVISED: Hero Section Tagline --- */}
       <header className="relative pt-16 pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-bottom-right from-green-50 to-white opacity-80 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-white opacity-80 z-0"></div>
         <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-0"></div>
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-0"></div>
 

@@ -64,7 +64,7 @@ function Feedback() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-orange-900 via-orange-700 to-orange-500 p-6">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Event Feedback
