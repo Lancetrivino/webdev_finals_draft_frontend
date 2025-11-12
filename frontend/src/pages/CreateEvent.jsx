@@ -234,6 +234,7 @@ function CreateEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Frontend validation
     if (
       !eventData.title?.trim() ||
       !eventData.description?.trim() ||
@@ -242,6 +243,11 @@ function CreateEvent() {
       !eventData.capacity
     ) {
       toast.error("Please fill all required fields.");
+      return;
+    }
+
+    if (eventData.capacity < 1) {
+      toast.error("Capacity must be at least 1.");
       return;
     }
 
@@ -261,18 +267,21 @@ function CreateEvent() {
       const formData = new FormData();
       formData.append("title", eventData.title.trim());
       formData.append("description", eventData.description.trim());
-      formData.append("date", eventData.date);
+      formData.append("date", eventData.date); // YYYY-MM-DD
       formData.append("venue", eventData.venue.trim());
-      if (eventData.time) formData.append("time", eventData.time);
+      if (eventData.time) formData.append("time", eventData.time); // HH:mm
       if (eventData.typeOfEvent)
         formData.append("typeOfEvent", eventData.typeOfEvent.trim());
       formData.append("capacity", Number(eventData.capacity));
-      formData.append("reminders", JSON.stringify(eventData.reminders));
-      if (imageFile) formData.append("image", imageFile);
+      formData.append("reminders", JSON.stringify(eventData.reminders)); // JSON string
+      if (imageFile) formData.append("image", imageFile); // Multer req.file
 
       const res = await fetch(`${API_BASE}/api/events`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Do NOT set Content-Type; fetch auto-sets multipart/form-data boundary
+        },
         body: formData,
       });
 
