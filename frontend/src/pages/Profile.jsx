@@ -66,16 +66,16 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-red from-orange-900 via-orange-700 to-orange-500 p-6">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#F2EEEB] p-6">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 border border-[#D9D2CC]">
+        <h2 className="text-2xl font-bold text-center text-[#5B5149] mb-6">
           My Profile
         </h2>
 
         {currentUser && (
           <form onSubmit={handleUpdate} className="space-y-4">
             <div>
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label className="block text-[#5B5149] font-semibold mb-1">
                 Full Name
               </label>
               <input
@@ -83,12 +83,12 @@ function Profile() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none"
+                className="w-full border border-[#D9D2CC] rounded-lg p-3 focus:ring-2 focus:ring-[#B0755E] outline-none bg-[#FAF8F7]"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label className="block text-[#5B5149] font-semibold mb-1">
                 Email Address
               </label>
               <input
@@ -96,15 +96,15 @@ function Profile() {
                 name="email"
                 value={formData.email}
                 disabled
-                className="w-full border border-gray-300 rounded-lg p-3 bg-gray-100 cursor-not-allowed"
+                className="w-full border border-[#D9D2CC] rounded-lg p-3 bg-[#EDE8E5] cursor-not-allowed text-gray-600"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 font-semibold mb-1">
+              <label className="block text-[#5B5149] font-semibold mb-1">
                 Role
               </label>
-              <p className="w-full border border-gray-200 rounded-lg p-3 bg-gray-100 text-gray-700">
+              <p className="w-full border border-[#D9D2CC] rounded-lg p-3 bg-[#EDE8E5] text-[#5B5149]">
                 {currentUser.role}
               </p>
             </div>
@@ -112,10 +112,10 @@ function Profile() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 ${
+              className={`w-full py-3 font-semibold text-white rounded-lg shadow-md transition-transform transform hover:scale-105 ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-right from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
+                  ? "bg-[#A39C96] cursor-not-allowed"
+                  : "bg-[#8B6B61] hover:bg-[#7A5D55]"
               }`}
             >
               {loading ? "Saving..." : "Update Profile"}
@@ -125,7 +125,7 @@ function Profile() {
 
         <button
           onClick={handleLogout}
-          className="w-full mt-4 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
+          className="w-full mt-4 py-3 bg-[#B05E48] text-white font-semibold rounded-lg shadow-md hover:bg-[#9C4E3A] transition"
         >
           Logout
         </button>
