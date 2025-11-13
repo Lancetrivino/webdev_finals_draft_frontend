@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://webdevfinals.onrender.com";
+const API_BASE =
+  import.meta.env.VITE_API_URL || "https://webdevfinals.onrender.com";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -64,7 +65,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (currentUser?.role === "Admin") {
       setLoading(true);
-      Promise.all([fetchEvents(), fetchUsers()]).finally(() => setLoading(false));
+      Promise.all([fetchEvents(), fetchUsers()]).finally(() =>
+        setLoading(false)
+      );
     }
   }, [currentUser]);
 
@@ -75,18 +78,20 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE}/api/events/${id}/approve`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${getToken()}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
         },
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to approve event");
       }
-      
-      setEvents((prev) => prev.map(e => e._id === id ? { ...e, status: "approved" } : e));
+
+      setEvents((prev) =>
+        prev.map((e) => (e._id === id ? { ...e, status: "approved" } : e))
+      );
       toast.success("✅ Event approved!");
     } catch (err) {
       console.error("Error approving event:", err);
@@ -103,18 +108,22 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE}/api/events/${rejectTarget}/reject`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${getToken()}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
         },
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to reject event");
       }
-      
-      setEvents((prev) => prev.map(e => e._id === rejectTarget ? { ...e, status: "rejected" } : e));
+
+      setEvents((prev) =>
+        prev.map((e) =>
+          e._id === rejectTarget ? { ...e, status: "rejected" } : e
+        )
+      );
       toast.success("❌ Event rejected!");
       setRejectTarget(null);
     } catch (err) {
@@ -135,13 +144,13 @@ export default function AdminDashboard() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to delete event");
       }
-      
-      setEvents((prev) => prev.filter(e => e._id !== deleteTarget));
+
+      setEvents((prev) => prev.filter((e) => e._id !== deleteTarget));
       toast.success("🗑️ Event deleted!");
       setDeleteTarget(null);
     } catch (err) {
@@ -160,19 +169,21 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE}/api/users/${userId}/role`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${getToken()}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ role: newRole }),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to update role");
       }
-      
-      setUsers((prev) => prev.map(u => u._id === userId ? { ...u, role: newRole } : u));
+
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
+      );
       toast.success("✅ User role updated!");
     } catch (err) {
       console.error("Error updating role:", err);
@@ -190,19 +201,21 @@ export default function AdminDashboard() {
       const { userId, active } = deactivateTarget;
       const res = await fetch(`${API_BASE}/api/users/${userId}/active`, {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${getToken()}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ active }),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to update status");
       }
-      
-      setUsers((prev) => prev.map(u => u._id === userId ? { ...u, active } : u));
+
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? { ...u, active } : u))
+      );
       toast.success(active ? "✅ User activated" : "⚠️ User deactivated");
       setDeactivateTarget(null);
     } catch (err) {
@@ -214,13 +227,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredEvents = useMemo(() => 
-    events.filter(e => e.title.toLowerCase().includes(search.toLowerCase())), 
+  const filteredEvents = useMemo(
+    () =>
+      events.filter((e) =>
+        e.title.toLowerCase().includes(search.toLowerCase())
+      ),
     [events, search]
   );
-  
-  const filteredUsers = useMemo(() => 
-    users.filter(u => u.name.toLowerCase().includes(search.toLowerCase())), 
+
+  const filteredUsers = useMemo(
+    () =>
+      users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase())),
     [users, search]
   );
 
@@ -238,37 +255,36 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-
         {/* Header & Tabs */}
         <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setTab("events")} 
+            <button
+              onClick={() => setTab("events")}
               className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-                tab === "events" 
-                  ? "bg-orange-600 text-white shadow-lg" 
+                tab === "events"
+                  ? "bg-orange-600 text-white shadow-lg"
                   : "bg-white text-gray-700 shadow hover:bg-gray-50"
               }`}
             >
               Events
             </button>
-            <button 
-              onClick={() => setTab("users")} 
+            <button
+              onClick={() => setTab("users")}
               className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-                tab === "users" 
-                  ? "bg-orange-600 text-white shadow-lg" 
+                tab === "users"
+                  ? "bg-orange-600 text-white shadow-lg"
                   : "bg-white text-gray-700 shadow hover:bg-gray-50"
               }`}
             >
               Users
             </button>
-            <input 
-              type="text" 
-              placeholder={`Search ${tab}...`} 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              className="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400" 
+            <input
+              type="text"
+              placeholder={`Search ${tab}...`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
         </div>
@@ -276,59 +292,95 @@ export default function AdminDashboard() {
         {/* Event Status Chart */}
         {tab === "events" && (
           <div className="bg-white rounded-2xl shadow p-6 mb-6">
-            <h2 className="text-gray-700 font-semibold mb-4 text-center">Event Status Overview</h2>
+            <h2 className="text-gray-700 font-semibold mb-4 text-center">
+              Event Status Overview
+            </h2>
             <div className="w-full h-8 flex rounded-xl overflow-hidden border">
-              <div 
-                className="bg-orange-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
-                style={{ 
-                  width: `${(events.filter(e => e.status === "pending").length / (events.length || 1)) * 100}%`,
-                  minWidth: events.filter(e => e.status === "pending").length > 0 ? '40px' : '0'
-                }} 
+              <div
+                className="bg-orange-500 h-full flex items-center justify-center text-white text-xs font-semibold"
+                style={{
+                  width: `${
+                    (events.filter((e) => e.status === "pending").length /
+                      (events.length || 1)) *
+                    100
+                  }%`,
+                  minWidth:
+                    events.filter((e) => e.status === "pending").length > 0
+                      ? "40px"
+                      : "0",
+                }}
               >
-                {events.filter(e => e.status === "pending").length > 0 && 
-                  `${events.filter(e => e.status === "pending").length} Pending`
-                }
+                {events.filter((e) => e.status === "pending").length > 0 &&
+                  `${
+                    events.filter((e) => e.status === "pending").length
+                  } Pending`}
               </div>
-              <div 
-                className="bg-green-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
-                style={{ 
-                  width: `${(events.filter(e => e.status === "approved").length / (events.length || 1)) * 100}%`,
-                  minWidth: events.filter(e => e.status === "approved").length > 0 ? '40px' : '0'
-                }} 
+              <div
+                className="bg-green-500 h-full flex items-center justify-center text-white text-xs font-semibold"
+                style={{
+                  width: `${
+                    (events.filter((e) => e.status === "approved").length /
+                      (events.length || 1)) *
+                    100
+                  }%`,
+                  minWidth:
+                    events.filter((e) => e.status === "approved").length > 0
+                      ? "40px"
+                      : "0",
+                }}
               >
-                {events.filter(e => e.status === "approved").length > 0 && 
-                  `${events.filter(e => e.status === "approved").length} Approved`
-                }
+                {events.filter((e) => e.status === "approved").length > 0 &&
+                  `${
+                    events.filter((e) => e.status === "approved").length
+                  } Approved`}
               </div>
-              <div 
-                className="bg-red-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
-                style={{ 
-                  width: `${(events.filter(e => e.status === "rejected").length / (events.length || 1)) * 100}%`,
-                  minWidth: events.filter(e => e.status === "rejected").length > 0 ? '40px' : '0'
-                }} 
+              <div
+                className="bg-red-500 h-full flex items-center justify-center text-white text-xs font-semibold"
+                style={{
+                  width: `${
+                    (events.filter((e) => e.status === "rejected").length /
+                      (events.length || 1)) *
+                    100
+                  }%`,
+                  minWidth:
+                    events.filter((e) => e.status === "rejected").length > 0
+                      ? "40px"
+                      : "0",
+                }}
               >
-                {events.filter(e => e.status === "rejected").length > 0 && 
-                  `${events.filter(e => e.status === "rejected").length} Rejected`
-                }
+                {events.filter((e) => e.status === "rejected").length > 0 &&
+                  `${
+                    events.filter((e) => e.status === "rejected").length
+                  } Rejected`}
               </div>
             </div>
             <div className="flex justify-center gap-6 mt-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                <span>Pending ({events.filter(e => e.status === "pending").length})</span>
+                <span>
+                  Pending ({events.filter((e) => e.status === "pending").length}
+                  )
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Approved ({events.filter(e => e.status === "approved").length})</span>
+                <span>
+                  Approved (
+                  {events.filter((e) => e.status === "approved").length})
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span>Rejected ({events.filter(e => e.status === "rejected").length})</span>
+                <span>
+                  Rejected (
+                  {events.filter((e) => e.status === "rejected").length})
+                </span>
               </div>
             </div>
           </div>
         )}
 
+        {/* Events Table */}
         {/* Events Table */}
         {tab === "events" && (
           <div className="bg-white shadow rounded-2xl p-6 overflow-x-auto">
@@ -339,61 +391,109 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="border-b p-3 font-semibold text-gray-700">Title</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Date</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Location</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Status</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Actions</th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Title
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Date
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Location
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Status
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEvents.map(event => (
-                    <tr key={event._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-3 border-b">{event.title}</td>
-                      <td className="p-3 border-b">{new Date(event.date).toLocaleDateString()}</td>
-                      <td className="p-3 border-b">{event.location || "N/A"}</td>
-                      <td className="p-3 border-b">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          event.status === "approved" 
-                            ? "bg-green-100 text-green-700" 
-                            : event.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-orange-100 text-orange-700"
-                        }`}>
-                          {event.status}
-                        </span>
-                      </td>
-                      <td className="p-3 border-b">
-                        <div className="flex gap-2 flex-wrap">
-                          {event.status === "pending" && (
-                            <>
-                              <button 
-                                disabled={processing} 
-                                onClick={() => handleApproveEvent(event._id)} 
-                                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              >
-                                Approve
-                              </button>
-                              <button 
-                                disabled={processing} 
-                                onClick={() => setRejectTarget(event._id)} 
-                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          <button 
-                            disabled={processing} 
-                            onClick={() => setDeleteTarget(event._id)} 
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  {filteredEvents.map((event) => {
+                    // Debug log - remove after fixing
+                    console.log(
+                      "Event:",
+                      event.title,
+                      "Status:",
+                      event.status,
+                      "Type:",
+                      typeof event.status
+                    );
+
+                    // Normalize status to lowercase for comparison
+                    const eventStatus = (event.status || "")
+                      .toLowerCase()
+                      .trim();
+
+                    return (
+                      <tr
+                        key={event._id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="p-3 border-b">{event.title}</td>
+                        <td className="p-3 border-b">
+                          {new Date(event.date).toLocaleDateString()}
+                        </td>
+                        <td className="p-3 border-b">
+                          {event.location || "N/A"}
+                        </td>
+                        <td className="p-3 border-b">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              eventStatus === "approved"
+                                ? "bg-green-100 text-green-700"
+                                : eventStatus === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-orange-100 text-orange-700"
+                            }`}
                           >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {event.status}
+                          </span>
+                        </td>
+                        <td className="p-3 border-b">
+                          <div className="flex gap-2 flex-wrap">
+                            {/* Show approve/reject for pending events */}
+                            {eventStatus === "pending" && (
+                              <>
+                                <button
+                                  disabled={processing}
+                                  onClick={() => {
+                                    console.log("Approving event:", event._id);
+                                    handleApproveEvent(event._id);
+                                  }}
+                                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  disabled={processing}
+                                  onClick={() => {
+                                    console.log(
+                                      "Setting reject target:",
+                                      event._id
+                                    );
+                                    setRejectTarget(event._id);
+                                  }}
+                                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+
+                            {/* Always show delete button */}
+                            <button
+                              disabled={processing}
+                              onClick={() => setDeleteTarget(event._id)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -410,55 +510,96 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="border-b p-3 font-semibold text-gray-700">Name</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Email</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Role</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Active</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Actions</th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Name
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Email
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Role
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Active
+                    </th>
+                    <th className="border-b p-3 font-semibold text-gray-700">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map(user => (
-                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                  {filteredUsers.map((user) => (
+                    <tr
+                      key={user._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="p-3 border-b">{user.name}</td>
                       <td className="p-3 border-b">{user.email}</td>
                       <td className="p-3 border-b">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.role === "Admin" 
-                            ? "bg-purple-100 text-purple-700" 
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.role === "Admin"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
                           {user.role}
                         </span>
                       </td>
                       <td className="p-3 border-b">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.active 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-gray-100 text-gray-700"
-                        }`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.active
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
                           {user.active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="p-3 border-b">
                         <div className="flex gap-2 flex-wrap">
-                          <button 
-                            disabled={processing || user._id === currentUser?._id} 
-                            onClick={() => handleRoleChange(user._id, user.role === "User" ? "Admin" : "User")} 
+                          <button
+                            disabled={
+                              processing || user._id === currentUser?._id
+                            }
+                            onClick={() =>
+                              handleRoleChange(
+                                user._id,
+                                user.role === "User" ? "Admin" : "User"
+                              )
+                            }
                             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            title={user._id === currentUser?._id ? "Cannot change your own role" : "Toggle role between User and Admin"}
+                            title={
+                              user._id === currentUser?._id
+                                ? "Cannot change your own role"
+                                : "Toggle role between User and Admin"
+                            }
                           >
                             {user.role === "User" ? "Make Admin" : "Make User"}
                           </button>
-                          <button 
-                            disabled={processing || user._id === currentUser?._id} 
-                            onClick={() => setDeactivateTarget({ userId: user._id, active: !user.active })} 
+                          <button
+                            disabled={
+                              processing || user._id === currentUser?._id
+                            }
+                            onClick={() =>
+                              setDeactivateTarget({
+                                userId: user._id,
+                                active: !user.active,
+                              })
+                            }
                             className={`px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                              user.active 
-                                ? "bg-red-500 hover:bg-red-600 text-white" 
+                              user.active
+                                ? "bg-red-500 hover:bg-red-600 text-white"
                                 : "bg-green-500 hover:bg-green-600 text-white"
                             }`}
-                            title={user._id === currentUser?._id ? "Cannot deactivate your own account" : user.active ? "Deactivate user" : "Activate user"}
+                            title={
+                              user._id === currentUser?._id
+                                ? "Cannot deactivate your own account"
+                                : user.active
+                                ? "Deactivate user"
+                                : "Activate user"
+                            }
                           >
                             {user.active ? "Deactivate" : "Activate"}
                           </button>
@@ -471,25 +612,29 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
-
       </div>
 
       {/* Delete Event Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirm Delete</h3>
-            <p className="mb-6 text-gray-600">Are you sure you want to delete this event? This action cannot be undone.</p>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              Confirm Delete
+            </h3>
+            <p className="mb-6 text-gray-600">
+              Are you sure you want to delete this event? This action cannot be
+              undone.
+            </p>
             <div className="flex justify-end gap-4">
-              <button 
-                onClick={() => setDeleteTarget(null)} 
+              <button
+                onClick={() => setDeleteTarget(null)}
                 disabled={processing}
                 className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleDeleteEvent} 
+              <button
+                onClick={handleDeleteEvent}
                 disabled={processing}
                 className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors disabled:opacity-50"
               >
@@ -504,18 +649,23 @@ export default function AdminDashboard() {
       {rejectTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirm Reject</h3>
-            <p className="mb-6 text-gray-600">Are you sure you want to reject this event? The event will be marked as rejected.</p>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              Confirm Reject
+            </h3>
+            <p className="mb-6 text-gray-600">
+              Are you sure you want to reject this event? The event will be
+              marked as rejected.
+            </p>
             <div className="flex justify-end gap-4">
-              <button 
-                onClick={() => setRejectTarget(null)} 
+              <button
+                onClick={() => setRejectTarget(null)}
                 disabled={processing}
                 className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleRejectEvent} 
+              <button
+                onClick={handleRejectEvent}
                 disabled={processing}
                 className="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-colors disabled:opacity-50"
               >
@@ -534,33 +684,37 @@ export default function AdminDashboard() {
               {deactivateTarget.active ? "Activate User" : "Deactivate User"}
             </h3>
             <p className="mb-6 text-gray-600">
-              Are you sure you want to {deactivateTarget.active ? "activate" : "deactivate"} this user?
+              Are you sure you want to{" "}
+              {deactivateTarget.active ? "activate" : "deactivate"} this user?
               {!deactivateTarget.active && " They will not be able to log in."}
             </p>
             <div className="flex justify-end gap-4">
-              <button 
-                onClick={() => setDeactivateTarget(null)} 
+              <button
+                onClick={() => setDeactivateTarget(null)}
                 disabled={processing}
                 className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleDeactivateUser} 
+              <button
+                onClick={handleDeactivateUser}
                 disabled={processing}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
-                  deactivateTarget.active 
-                    ? "bg-green-500 hover:bg-green-600 text-white" 
+                  deactivateTarget.active
+                    ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-red-500 hover:bg-red-600 text-white"
                 }`}
               >
-                {processing ? "Processing..." : (deactivateTarget.active ? "Activate" : "Deactivate")}
+                {processing
+                  ? "Processing..."
+                  : deactivateTarget.active
+                  ? "Activate"
+                  : "Deactivate"}
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }
