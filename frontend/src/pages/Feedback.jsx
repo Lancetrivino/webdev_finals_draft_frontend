@@ -171,7 +171,7 @@ export default function FeedbackEnhanced() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
-      toast.success(" Thank you for your feedback!");
+      toast.success("✅ Thank you for your feedback!");
       setComment("");
       setRating(5);
       setHoverRating(0);
@@ -309,7 +309,7 @@ export default function FeedbackEnhanced() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-300 mt-1">By trymodal</p>
+          <p className="text-center text-xs text-gray-300 mt-1"></p>
         </form>
       </div>
     </div>

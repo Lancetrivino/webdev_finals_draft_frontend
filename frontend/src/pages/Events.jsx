@@ -18,14 +18,9 @@ function Events() {
 
     const { token, role, _id: userId } = JSON.parse(storedUser);
 
-    console.log("=== Events.jsx Fetch ===");
-    console.log("User Role:", role);
-    console.log("User ID:", userId);
-
     const fetchEvents = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_URL;
-
         const res = await fetch(`${API_BASE}/api/events`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -33,27 +28,10 @@ function Events() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        console.log("📦 Raw data from backend:", data);
-        console.log("📦 Total events received:", data.length);
-
-        // ✅ Backend already filters by user, so just use the data directly
-        // Admin gets all events, regular users get only their own events
         setEvents(data);
-
-        console.log("✅ Events set in state:", data.length);
-        
-        // Debug: Show each event's creator
-        data.forEach(event => {
-          console.log(`Event: ${event.title}`);
-          console.log(`  Creator ID: ${event.createdBy?._id || event.createdBy}`);
-          console.log(`  Status: ${event.status}`);
-        });
-
       } catch (error) {
         console.error("❌ Error fetching events:", error);
-        toast.error(
-          "Failed to load events. Check your connection or permissions."
-        );
+        toast.error("Failed to load events. Check your connection or permissions.");
       } finally {
         setLoading(false);
       }
@@ -62,7 +40,6 @@ function Events() {
     fetchEvents();
   }, [navigate]);
 
-  // DELETE handler
   const handleDelete = async (eventId) => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
@@ -89,7 +66,7 @@ function Events() {
     }
   };
 
-  // LOADING state
+  // Loading UI
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -98,26 +75,24 @@ function Events() {
     );
   }
 
-  // NO EVENTS
+  // No events UI
   if (events.length === 0) {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const role = storedUser?.role || "User";
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          {role === "Admin"
-            ? "No events available."
-            : "You haven't created any events yet."}
+          {role === "Admin" ? "No events available." : "You haven't created any events yet."}
         </h2>
-        <p className="text-gray-500 mt-2">
-          {role === "Admin" 
-            ? "Create your first event to get started!" 
+        <p className="text-gray-500 mt-2 text-center max-w-xl">
+          {role === "Admin"
+            ? "Create your first event to get started!"
             : "Create an event and it will appear here after admin approval."}
         </p>
         <Link
           to="/create-event"
-          className="mt-4 px-6 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition"
+          className="mt-6 px-6 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition shadow-md"
         >
           Create Event
         </Link>
@@ -125,56 +100,81 @@ function Events() {
     );
   }
 
-  // MAIN DISPLAY
+  // palette (same as feedback)
+  const palette = {
+    deep: "#08324A",
+    navy: "#0B63A3",
+    blue: "#0F85D0",
+    soft: "#BFE7FF",
+    pale: "#DFF3FB",
+    accent: "#8B5CF6", // purple accent used for subtle glow
+  };
+
+  // map status to badge styles
+  const statusColors = {
+    Approved: "bg-green-100 text-green-700 border-green-200",
+    Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    Rejected: "bg-red-100 text-red-700 border-red-200",
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-emerald-600">
-            {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
-              ? "All Events"
-              : "My Events"}
+          <h2 className="text-3xl font-bold" style={{ color: palette.deep }}>
+            {JSON.parse(localStorage.getItem("user"))?.role === "Admin" ? "All Events" : "My Events"}
           </h2>
           <Link
             to="/create-event"
-            className="px-6 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition shadow-md"
+            className="px-6 py-3 rounded-full font-medium shadow-md transition transform hover:-translate-y-0.5"
+            style={{ background: `linear-gradient(90deg, ${palette.blue}, ${palette.navy})`, color: "white" }}
           >
             + Create Event
           </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
-            const remainingSlots =
-              event.capacity - (event.participants?.length || 0);
-
-            // Determine status badge color
-            const statusColors = {
-              Approved: "bg-green-100 text-green-700 border-green-200",
-              Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-              Rejected: "bg-red-100 text-red-700 border-red-200"
-            };
+            const remainingSlots = event.capacity - (event.participants?.length || 0);
 
             return (
               <article
                 key={event._id}
-                className="group rounded-2xl bg-white shadow-[0_10px_25px_-10px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_35px_-15px_rgba(0,0,0,0.25)] transition-all overflow-hidden"
+                className="relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-shadow"
+                aria-labelledby={`event-title-${event._id}`}
               >
-                {/* Image */}
-                <div className="h-40 w-full overflow-hidden relative">
+                {/* Image area with rounded corners and purple glow */}
+                <div className="relative h-44 overflow-hidden">
                   {event.image || event.imageData ? (
                     <img
                       src={event.image || event.imageData}
                       alt={event.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
+                      style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
                     />
                   ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
+                    <div
+                      className="w-full h-full bg-gradient-to-br from-indigo-200 via-sky-200 to-cyan-200"
+                      style={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
+                    />
                   )}
-                  
-                  {/* Status Badge */}
+
+                  {/* subtle purple glow under image */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-x-6 -bottom-6 h-6 rounded-xl"
+                    style={{
+                      background: `linear-gradient(90deg, ${palette.accent}22, ${palette.blue}11)`,
+                      filter: "blur(12px)",
+                      opacity: 0.95,
+                    }}
+                  />
+
+                  {/* status badge */}
                   <div className="absolute top-3 right-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[event.status] || 'bg-gray-100 text-gray-700'}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[event.status] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+                    >
                       {event.status || "Unknown"}
                     </span>
                   </div>
@@ -182,35 +182,45 @@ function Events() {
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                  <h3 id={`event-title-${event._id}`} className="text-lg font-extrabold text-slate-800 mb-2">
                     {event.title}
                   </h3>
 
-                  <p className="text-slate-700 mb-1">
-                    📅 <strong>Date:</strong>{" "}
-                    {new Date(event.date).toLocaleDateString()}
-                  </p>
-                  <p className="text-slate-700 mb-1">
-                    📍 <strong>Venue:</strong> {event.venue}
-                  </p>
-                  <p className="text-slate-700 mb-2">
-                    🎟️ <strong>Remaining Slots:</strong> {remainingSlots}
-                  </p>
+                  <div className="text-sm text-slate-600 space-y-1 mb-3">
+                    <p className="flex items-center gap-2">
+                      <span aria-hidden></span>
+                      <span><strong className="text-slate-700">Date:</strong> {new Date(event.date).toLocaleDateString()}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span aria-hidden></span>
+                      <span><strong className="text-slate-700">Venue:</strong> {event.venue}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span aria-hidden></span>
+                      <span><strong className="text-slate-700">Remaining Slots:</strong> {remainingSlots}</span>
+                    </p>
+                  </div>
 
-                  <p className="text-slate-600 line-clamp-3">
+                  <p className="text-sm text-slate-500 line-clamp-3 mb-4">
                     {event.description}
                   </p>
 
-                  <div className="mt-4 flex items-center justify-between gap-2">
-                    <Link
-                      to={`/events/${event._id}`}
-                      className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-white font-medium shadow-md hover:shadow-lg active:scale-95 transition"
-                    >
-                      View Details
-                    </Link>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      <div className="text-lg font-bold text-slate-800">{event.price ? `$${event.price}` : ""}</div>
+                      <div className="text-xs text-gray-400">/ person</div>
+                    </div>
 
-                    {/* Edit/Delete for creators/admins */}
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={`/events/${event._id}`}
+                        className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium shadow"
+                        style={{ background: `linear-gradient(90deg, ${palette.blue}, ${palette.navy})`, color: "white" }}
+                      >
+                        See More
+                      </Link>
+
+                      {/* Edit/Delete for creators/admins */}
                       <Link
                         to={`/events/edit/${event._id}`}
                         className="rounded-full bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
@@ -225,6 +235,25 @@ function Events() {
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* three circles at bottom-left (kept as requested) */}
+                <div className="absolute left-4 bottom-4 flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.accent, boxShadow: `0 8px 20px ${palette.accent}33` }}
+                    aria-hidden
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.blue, boxShadow: `0 8px 20px ${palette.blue}33` }}
+                    aria-hidden
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.navy, boxShadow: `0 8px 20px ${palette.navy}33` }}
+                    aria-hidden
+                  />
                 </div>
               </article>
             );
