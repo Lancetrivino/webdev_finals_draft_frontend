@@ -7,18 +7,30 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  // 'initializing' is true only while restoring user from storage on app start
+  const [initializing, setInitializing] = useState(true);
+
+  // 'authLoading' is true during login/register network requests
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Load user from localStorage on app start
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+      }
+    } catch (err) {
+      console.error("Failed to read user from localStorage", err);
+    } finally {
+      setInitializing(false);
     }
-    setLoading(false);
   }, []);
 
+  // login still accepts an object: login({ email, password })
   const login = async ({ email, password }) => {
+    setAuthLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
@@ -33,14 +45,18 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setCurrentUser(userWithToken);
 
+      // return the user immediately so callers (Login.jsx) can navigate safely
       return userWithToken;
     } catch (err) {
       toast.error(err.message || "Login failed");
       throw err;
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const register = async ({ name, email, password }) => {
+    setAuthLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: "POST",
@@ -56,6 +72,8 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       toast.error(err.message || "Registration failed");
       throw err;
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -79,12 +97,14 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateCurrentUser,
     isAuthenticated,
-    loading,
+    // expose flags your App.jsx route guards expect
+    initializing,
+    authLoading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
+      {initializing ? (
         <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
           Loading...
         </div>
