@@ -19,6 +19,26 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // helper: poll for currentUser to be set (or for a role to be available)
+  const waitForCurrentUser = async (timeout = 2000, interval = 100) => {
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        // read currentUser from closure
+        if (currentUser && (currentUser.role || currentUser.uid)) {
+          resolve(currentUser);
+          return;
+        }
+        if (Date.now() - start >= timeout) {
+          resolve(null); // timed out
+          return;
+        }
+        setTimeout(check, interval);
+      };
+      check();
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -31,8 +51,26 @@ function Login() {
     }
 
     try {
-      await login(formData);
+      // Pass email & password separately (many auth helpers expect two args)
+      await login(formData.email, formData.password);
+
       toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
+
+      // Give AuthContext a short moment to populate currentUser/profile (poll)
+      const userAfterLogin = await waitForCurrentUser(2000, 100);
+
+      // If we got a user with a role, navigate according to role.
+      if (userAfterLogin) {
+        const role = (userAfterLogin.role || "").toString().toLowerCase();
+        if (role.includes("admin")) {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      } else {
+        // Fallback: if currentUser still not available, navigate to dashboard (or protected route will re-check)
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Login failed. Please check your credentials.", { autoClose: 2000 });
@@ -41,7 +79,7 @@ function Login() {
     }
   };
 
-  // Navigate only after AuthContext updates currentUser
+  // Safety net: if AuthContext updates currentUser later, this effect still navigates
   useEffect(() => {
     if (!currentUser) return;
     if ((currentUser.role || "").toString().toLowerCase().includes("admin")) {
@@ -72,7 +110,7 @@ function Login() {
             <div>
               <label className="text-sm text-gray-600">Email</label>
               <input
-                type="text"
+                type="email"
                 name="email"
                 placeholder="Enter your email"
                 value={formData.email}
