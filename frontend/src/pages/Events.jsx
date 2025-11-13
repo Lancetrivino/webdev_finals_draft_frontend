@@ -17,6 +17,10 @@ function Events() {
     }
 
     const { token, role, _id: userId } = JSON.parse(storedUser);
+    
+    console.log('=== Events.jsx Fetch ===');
+    console.log('User Role:', role);
+    console.log('User ID:', userId);
 
     const fetchEvents = async () => {
       try {
@@ -33,8 +37,24 @@ function Events() {
         const filteredEvents =
           role === "Admin"
             ? data
-            : data.filter((event) => event.createdBy?._id === userId);
+            : data.filter((event) => {
+                // Check multiple possible fields for creator ID
+                const creatorId = 
+                  event.createdBy?._id || // if populated object
+                  event.createdBy ||       // if just ID string
+                  event.userId ||          // alternative field name
+                  event.creator;           // another alternative
+                
+                console.log('Checking event:', event.title);
+                console.log('  Creator ID:', creatorId);
+                console.log('  Current User ID:', userId);
+                console.log('  Match:', creatorId === userId);
+                
+                return creatorId === userId;
+              });
 
+        console.log('Total events from API:', data.length);
+        console.log('Filtered events for user:', filteredEvents.length);
         setEvents(filteredEvents);
       } catch (error) {
         console.error(error);
@@ -123,14 +143,14 @@ function Events() {
             >
               {/* Image */}
               <div className="h-40 w-full overflow-hidden">
-                {event.image ? (
+                {event.image || event.imageData ? (
                   <img
-                    src={event.image}
+                    src={event.image || event.imageData}
                     alt={event.title}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-top-right from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
+                  <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-sky-400 to-cyan-400 group-hover:scale-105 transition-transform duration-500" />
                 )}
               </div>
 
