@@ -104,7 +104,10 @@ function Events() {
   };
 
   return (
-    <div className="min-h-screen bg-[#DFF3FB] py-10 px-6">
+    <div
+      className="min-h-screen py-10 px-6"
+      style={{ backgroundColor: palette.pale }}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h2
@@ -117,20 +120,21 @@ function Events() {
           </h2>
           <Link
             to="/create-event"
-            className="px-6 py-3 text-white rounded-full font-medium transition"
+            className="px-6 py-3 text-white rounded-full font-medium transition hover:opacity-90"
             style={{ background: palette.blue }}
           >
             + Create Event
           </Link>
         </div>
 
+        {/* Event Cards */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
             const remainingSlots = event.capacity - (event.participants?.length || 0);
             return (
               <article
                 key={event._id}
-                className="relative bg-white rounded-2xl border border-[#BFE7FF] hover:shadow-lg transition-all duration-300"
+                className="relative bg-white rounded-2xl border border-[#BFE7FF] shadow-sm hover:shadow-md transition-all duration-300"
               >
                 {/* Image Section */}
                 <div className="relative h-48 rounded-t-2xl overflow-hidden">
@@ -141,7 +145,10 @@ function Events() {
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#BFE7FF] via-[#0F85D0] to-[#08324A]" />
+                    <div
+                      className="w-full h-full bg-gradient-to-br from-[#BFE7FF] via-[#0F85D0] to-[#08324A]"
+                      style={{ borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem" }}
+                    />
                   )}
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
