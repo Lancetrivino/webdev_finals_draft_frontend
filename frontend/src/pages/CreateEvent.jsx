@@ -254,7 +254,6 @@ function CreateEvent() {
     setLoading(true);
 
     try {
-      
       const token = currentUser?.token;
 
       if (!token) {
@@ -318,7 +317,9 @@ function CreateEvent() {
       }
 
       toast.success("✅ Event created successfully!");
-      navigate(`/events/${data.event._id}`);
+      setTimeout(() => {
+        navigate(`/events/${data.event._id}`);
+      }, 100);
     } catch (err) {
       console.error("❌ Create Event Error:", err);
 

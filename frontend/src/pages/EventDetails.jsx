@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from "../App";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -20,7 +20,7 @@ const EventDetails = () => {
     const fetchEvent = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("token");
+        const token = currentUser?.token;
         const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -57,7 +57,7 @@ const EventDetails = () => {
 
   // Handle Join
   const handleBook = async () => {
-    const token = localStorage.getItem("token");
+    const token = currentUser?.token;
     if (!token) {
       toast.info("Please login first.");
       navigate("/login");
@@ -86,7 +86,7 @@ const EventDetails = () => {
 
   // Handle Leave
   const handleLeave = async () => {
-    const token = localStorage.getItem("token");
+    const token = currentUser?.token;
     if (!token) {
       toast.info("Please login first.");
       navigate("/login");
