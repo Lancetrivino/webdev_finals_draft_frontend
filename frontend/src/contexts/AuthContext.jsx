@@ -1,3 +1,4 @@
+// contexts/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../App";
@@ -23,8 +24,8 @@ export const AuthProvider = ({ children }) => {
         setInitializing(false);
       }
     };
-    // ensure the UI doesn’t render early
-    setTimeout(loadUser, 100);
+    // call immediately (don't block UI with an artificial timeout)
+    loadUser();
   }, []);
 
   const login = async ({ email, password }) => {
@@ -94,13 +95,17 @@ export const AuthProvider = ({ children }) => {
     authLoading,
   };
 
-  if (initializing) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
-        Loading...
-      </div>
-    );
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // ALWAYS provide the context so consumers won't encounter a "missing context" race.
+  // While initializing, render a loading screen inside the provider.
+  return (
+    <AuthContext.Provider value={value}>
+      {initializing ? (
+        <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
+          Loading...
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 };
