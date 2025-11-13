@@ -216,6 +216,12 @@ function CreateEvent() {
     reader.readAsDataURL(file);
   };
 
+  // NEW: remove attached image/file
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+  };
+
   const addReminder = () => {
     const text = reminderInput.trim();
     if (!text) return;
@@ -457,8 +463,18 @@ function CreateEvent() {
                   <div className="rounded-lg bg-slate-100 p-2 text-slate-500">
                     <UploadIcon />
                   </div>
-                  <div className="text-sm text-slate-600">
-                    {imageFile ? imageFile.name : "No file selected"}
+                  <div className="text-sm text-slate-600 flex items-center gap-2">
+                    <span>{imageFile ? imageFile.name : "No file selected"}</span>
+                    {imageFile && (
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="ml-2 rounded-full bg-slate-100 p-1 text-slate-500 hover:bg-slate-200"
+                        aria-label="Remove attachment"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
@@ -477,12 +493,20 @@ function CreateEvent() {
               </div>
 
               {imagePreview && (
-                <div className="overflow-hidden rounded-xl border border-slate-200">
+                <div className="relative overflow-hidden rounded-xl border border-slate-200">
                   <img
                     src={imagePreview}
                     alt="Preview"
                     className="h-48 w-full object-cover"
                   />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    aria-label="Remove preview"
+                    className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-slate-600 hover:bg-white"
+                  >
+                    ✕
+                  </button>
                 </div>
               )}
             </div>
