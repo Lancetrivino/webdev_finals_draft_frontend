@@ -201,7 +201,7 @@ export default function FeedbackEnhanced() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-300 mt-1">By trymodal</p>
+          <p className="text-center text-xs text-gray-300 mt-1"></p>
         </form>
       </div>
     </div>
