@@ -24,17 +24,16 @@ export default function AvailableEvents() {
         const { token, _id: userId } = JSON.parse(storedUser);
         const API_BASE = import.meta.env.VITE_API_URL;
 
-        const res = await fetch(`${API_BASE}/api/events`, {
+        // Use the new /available endpoint that returns all approved events
+        const res = await fetch(`${API_BASE}/api/events/available`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        const approvedEvents = data.filter(
-          (event) => event.status?.toLowerCase() === "approved"
-        );
-        setEvents(approvedEvents);
+        // The endpoint already returns only approved events, no need to filter
+        setEvents(data);
 
         // Mark events the user already joined
         const joined = approvedEvents
