@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../contexts/AuthContext"; // ✅ Correct relative path
+import { useAuth } from "../contexts/AuthContext";
 
 function Login() {
-  const { login } = useAuth();
+  const { login, currentUser } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,6 +21,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
 
     if (!validateEmail(formData.email)) {
@@ -30,14 +31,8 @@ function Login() {
     }
 
     try {
-      const user = await login(formData);
-
-      // ✅ Show toast
+      await login(formData);
       toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
-
-      // ✅ Navigate immediately
-      if (user.role === "Admin") navigate("/admin", { replace: true });
-      else navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Login failed. Please check your credentials.", { autoClose: 2000 });
@@ -45,6 +40,16 @@ function Login() {
       setLoading(false);
     }
   };
+
+  // Navigate only after AuthContext updates currentUser
+  useEffect(() => {
+    if (!currentUser) return;
+    if ((currentUser.role || "").toString().toLowerCase().includes("admin")) {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#EDE9E6]">
@@ -63,6 +68,7 @@ function Login() {
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            {/* Email */}
             <div>
               <label className="text-sm text-gray-600">Email</label>
               <input
@@ -75,6 +81,7 @@ function Login() {
               />
             </div>
 
+            {/* Password */}
             <div className="relative">
               <label className="text-sm text-gray-600">Password</label>
               <input
@@ -89,9 +96,21 @@ function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-500 hover:text-[#7A6C5D]"
+                className="absolute right-3 top-9 text-gray-500 hover:text-[#7A6C5D] transition"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? (
+                  // eye-off icon
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M9.88 9.88A3 3 0 0012 15a3 3 0 002.12-.88M6.25 6.25C3.8 8.04 2.25 10.4 2.25 12c0 1.6 1.55 3.96 4 5.75 2.45 1.79 5.2 2.75 7.75 2.75 2.55 0 5.3-.96 7.75-2.75 1.12-.81 2.04-1.72 2.75-2.75M14.12 14.12A3 3 0 019.88 9.88M12 3c2.55 0 5.3.96 7.75 2.75 2.45 1.79 4 4.15 4 5.75s-1.55 3.96-4 5.75C17.3 20.04 14.55 21 12 21c-2.55 0-5.3-.96-7.75-2.75C1.8 16.96.25 14.6.25 13c0-1.6 1.55-3.96 4-5.75C6.7 5.96 9.45 5 12 5z" />
+                  </svg>
+                ) : (
+                  // open-eye icon
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12c0-1.6 1.55-3.96 4-5.75C8.7 4.46 11.45 3.5 14 3.5c2.55 0 5.3.96 7.75 2.75 2.45 1.79 4 4.15 4 5.75s-1.55 3.96-4 5.75C19.3 20.54 16.55 21.5 14 21.5c-2.55 0-5.3-.96-7.75-2.75C3.8 15.96 2.25 13.6 2.25 12z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )}
               </button>
             </div>
 
