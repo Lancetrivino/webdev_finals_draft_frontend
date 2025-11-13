@@ -18,25 +18,6 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Helper: poll for currentUser to be set
-  const waitForCurrentUser = async (timeout = 2000, interval = 100) => {
-    const start = Date.now();
-    return new Promise((resolve) => {
-      const check = () => {
-        if (currentUser && (currentUser.role || currentUser.uid)) {
-          resolve(currentUser);
-          return;
-        }
-        if (Date.now() - start >= timeout) {
-          resolve(null); // timed out
-          return;
-        }
-        setTimeout(check, interval);
-      };
-      check();
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -49,33 +30,26 @@ function Login() {
     }
 
     try {
-      // AuthContext expects { email, password }
-      await login({ email: formData.email, password: formData.password });
+      const user = await login({
+        email: formData.email,
+        password: formData.password,
+      });
 
       toast.success("Welcome back!", {
         autoClose: 1500,
         toastId: "login-success",
       });
 
-      // Give AuthContext a short moment to populate currentUser
-      await new Promise((res) => setTimeout(res, 100));
-
-      const userAfterLogin = await waitForCurrentUser(2000, 100);
-
-      // Role-based routing logic preserved
-      if (userAfterLogin) {
-        const role = (userAfterLogin.role || "").toString().toLowerCase();
-        if (role.includes("admin")) {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/dashboard", { replace: true });
-        }
+      // Navigate based on role
+      const role = (user.role || "").toString().toLowerCase();
+      if (role.includes("admin")) {
+        navigate("/admin", { replace: true });
       } else {
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Login failed. Please check your credentials.", {
+      toast.error(err.message || "Login failed. Please check credentials.", {
         autoClose: 2000,
       });
     } finally {
@@ -83,7 +57,7 @@ function Login() {
     }
   };
 
-  // Safety net: re-navigate if currentUser updates later
+  // If already logged in, redirect instantly
   useEffect(() => {
     if (!currentUser) return;
     const role = (currentUser.role || "").toString().toLowerCase();
