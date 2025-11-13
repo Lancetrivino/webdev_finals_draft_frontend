@@ -5,7 +5,6 @@ import { useAuth } from "../contexts/AuthContext";
 function Dashboard() {
   const { currentUser } = useAuth();
   const [now, setNow] = useState(new Date());
-  const sessionStartRef = useRef(new Date());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,14 +64,15 @@ function Dashboard() {
           <div className="pointer-events-none absolute -bottom-24 left-10 w-72 h-72 rounded-full bg-[#cde2ee]/30 blur-[72px]" />
 
           <div className="relative flex flex-col h-full">
-            {/* Center Welcome Box */}
+            {/* Center Introduction Box */}
             <div className="px-6 sm:px-10 pt-8 pb-3 text-center">
-              <div className="inline-block bg-white/40 backdrop-blur-md rounded-2xl px-8 py-6 shadow-md">
+              <div className="inline-block bg-white/40 backdrop-blur-md rounded-2xl px-8 py-6 shadow-md max-w-2xl">
                 <h1 className="text-[clamp(30px,5vw,52px)] font-extrabold tracking-tight text-[#002d54]">
-                  Welcome, {currentUser?.name || "User"}!
+                  Welcome to Easy Go Local
                 </h1>
-                <p className="mt-2 text-sm text-gray-600">
-                  {now.toLocaleDateString()} • {now.toLocaleTimeString()}
+                <p className="mt-3 text-sm sm:text-base text-gray-600">
+                  Discover, join, and create exciting local events in your area.  
+                  Stay connected with your community and never miss what’s happening nearby!
                 </p>
               </div>
             </div>
@@ -119,9 +119,9 @@ function Dashboard() {
                         <span className="font-medium text-gray-900">{now.toLocaleTimeString()}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-500">Session start</span>
+                        <span className="text-gray-500">Date</span>
                         <span className="font-medium text-gray-900">
-                          {sessionStartRef.current.toLocaleTimeString()}
+                          {now.toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -147,23 +147,8 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* RIGHT SIDE (kept same style but recolored) */}
+                {/* RIGHT SIDE (Highlight Cards Only) */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
-                  {/* Welcome */}
-                  <div className="rounded-3xl border border-white/70 bg-[#a8daf9]/40 backdrop-blur-md px-6 py-4 shadow flex items-center justify-between">
-                    <span className="text-lg font-semibold text-[#002d54]">Welcome:</span>
-                    <span className="text-lg font-medium text-[#004887]">
-                      {currentUser?.name || "User"}
-                    </span>
-                  </div>
-
-                  {/* Role */}
-                  <div className="rounded-3xl border border-white/70 bg-[#a8daf9]/40 backdrop-blur-md px-6 py-4 shadow flex items-center justify-between">
-                    <span className="text-lg font-semibold text-[#002d54]">Role:</span>
-                    <span className="capitalize text-lg font-medium text-[#004887]">{roleLabel}</span>
-                  </div>
-
-                  {/* Highlight Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
                       {
@@ -230,3 +215,5 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
