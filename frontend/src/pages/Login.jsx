@@ -30,7 +30,8 @@ function Login() {
     }
 
     try {
-      const user = await login({
+      // Await login to ensure the AuthContext updates currentUser and localStorage
+      await login({
         email: formData.email,
         password: formData.password,
       });
@@ -40,13 +41,8 @@ function Login() {
         toastId: "login-success",
       });
 
-      // Navigate based on role
-      const role = (user.role || "").toString().toLowerCase();
-      if (role.includes("admin")) {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      // NOTE: navigate() removed intentionally.
+      // Let the useEffect that watches currentUser perform navigation to avoid race conditions.
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Login failed. Please check credentials.", {
