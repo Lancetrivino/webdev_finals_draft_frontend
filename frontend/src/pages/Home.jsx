@@ -1,203 +1,155 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useEffect, useState, useRef } from "react";
 
-function Events() {
-  const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const featuresRef = useRef(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    setIsClient(true);
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+  }, []);
 
-    if (!storedUser) {
-      toast.info("Please login to view events");
-      navigate("/login");
-      return;
-    }
-
-    const { token } = JSON.parse(storedUser);
-
-    const fetchEvents = async () => {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-        const res = await fetch(`${API_BASE}/api/events`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch events");
-
-        setEvents(data);
-      } catch (error) {
-        toast.error("Failed to load events. Check your connection or permissions.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [navigate]);
-
-  const handleDelete = async (eventId) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      const { token } = storedUser;
-      const API_BASE = import.meta.env.VITE_API_URL;
-
-      const res = await fetch(`${API_BASE}/api/events/${eventId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to delete event");
-
-      toast.success("Event deleted successfully.");
-      setEvents((prev) => prev.filter((event) => event._id !== eventId));
-    } catch {
-      toast.error("Failed to delete event.");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
   };
 
-  // Status badge colors
-  const statusColors = {
-    Approved: "bg-green-100 text-green-700 border-green-200",
-    Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    Rejected: "bg-red-100 text-red-700 border-red-200",
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
-        <p className="text-gray-700 text-lg font-medium">Loading events...</p>
-      </div>
-    );
-  }
+  const NavLinks = () => {
+    if (!isClient) return null;
 
-  if (events.length === 0) {
-    const role = JSON.parse(localStorage.getItem("user"))?.role || "User";
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-white px-6">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {role === "Admin" ? "No events available." : "You haven't created any events yet."}
-        </h2>
-        <p className="text-gray-500 mt-2 text-center max-w-xl">
-          {role === "Admin"
-            ? "Create your first event to get started!"
-            : "Create an event and it will appear here after admin approval."}
-        </p>
-        <Link
-          to="/create-event"
-          className="mt-6 px-6 py-3 bg-green-600 text-white rounded-full font-medium shadow-md hover:bg-green-700 transition"
+    const baseLinkClass = "relative text-gray-700 font-medium transition duration-150 group";
+    const hoverEffect = "group-hover:text-brand-700 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 after:transition-all after:duration-300 group-hover:after:w-full";
+
+    return isAuthenticated ? (
+      <>
+        <a href="/dashboard" className={`${baseLinkClass} ${hoverEffect}`}>
+          Dashboard
+        </a>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 text-brand-800 border border-brand-800 rounded-full hover:bg-brand-800 hover:text-white transition duration-150 shadow-sm hover:shadow-md"
         >
-          Create Event
-        </Link>
+          Logout
+        </button>
+      </>
+    ) : (
+      <div className="flex items-center space-x-6">
+        <button onClick={scrollToFeatures} className={`${baseLinkClass} ${hoverEffect}`}>
+          Features
+        </button>
+        <a href="/login" className={`${baseLinkClass} ${hoverEffect}`}>
+          Login
+        </a>
+        <a
+          href="/register"
+          className="px-5 py-2 bg-brand-700 text-white rounded-full font-semibold shadow-md hover:bg-brand-800 transition duration-200 transform hover:scale-105"
+        >
+          Sign Up Free
+        </a>
       </div>
     );
-  }
+  };
+
+  const mainButtonClass = "px-10 py-4 text-xl font-bold rounded-full shadow-xl transition duration-300 transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-brand-200";
+
+  const mainButton = isAuthenticated ? (
+    <a
+      href="/dashboard"
+      className={`${mainButtonClass} bg-brand-700 text-white hover:bg-brand-800`}
+    >
+      Go to Dashboard
+    </a>
+  ) : (
+    <button
+      onClick={scrollToFeatures}
+      className={`${mainButtonClass} bg-brand-700 text-white hover:bg-brand-800`}
+    >
+      Explore Features
+    </button>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white py-10 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-3xl font-bold text-gray-800">
-            {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
-              ? "All Events"
-              : "My Events"}
-          </h2>
-          <Link
-            to="/create-event"
-            className="px-6 py-3 bg-green-600 text-white rounded-full font-medium shadow hover:bg-green-700 transition"
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      <nav className="sticky top-0 bg-white bg-opacity-95 backdrop-blur-sm z-30 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            <a href="/" className="text-3xl font-black text-brand-700 tracking-wider">
+              Eventure
+            </a>
+            <div className="flex items-center space-x-6">
+              <NavLinks />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <header className="relative pt-16 pb-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-100 to-white opacity-80 z-0"></div>
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-brand-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob z-0"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-brand-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000 z-0"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
+          <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Plan, Promote, and Attend <span className="text-brand-700 block sm:inline-block">Any Event</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mb-12 font-light">
+            Eventure is the ultimate platform for organizers and attendees, whether you’re hosting a car meet, food festival, or local gathering.
+          </p>
+          {mainButton}
+
+          <button
+            onClick={scrollToFeatures}
+            className="mt-16 text-gray-400 hover:text-brand-700 transition duration-300"
+            aria-label="Scroll down to features"
           >
-            + Create Event
-          </Link>
+            <svg className="w-6 h-6 animate-bounce" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+          </button>
         </div>
+      </header>
 
-        {/* Event Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => {
-            const remainingSlots = event.capacity - (event.participants?.length || 0);
+      <section ref={featuresRef} id="features" className="max-w-7xl mx-auto px-6 py-24">
+        <h2 className="text-4xl font-bold text-center text-gray-800 mb-16">Key Features for Every Event</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+            <div className="text-brand-700 mb-4 text-3xl">🛠️</div>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Event Creation Hub</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Quickly set up any type of event—from music festivals and workshops to local car meets.
+            </p>
+          </div>
 
-            return (
-              <article
-                key={event._id}
-                className="relative bg-white border border-gray-100 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:-translate-y-1"
-              >
-                {/* Image */}
-                <div className="relative h-48 rounded-t-2xl overflow-hidden">
-                  {event.image || event.imageData ? (
-                    <img
-                      src={event.image || event.imageData}
-                      alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-green-200 via-green-100 to-white" />
-                  )}
-                  {/* Status Badge */}
-                  <div className="absolute top-3 right-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[event.status] || "bg-gray-100 text-gray-700 border-gray-200"}`}
-                    >
-                      {event.status || "Unknown"}
-                    </span>
-                  </div>
-                </div>
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+            <div className="text-brand-700 mb-4 text-3xl">📍</div>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Discover Local Gatherings</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Explore events near you with filtering options by category.
+            </p>
+          </div>
 
-                {/* Details */}
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">{event.title}</h3>
-                  <div className="text-sm text-gray-600 space-y-1 mb-3">
-                    <p>📅 <strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-                    <p>📍 <strong>Venue:</strong> {event.venue}</p>
-                    <p>🎟️ <strong>Remaining Slots:</strong> {remainingSlots}</p>
-                  </div>
-                  <p className="text-sm text-gray-500 line-clamp-3 mb-4">
-                    {event.description}
-                  </p>
-
-                  <div className="flex justify-between items-center gap-2">
-                    <Link
-                      to={`/events/${event._id}`}
-                      className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-full transition hover:bg-green-700"
-                    >
-                      View Details
-                    </Link>
-
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/events/edit/${event._id}`}
-                        className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(event._id)}
-                        className="px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-full hover:bg-red-700 transition"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Three Circles */}
-                <div className="absolute left-4 bottom-4 flex gap-2">
-                  <span className="w-3 h-3 rounded-full bg-green-400" />
-                  <span className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="w-3 h-3 rounded-full bg-green-600" />
-                </div>
-              </article>
-            );
-          })}
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+            <div className="text-brand-700 mb-4 text-3xl">📣</div>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Built-in Promotion Tools</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Generate shareable links, send updates, and track RSVP numbers.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <footer className="bg-gray-50 mt-16 py-8 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Eventure. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
-
-export default Events;
