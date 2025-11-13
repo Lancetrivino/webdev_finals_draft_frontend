@@ -107,7 +107,7 @@ export default function BookEvent() {
         return;
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/events/${id}/book`, {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

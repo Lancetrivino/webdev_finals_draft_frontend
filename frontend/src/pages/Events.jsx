@@ -17,10 +17,10 @@ function Events() {
     }
 
     const { token, role, _id: userId } = JSON.parse(storedUser);
-    
-    console.log('=== Events.jsx Fetch ===');
-    console.log('User Role:', role);
-    console.log('User ID:', userId);
+
+    console.log("=== Events.jsx Fetch ===");
+    console.log("User Role:", role);
+    console.log("User ID:", userId);
 
     const fetchEvents = async () => {
       try {
@@ -38,23 +38,12 @@ function Events() {
           role === "Admin"
             ? data
             : data.filter((event) => {
-                // Check multiple possible fields for creator ID
-                const creatorId = 
-                  event.createdBy?._id || // if populated object
-                  event.createdBy ||       // if just ID string
-                  event.userId ||          // alternative field name
-                  event.creator;           // another alternative
-                
-                console.log('Checking event:', event.title);
-                console.log('  Creator ID:', creatorId);
-                console.log('  Current User ID:', userId);
-                console.log('  Match:', creatorId === userId);
-                
+                const creatorId = event.createdBy?._id || event.createdBy;
                 return creatorId === userId;
               });
 
-        console.log('Total events from API:', data.length);
-        console.log('Filtered events for user:', filteredEvents.length);
+        console.log("Total events from API:", data.length);
+        console.log("Filtered events for user:", filteredEvents.length);
         setEvents(filteredEvents);
       } catch (error) {
         console.error(error);

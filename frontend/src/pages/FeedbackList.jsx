@@ -73,7 +73,7 @@ export default function EventFeedbackPage() {
 
   // Adjust these endpoints to match your API.
   const EVENT_URL = `${API_BASE_URL}/api/events/${eventId}`;
-  const REVIEWS_URL = `${API_BASE_URL}/api/events/${eventId}/reviews`;
+  const REVIEWS_URL = `${API_BASE_URL}/api/feedback/${eventId}`;
 
   useEffect(() => {
     let isMounted = true;
