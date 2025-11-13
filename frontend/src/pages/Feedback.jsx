@@ -5,6 +5,114 @@ import { useAuth } from "../contexts/AuthContext";
 import { API_BASE_URL } from "../App";
 
 
+
+
+export function EventCard({ event = {}, onView, onEdit, onDelete }) {
+  const palette = {
+    deep: "#08324A",
+    navy: "#0B63A3",
+    blue: "#0F85D0",
+    soft: "#BFE7FF",
+    pale: "#DFF3FB",
+    accent: "#8B5CF6", // purple accent for glow
+  };
+
+  const {
+    title = "Untitled Event",
+    date = "--/--/----",
+    venue = "TBD",
+    remaining = 0,
+    description = "No description provided.",
+    price = null,
+    image,
+    status = "", // e.g. Pending
+  } = event;
+
+  return (
+    <article className="max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden relative">
+      {/* optional status badge */}
+      {status && (
+        <span className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 z-10">
+          {status}
+        </span>
+      )}
+
+      <div className="p-4">
+        <div className="rounded-xl overflow-hidden" style={{ boxShadow: `0 10px 30px rgba(11,99,163,0.12)` }}>
+          <img
+            src={image || "/placeholder.jpg"}
+            alt={title}
+            className="w-full h-40 object-cover rounded-xl block"
+            style={{ borderRadius: 16 }}
+          />
+        </div>
+
+        <h3 className="mt-4 text-lg font-extrabold text-slate-800">{title}</h3>
+
+        <ul className="mt-2 text-sm text-slate-500 space-y-1">
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-xs"></span>
+            <span><strong className="text-slate-700">Date:</strong> {date}</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-xs"></span>
+            <span><strong className="text-slate-700">Venue:</strong> {venue}</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span aria-hidden className="text-xs"></span>
+            <span><strong className="text-slate-700">Remaining Slots:</strong> {remaining}</span>
+          </li>
+        </ul>
+
+        <p className="mt-3 text-sm text-slate-500">{description}</p>
+
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold text-slate-800">{price ? `$${price}` : ""}</span>
+            <span className="text-xs text-gray-400">/ person</span>
+          </div>
+
+          <button
+            onClick={onView}
+            className="px-4 py-2 text-sm font-semibold rounded-full shadow-md"
+            style={{ background: `linear-gradient(90deg, ${palette.blue}, ${palette.navy})`, color: "white" }}
+          >
+            See More
+          </button>
+        </div>
+
+        <div className="mt-4 flex gap-3 items-center">
+          <button
+            onClick={onView}
+            className="px-3 py-2 text-sm rounded-full border border-transparent bg-emerald-500 text-white shadow-sm"
+          >
+            View Details
+          </button>
+          <button
+            onClick={onEdit}
+            className="px-3 py-2 text-sm rounded-full bg-blue-600 text-white shadow-sm"
+          >
+            Edit
+          </button>
+          <button
+            onClick={onDelete}
+            className="px-3 py-2 text-sm rounded-full bg-red-600 text-white shadow-sm"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      {/* three circles at bottom-left (kept as requested) */}
+      <div className="absolute left-4 bottom-4 flex items-center gap-2">
+        <span className="w-3 h-3 rounded-full" style={{ background: palette.accent, boxShadow: `0 6px 18px ${palette.accent}33` }} />
+        <span className="w-3 h-3 rounded-full" style={{ background: palette.blue, boxShadow: `0 6px 18px ${palette.blue}33` }} />
+        <span className="w-3 h-3 rounded-full" style={{ background: palette.navy, boxShadow: `0 6px 18px ${palette.navy}33` }} />
+      </div>
+    </article>
+  );
+}
+
 export default function FeedbackEnhanced() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -37,7 +145,7 @@ export default function FeedbackEnhanced() {
     e.preventDefault();
 
     if (!comment.trim()) {
-      toast.error(" Please enter your feedback before submitting.");
+      toast.error("⚠️ Please enter your feedback before submitting.");
       return;
     }
 
@@ -63,7 +171,7 @@ export default function FeedbackEnhanced() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
-      toast.success("Thank you for your feedback!");
+      toast.success(" Thank you for your feedback!");
       setComment("");
       setRating(5);
       setHoverRating(0);
@@ -201,7 +309,7 @@ export default function FeedbackEnhanced() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-300 mt-1"></p>
+          <p className="text-center text-xs text-gray-300 mt-1">By trymodal</p>
         </form>
       </div>
     </div>
