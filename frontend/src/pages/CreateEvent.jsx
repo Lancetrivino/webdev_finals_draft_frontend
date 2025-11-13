@@ -283,26 +283,17 @@ function CreateEvent() {
         formData.append("image", imageFile);
       }
 
-      // ✅ Debug log (remove in production)
-      console.log("📤 Sending event data:");
-      for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value);
-      }
-
       const res = await fetch(`${API_BASE_URL}/api/events`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          // ✅ Do NOT set Content-Type - browser sets it automatically with boundary
         },
         body: formData,
       });
 
       const data = await res.json();
-      console.log("📥 Server response:", data);
 
       if (!res.ok) {
-        console.error("❌ Server Error:", data);
         const errorMessage =
           data.message || data.details || "Error creating event.";
         toast.error(errorMessage);
@@ -311,15 +302,17 @@ function CreateEvent() {
 
       // ✅ Validate response structure
       if (!data?.event?._id) {
-        console.error("❌ Invalid response structure:", data);
         toast.error("Server returned invalid response");
         return;
       }
 
-      toast.success("✅ Event created successfully!");
+      // ✅ Success! Show approval message
+      toast.success("🎉 Event submitted for admin approval!");
+
+      // ✅ Navigate to dashboard (not event details since it's pending)
       setTimeout(() => {
-        navigate(`/events/${data.event._id}`);
-      }, 100);
+        navigate("/dashboard", { replace: true });
+      }, 1000);
     } catch (err) {
       console.error("❌ Create Event Error:", err);
 
