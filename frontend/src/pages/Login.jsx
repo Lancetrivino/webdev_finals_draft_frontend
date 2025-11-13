@@ -12,19 +12,17 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // helper: poll for currentUser to be set (or for a role to be available)
+  // Helper: poll for currentUser to be set
   const waitForCurrentUser = async (timeout = 2000, interval = 100) => {
     const start = Date.now();
     return new Promise((resolve) => {
       const check = () => {
-        // read currentUser from closure
         if (currentUser && (currentUser.role || currentUser.uid)) {
           resolve(currentUser);
           return;
@@ -51,15 +49,20 @@ function Login() {
     }
 
     try {
-      // Pass email & password separately (many auth helpers expect two args)
-      await login(formData.email, formData.password);
+      // AuthContext expects { email, password }
+      await login({ email: formData.email, password: formData.password });
 
-      toast.success("Welcome back!", { autoClose: 1500, toastId: "login-success" });
+      toast.success("Welcome back!", {
+        autoClose: 1500,
+        toastId: "login-success",
+      });
 
-      // Give AuthContext a short moment to populate currentUser/profile (poll)
+      // Give AuthContext a short moment to populate currentUser
+      await new Promise((res) => setTimeout(res, 100));
+
       const userAfterLogin = await waitForCurrentUser(2000, 100);
 
-      // If we got a user with a role, navigate according to role.
+      // Role-based routing logic preserved
       if (userAfterLogin) {
         const role = (userAfterLogin.role || "").toString().toLowerCase();
         if (role.includes("admin")) {
@@ -68,21 +71,23 @@ function Login() {
           navigate("/dashboard", { replace: true });
         }
       } else {
-        // Fallback: if currentUser still not available, navigate to dashboard (or protected route will re-check)
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Login failed. Please check your credentials.", { autoClose: 2000 });
+      toast.error(err.message || "Login failed. Please check your credentials.", {
+        autoClose: 2000,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Safety net: if AuthContext updates currentUser later, this effect still navigates
+  // Safety net: re-navigate if currentUser updates later
   useEffect(() => {
     if (!currentUser) return;
-    if ((currentUser.role || "").toString().toLowerCase().includes("admin")) {
+    const role = (currentUser.role || "").toString().toLowerCase();
+    if (role.includes("admin")) {
       navigate("/admin", { replace: true });
     } else {
       navigate("/dashboard", { replace: true });
@@ -100,7 +105,9 @@ function Login() {
 
         {/* Right Section */}
         <div className="w-1/2 p-12 flex flex-col justify-center">
-          <h1 className="text-3xl font-semibold text-[#2C2C2C] mb-2">Eventure</h1>
+          <h1 className="text-3xl font-semibold text-[#2C2C2C] mb-2">
+            Eventure
+          </h1>
           <p className="text-sm text-gray-500 mb-8">
             Please enter your details to continue
           </p>
@@ -138,12 +145,12 @@ function Login() {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  // eye-off icon
+                  // eye-off
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M9.88 9.88A3 3 0 0012 15a3 3 0 002.12-.88M6.25 6.25C3.8 8.04 2.25 10.4 2.25 12c0 1.6 1.55 3.96 4 5.75 2.45 1.79 5.2 2.75 7.75 2.75 2.55 0 5.3-.96 7.75-2.75 1.12-.81 2.04-1.72 2.75-2.75M14.12 14.12A3 3 0 019.88 9.88M12 3c2.55 0 5.3.96 7.75 2.75 2.45 1.79 4 4.15 4 5.75s-1.55 3.96-4 5.75C17.3 20.04 14.55 21 12 21c-2.55 0-5.3-.96-7.75-2.75C1.8 16.96.25 14.6.25 13c0-1.6 1.55-3.96 4-5.75C6.7 5.96 9.45 5 12 5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18M9.88 9.88A3 3 0 0012 15a3 3 0 002.12-.88M6.25 6.25C3.8 8.04 2.25 10.4 2.25 12c0 1.6 1.55 3.96 4 5.75 2.45 1.79 5.2 2.75 7.75 2.75 2.55 0 5.3-.96 7.75-2.75 1.12-.81 2.04-1.72 2.75-2.75M14.12 14.12A3 3 0 019.88 9.88" />
                   </svg>
                 ) : (
-                  // open-eye icon
+                  // eye
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12c0-1.6 1.55-3.96 4-5.75C8.7 4.46 11.45 3.5 14 3.5c2.55 0 5.3.96 7.75 2.75 2.45 1.79 4 4.15 4 5.75s-1.55 3.96-4 5.75C19.3 20.54 16.55 21.5 14 21.5c-2.55 0-5.3-.96-7.75-2.75C3.8 15.96 2.25 13.6 2.25 12z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
