@@ -7,55 +7,66 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
 
-  // Load user from localStorage on app start
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const loadUser = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setCurrentUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        console.error("Failed to parse user from storage:", err);
+      } finally {
+        setInitializing(false);
+      }
+    };
+    // ensure the UI doesn’t render early
+    setTimeout(loadUser, 100);
   }, []);
 
   const login = async ({ email, password }) => {
+    setAuthLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
       const userWithToken = { ...data.user, token: data.token };
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setCurrentUser(userWithToken);
-
       return userWithToken;
     } catch (err) {
       toast.error(err.message || "Login failed");
       throw err;
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const register = async ({ name, email, password }) => {
+    setAuthLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
-
       toast.success("Account created! Please log in.");
       return true;
     } catch (err) {
       toast.error(err.message || "Registration failed");
       throw err;
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -79,18 +90,17 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateCurrentUser,
     isAuthenticated,
-    loading,
+    initializing,
+    authLoading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-          Loading...
-        </div>
-      ) : (
-        children
-      )}
-    </AuthContext.Provider>
-  );
+  if (initializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
+        Loading...
+      </div>
+    );
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

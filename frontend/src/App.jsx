@@ -50,20 +50,50 @@ const GlobalStyles = () => (
   `}</style>
 );
 
-// Route guards
+// =========================
+// Route Guards
+// =========================
+
 const PrivateRoute = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, initializing } = useAuth();
+
+  // Wait for AuthProvider to finish initializing (restoring user from localStorage)
+  if (initializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Loading...
+      </div>
+    );
+  }
+
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, initializing } = useAuth();
+
+  // Wait for initialization before making decisions
+  if (initializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
+        Loading...
+      </div>
+    );
+  }
+
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (currentUser.role !== "Admin") return <Navigate to="/" replace />;
+
+  // Role check (case-insensitive)
+  const role = (currentUser.role || "").toString().toLowerCase();
+  if (!role.includes("admin")) return <Navigate to="/" replace />;
+
   return children;
 };
 
-// App content
+// =========================
+// App Content
+// =========================
+
 const AppContent = () => (
   <>
     <GlobalStyles />
@@ -79,18 +109,88 @@ const AppContent = () => (
           <Route path="/register" element={<Register />} />
 
           {/* Protected */}
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
-          <Route path="/create-event" element={<PrivateRoute><CreateEvent /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="/events/:id" element={<PrivateRoute><EventDetails /></PrivateRoute>} />
-          <Route path="/feedback" element={<PrivateRoute><FeedbackList /></PrivateRoute>} />
-          <Route path="/feedback/:eventId" element={<PrivateRoute><Feedback /></PrivateRoute>} />
-          <Route path="/available-events" element={<PrivateRoute><AvailableEvents /></PrivateRoute>} />
-          <Route path="/book/:placeId" element={<PrivateRoute><BookEvent /></PrivateRoute>} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <PrivateRoute>
+                <Events />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/create-event"
+            element={
+              <PrivateRoute>
+                <CreateEvent />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/events/:id"
+            element={
+              <PrivateRoute>
+                <EventDetails />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <PrivateRoute>
+                <FeedbackList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/feedback/:eventId"
+            element={
+              <PrivateRoute>
+                <Feedback />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/available-events"
+            element={
+              <PrivateRoute>
+                <AvailableEvents />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/book/:placeId"
+            element={
+              <PrivateRoute>
+                <BookEvent />
+              </PrivateRoute>
+            }
+          />
 
           {/* Admin */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />
@@ -100,7 +200,10 @@ const AppContent = () => (
   </>
 );
 
-// Main app
+// =========================
+// Main App
+// =========================
+
 const App = () => (
   <AuthProvider>
     <AppContent />
