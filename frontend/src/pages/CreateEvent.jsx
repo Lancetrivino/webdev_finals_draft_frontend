@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
+import { API_BASE_URL } from "../App";
 /* ---------- Icons ---------- */
 const ClockIcon = (props) => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" {...props}>
@@ -241,7 +240,9 @@ function CreateEvent() {
       !eventData.date ||
       !eventData.venue?.trim()
     ) {
-      toast.error("Please fill all required fields (title, description, date, venue).");
+      toast.error(
+        "Please fill all required fields (title, description, date, venue)."
+      );
       return;
     }
 
@@ -253,9 +254,8 @@ function CreateEvent() {
     setLoading(true);
 
     try {
-      const storedUser = localStorage.getItem("user");
-      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-      const token = parsedUser?.token || currentUser?.token;
+      
+      const token = currentUser?.token;
 
       if (!token) {
         toast.error("Please log in first.");
@@ -265,14 +265,14 @@ function CreateEvent() {
 
       // ✅ Build FormData correctly
       const formData = new FormData();
-      
+
       formData.append("title", eventData.title.trim());
       formData.append("description", eventData.description.trim());
       formData.append("date", eventData.date); // YYYY-MM-DD
       formData.append("venue", eventData.venue.trim());
       formData.append("capacity", Number(eventData.capacity));
       formData.append("reminders", JSON.stringify(eventData.reminders));
-      
+
       // ✅ Only append optional fields if they have values
       if (eventData.time) {
         formData.append("time", eventData.time);
@@ -290,7 +290,7 @@ function CreateEvent() {
         console.log(`  ${key}:`, value);
       }
 
-      const res = await fetch(`${API_BASE}/api/events`, {
+      const res = await fetch(`${API_BASE_URL}/api/events`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -304,7 +304,8 @@ function CreateEvent() {
 
       if (!res.ok) {
         console.error("❌ Server Error:", data);
-        const errorMessage = data.message || data.details || "Error creating event.";
+        const errorMessage =
+          data.message || data.details || "Error creating event.";
         toast.error(errorMessage);
         return;
       }
@@ -318,11 +319,10 @@ function CreateEvent() {
 
       toast.success("✅ Event created successfully!");
       navigate(`/events/${data.event._id}`);
-      
     } catch (err) {
       console.error("❌ Create Event Error:", err);
-      
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
         toast.error("Network error. Please check your connection.");
       } else {
         toast.error(err.message || "Server error.");
@@ -502,7 +502,7 @@ function CreateEvent() {
                     value={reminderInput}
                     onChange={(e) => setReminderInput(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         addReminder();
                       }
