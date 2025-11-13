@@ -164,7 +164,7 @@ export default function AvailableEvents() {
     );
   }
 
-  // 📭 No results
+  // 🔭 No results
   if (filtered.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -217,7 +217,7 @@ export default function AvailableEvents() {
               >
                 <div className="h-40 w-full overflow-hidden">
                   <img
-                    src={e.imageData || "/placeholder.png"}
+                    src={e.image || e.imageData || "/placeholder.png"}
                     alt={e.title}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
