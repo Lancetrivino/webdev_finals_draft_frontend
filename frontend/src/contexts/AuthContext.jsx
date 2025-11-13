@@ -7,28 +7,26 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-
-  // 'initializing' is true only while restoring user from storage on app start
   const [initializing, setInitializing] = useState(true);
-
-  // 'authLoading' is true during login/register network requests
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Load user from localStorage on app start
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
+    const loadUser = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setCurrentUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        console.error("Failed to parse user from storage:", err);
+      } finally {
+        setInitializing(false);
       }
-    } catch (err) {
-      console.error("Failed to read user from localStorage", err);
-    } finally {
-      setInitializing(false);
-    }
+    };
+    // ensure the UI doesn’t render early
+    setTimeout(loadUser, 100);
   }, []);
 
-  // login still accepts an object: login({ email, password })
   const login = async ({ email, password }) => {
     setAuthLoading(true);
     try {
@@ -37,15 +35,12 @@ export const AuthProvider = ({ children }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
       const userWithToken = { ...data.user, token: data.token };
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setCurrentUser(userWithToken);
-
-      // return the user immediately so callers (Login.jsx) can navigate safely
       return userWithToken;
     } catch (err) {
       toast.error(err.message || "Login failed");
@@ -63,10 +58,8 @@ export const AuthProvider = ({ children }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
-
       toast.success("Account created! Please log in.");
       return true;
     } catch (err) {
@@ -97,20 +90,17 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateCurrentUser,
     isAuthenticated,
-    // expose flags your App.jsx route guards expect
     initializing,
     authLoading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {initializing ? (
-        <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-          Loading...
-        </div>
-      ) : (
-        children
-      )}
-    </AuthContext.Provider>
-  );
+  if (initializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
+        Loading...
+      </div>
+    );
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
