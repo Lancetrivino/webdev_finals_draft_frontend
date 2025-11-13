@@ -35,8 +35,9 @@ export default function AvailableEvents() {
         // The endpoint already returns only approved events, no need to filter
         setEvents(data);
 
+        // ✅ FIX: Use 'data' instead of 'approvedEvents'
         // Mark events the user already joined
-        const joined = approvedEvents
+        const joined = data
           .filter((e) => e.participants?.includes(userId))
           .map((e) => e._id);
         setJoinedEventIds(joined);
