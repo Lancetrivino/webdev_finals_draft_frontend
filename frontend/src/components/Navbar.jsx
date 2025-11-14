@@ -9,7 +9,6 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide navbar only on login/register pages (not home)
   if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") return null;
 
   const handleLogout = () => {
@@ -27,185 +26,163 @@ const NavBar = () => {
   }, [currentUser]);
 
   const navLinkStyle = ({ isActive }) =>
-    `relative px-3 py-2 font-medium transition rounded-full
-     ${isActive 
-       ? "bg-white/90 text-[#C87350] shadow-sm" 
-       : "text-white hover:bg-white/20"}`;
+    `relative px-3 py-2 font-medium transition text-white/90 hover:text-white
+     ${isActive ? "text-white" : ""}`;
 
   return (
-    <>
-      <style>{`
-        @keyframes multiStopGradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-      
-      <header 
-        className="sticky top-0 z-50"
-        style={{
-          background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
-          backgroundSize: "600% 600%",
-          animation: "multiStopGradient 18s ease infinite",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            
-            {/* Brand */}
-            <NavLink to="/dashboard" className="flex items-center gap-2" aria-label="Eventure Home">
-              <span className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white/95 shadow-lg hover:shadow-xl transition-all">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#C87350" />
-                      <stop offset="50%" stopColor="#E5946B" />
-                      <stop offset="100%" stopColor="#FFBC80" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
-                </svg>
-                <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#C87350] via-[#E5946B] to-[#FFBC80] bg-clip-text text-transparent tracking-tight">
-                  Eventure
-                </span>
+    <header className="bg-white/10 backdrop-blur-md shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          
+          {/* Brand */}
+          <NavLink to="/dashboard" className="flex items-center gap-2" aria-label="Eventure Home">
+            <span className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-lg hover:shadow-xl transition-all">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#667eea" />
+                    <stop offset="100%" stopColor="#764ba2" />
+                  </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
+              </svg>
+              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent tracking-tight">
+                Eventure
               </span>
-            </NavLink>
+            </span>
+          </NavLink>
 
-            {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-3">
-              <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
-              <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
-              <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
-              <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
+            <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
+            <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
 
-              {currentUser?.role === "Admin" && (
-                <NavLink to="/admin" className={navLinkStyle}>Admin</NavLink>
-              )}
+            {currentUser?.role === "Admin" && (
+              <NavLink to="/admin" className={navLinkStyle}>Admin</NavLink>
+            )}
 
-              {/* Avatar menu */}
-              <div className="relative ml-2">
-                <button
-                  onClick={() => setAvatarOpen((v) => !v)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#C87350] font-bold shadow-lg hover:shadow-xl transition-all"
-                  aria-label="User menu"
+            {/* Avatar menu */}
+            <div className="relative ml-2">
+              <button
+                onClick={() => setAvatarOpen((v) => !v)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#667eea] font-bold shadow-lg hover:shadow-xl transition-all"
+                aria-label="User menu"
+              >
+                {initials}
+              </button>
+
+              {avatarOpen && (
+                <div
+                  className="absolute right-0 mt-3 w-48 rounded-2xl bg-white py-2 shadow-xl"
+                  onMouseLeave={() => setAvatarOpen(false)}
                 >
-                  {initials}
-                </button>
-
-                {avatarOpen && (
-                  <div
-                    className="absolute right-0 mt-3 w-48 rounded-2xl border border-[#E5946B]/20 bg-white py-2 shadow-xl"
-                    onMouseLeave={() => setAvatarOpen(false)}
-                  >
-                    <div className="px-4 py-2 text-xs text-[#9a8576] font-medium">
-                      Hello, {currentUser?.name || "User"}
-                    </div>
-                    <NavLink
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-[#C87350] hover:bg-[#fed0ba]/30 rounded-lg mx-2 transition"
-                      onClick={() => setAvatarOpen(false)}
-                    >
-                      Profile
-                    </NavLink>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg mx-2 transition"
-                    >
-                      Logout
-                    </button>
+                  <div className="px-4 py-2 text-xs text-gray-500 font-medium">
+                    Hello, {currentUser?.name || "User"}
                   </div>
-                )}
-              </div>
-            </nav>
-
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden text-white bg-white/20 p-2 rounded-full hover:bg-white/30 transition"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? (
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile dropdown */}
-        {menuOpen && (
-          <div className="md:hidden">
-            <div className="max-w-7xl mx-auto px-4 pb-4">
-              <div className="rounded-3xl bg-white/95 backdrop-blur shadow-xl px-6 py-4">
-                <div className="flex flex-col gap-2">
-                  <NavLink 
-                    to="/events" 
-                    className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Events
-                  </NavLink>
-                  <NavLink 
-                    to="/available-events" 
-                    className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Available Events
-                  </NavLink>
-                  <NavLink 
-                    to="/create-event" 
-                    className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Create Event
-                  </NavLink>
-                  <NavLink 
-                    to="/feedback" 
-                    className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Feedback
-                  </NavLink>
-                  <NavLink 
-                    to="/profile" 
-                    className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                    onClick={() => setMenuOpen(false)}
+                  <NavLink
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    onClick={() => setAvatarOpen(false)}
                   >
                     Profile
                   </NavLink>
-
-                  {currentUser?.role === "Admin" && (
-                    <NavLink 
-                      to="/admin" 
-                      className="px-4 py-2 text-[#C87350] hover:bg-[#fed0ba]/30 rounded-full font-medium transition" 
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Admin
-                    </NavLink>
-                  )}
-
                   <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="mt-3 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#C87350] to-[#E5946B] px-6 py-3 text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
                   >
                     Logout
                   </button>
                 </div>
-              </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="md:hidden bg-white/10 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 pb-4">
+            <div className="flex flex-col gap-2">
+              <NavLink 
+                to="/events" 
+                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Events
+              </NavLink>
+              <NavLink 
+                to="/available-events" 
+                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Available Events
+              </NavLink>
+              <NavLink 
+                to="/create-event" 
+                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Create Event
+              </NavLink>
+              <NavLink 
+                to="/feedback" 
+                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Feedback
+              </NavLink>
+              <NavLink 
+                to="/profile" 
+                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Profile
+              </NavLink>
+
+              {currentUser?.role === "Admin" && (
+                <NavLink 
+                  to="/admin" 
+                  className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" 
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Admin
+                </NavLink>
+              )}
+
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleLogout();
+                }}
+                className="mt-3 inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-[#667eea] font-medium shadow-lg hover:shadow-xl transition-all"
+              >
+                Logout
+              </button>
             </div>
           </div>
-        )}
-      </header>
-    </>
+        </div>
+      )}
+    </header>
   );
 };
 

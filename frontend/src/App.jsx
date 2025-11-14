@@ -39,18 +39,10 @@ const GlobalStyles = () => (
   <style>{`
     body { 
       font-family: 'Inter', sans-serif; 
-      background: linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80);
-      background-size: 600% 600%;
-      animation: multiStopGradient 18s ease infinite;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       margin: 0;
       padding: 0;
       min-height: 100vh;
-    }
-    
-    @keyframes multiStopGradient {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
     
     .Toastify__toast-container { top: 3em; right: 1em; }
@@ -73,7 +65,6 @@ const GlobalStyles = () => (
 const PrivateRoute = ({ children }) => {
   const { currentUser, initializing } = useAuth();
 
-  // Wait for AuthProvider to finish initializing (restoring user from localStorage)
   if (initializing) {
     return (
       <div className="flex h-screen items-center justify-center text-white">
@@ -91,7 +82,6 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { currentUser, initializing } = useAuth();
 
-  // Wait for initialization before making decisions
   if (initializing) {
     return (
       <div className="flex h-screen items-center justify-center text-white">
@@ -105,7 +95,6 @@ const AdminRoute = ({ children }) => {
 
   if (!currentUser) return <Navigate to="/login" replace />;
 
-  // Role check (case-insensitive)
   const role = (currentUser.role || "").toString().toLowerCase();
   if (!role.includes("admin")) return <Navigate to="/" replace />;
 
@@ -123,7 +112,7 @@ const AppContent = () => (
     <Navbar />
 
     <div className="min-h-screen">
-      <main className="pt-4 pb-12">
+      <main>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
