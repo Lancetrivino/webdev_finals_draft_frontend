@@ -30,12 +30,15 @@ const NavBar = () => {
   }, [currentUser]);
 
   // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
-  const navLinkStyle = ({ isActive }) =>
-    `relative inline-block min-w-[130px] text-center
-   px-4 py-2 font-medium tracking-wide transition-all duration-200 text-white/90 
-   hover:text-white hover:font-semibold hover:-translate-y-0.5 
-   active:translate-y-0 active:font-bold
-   ${isActive ? "text-white font-bold" : ""}`;
+const navLinkStyle = ({ isActive }) =>
+  `relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200
+   text-white/90 
+   hover:text-white 
+   hover:brightness-150
+   hover:scale-105
+   active:scale-95
+   ${isActive ? "text-white" : ""}`;
+
 
   return (
     <header
