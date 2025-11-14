@@ -39,6 +39,7 @@ export default function AvailableEvents() {
           .map((e) => e._id);
         setJoinedEventIds(joined);
       } catch (error) {
+        console.error(error);
         toast.error("Failed to load events.");
       } finally {
         setLoading(false);
@@ -95,10 +96,10 @@ export default function AvailableEvents() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Failed to join event");
 
       const eventName = events.find((e) => e._id === eventId)?.title || "event";
-      toast.success(`🎉 Joined "${eventName}"!`);
+      toast.success(`🎉 You've successfully joined "${eventName}"!`);
 
       setJoinedEventIds((prev) => [...prev, eventId]);
 
@@ -120,7 +121,8 @@ export default function AvailableEvents() {
     const eventName =
       events.find((e) => e._id === eventId)?.title || "this event";
 
-    if (!window.confirm(`Leave "${eventName}"?`)) return;
+    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`))
+      return;
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) return toast.info("Please login first.");
@@ -140,9 +142,9 @@ export default function AvailableEvents() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.message || "Failed to leave event");
 
-      toast.success(`You left "${eventName}".`);
+      toast.success(`You've left "${eventName}"`);
 
       setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
 
@@ -173,79 +175,80 @@ export default function AvailableEvents() {
     );
   }
 
-  return (
-    <div className="relative min-h-screen">
-      {/* Background */}
+  if (filtered.length === 0) {
+    return (
       <div
-        className="fixed inset-0 -z-10"
+        className="min-h-screen flex flex-col items-center justify-center"
         style={{
           background:
-            "linear-gradient(135deg, #f3e8ff 0%, #e6cfff 25%, #cca3ff 50%, #a66bff 75%, #8040ff 100%)",
+            "linear-gradient(135deg,#f3e8ff,#e6cfff,#cca3ff,#a66bff,#8040ff)",
         }}
       >
-        <div
-          className="absolute w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse top-10 left-10"
-          style={{ background: "linear-gradient(135deg,#f3e8ff,#cca3ff)" }}
-        ></div>
-
-        <div
-          className="absolute w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse bottom-20 right-20"
-          style={{ background: "linear-gradient(135deg,#e6cfff,#a66bff)" }}
-        ></div>
-
-        <div
-          className="absolute w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ background: "linear-gradient(135deg,#cca3ff,#8040ff)" }}
-        ></div>
+        <h2 className="text-2xl font-semibold text-gray-700">No events found.</h2>
       </div>
+    );
+  }
 
-      {/* Content */}
-      <div className="px-6 py-10 max-w-6xl mx-auto relative z-10">
-        <h1 className="text-3xl font-bold text-white drop-shadow-lg mb-6">
-          Available Events
-        </h1>
+  return (
+    <div
+      className="min-h-screen px-6 py-10"
+      style={{
+        background:
+          "linear-gradient(135deg, #f3e8ff 0%, #e6cfff 25%, #cca3ff 50%, #a66bff 75%, #8040ff 100%)",
+      }}
+    >
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-3xl font-bold text-slate-800">Available Events</h1>
 
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:justify-between">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search events or venue…"
-            className="w-full sm:w-64 rounded-2xl border px-4 py-2.5 text-slate-700"
-          />
+          <div className="flex gap-2 items-center w-full sm:w-auto">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search events or venue…"
+              className="w-full sm:w-64 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-slate-700"
+            />
 
-          <select
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-            className="rounded-2xl border px-3 py-2 text-slate-700"
-          >
-            <option value="date">Sort by Date</option>
-            <option value="slots">Sort by Availability</option>
-          </select>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-700"
+            >
+              <option value="date">Sort by Date</option>
+              <option value="slots">Sort by Availability</option>
+            </select>
+          </div>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((e) => {
             const remaining =
               (e.capacity || 0) - (e.participants?.length || 0);
-            const joined = joinedEventIds.includes(e._id);
             const isFull = remaining <= 0;
+            const joined = joinedEventIds.includes(e._id);
             const isProcessing = processingEvent === e._id;
 
             return (
               <article
                 key={e._id}
-                className="rounded-2xl bg-white shadow-lg overflow-hidden"
+                className="group overflow-hidden rounded-2xl bg-white shadow-lg transition-all"
               >
-                <img
-                  src={e.image || e.imageData}
-                  className="h-40 w-full object-cover"
-                />
+                <div className="h-40 w-full overflow-hidden">
+                  <img
+                    src={e.image || e.imageData || "/placeholder.png"}
+                    alt={e.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
 
                 <div className="p-5">
-                  <h3 className="font-semibold text-lg">{e.title}</h3>
-                  <p className="text-sm text-gray-500">{e.venue}</p>
+                  <h3 className="text-lg font-semibold text-slate-800">
+                    {e.title}
+                  </h3>
 
-                  <div className="mt-4 flex justify-between items-center">
+                  <p className="text-sm text-slate-500">{e.venue}</p>
+
+                  <div className="mt-4 flex items-center justify-between">
                     <span
                       className={`text-sm font-semibold ${
                         isFull ? "text-red-600" : "text-emerald-600"
@@ -258,7 +261,7 @@ export default function AvailableEvents() {
                       <button
                         onClick={() => handleLeave(e._id)}
                         disabled={isProcessing}
-                        className="bg-red-600 text-white rounded-full px-4 py-2"
+                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white"
                       >
                         {isProcessing ? "Leaving..." : "Leave"}
                       </button>
@@ -266,11 +269,13 @@ export default function AvailableEvents() {
                       <button
                         onClick={() => handleBook(e._id)}
                         disabled={isFull || isProcessing}
-                        className={`rounded-full px-4 py-2 text-white ${
-                          isFull ? "bg-gray-400" : "bg-emerald-600"
+                        className={`rounded-full px-4 py-2 text-sm font-medium text-white ${
+                          isFull
+                            ? "bg-gray-400"
+                            : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
                       >
-                        {isProcessing ? "Joining..." : "Join"}
+                        {isProcessing ? "Joining..." : isFull ? "Full" : "Join"}
                       </button>
                     )}
                   </div>
