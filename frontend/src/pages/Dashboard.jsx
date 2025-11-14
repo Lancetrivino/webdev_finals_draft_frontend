@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -28,13 +28,15 @@ function Dashboard() {
 
   const roleBadge = useMemo(() => {
     const r = roleLabel.toLowerCase();
-    if (r.includes("admin")) return "bg-blue-100 text-blue-800 border-blue-200";
+    if (r.includes("admin"))
+      return "bg-gray-100 text-gray-700 border-gray-200";
     if (r.includes("organizer") || r.includes("host"))
-      return "bg-sky-100 text-sky-800 border-sky-200";
-    return "bg-cyan-100 text-cyan-800 border-cyan-200";
+      return "bg-gray-100 text-gray-700 border-gray-200";
+    return "bg-gray-100 text-gray-700 border-gray-200";
   }, [roleLabel]);
 
   const NAV_HEIGHT = 80;
+
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
     const prevBody = document.body.style.overflow;
@@ -53,39 +55,51 @@ function Dashboard() {
       className="fixed left-0 right-0 bottom-0"
       style={{
         top: NAV_HEIGHT,
-        background: "linear-gradient(180deg, #002d54 0%, #0078c1 45%, #cde2ee 100%)",
+        background: "linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
       }}
     >
-      <div className="h-full w-full flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6">
-        <div className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)] rounded-[28px] overflow-hidden border border-white/40 shadow-[0_25px_80px_rgba(0,0,0,0.15)] bg-white/40 backdrop-blur-lg">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#002d54] via-[#0078c1] to-[#a8daf9]" />
+      <div className="h-full w-full flex items-center justify-center px-6 py-6">
+        <div className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)]
+          rounded-[28px] overflow-hidden border border-white/40
+          bg-white/30 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+        >
+          {/* Soft top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/60" />
 
-          <div className="pointer-events-none absolute -top-20 right-10 w-56 h-56 rounded-full bg-[#a8daf9]/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-10 w-72 h-72 rounded-full bg-[#cde2ee]/30 blur-[72px]" />
+          {/* Subtle blurred blobs */}
+          <div className="pointer-events-none absolute -top-24 right-8 w-56 h-56 rounded-full bg-white/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 left-8 w-64 h-64 rounded-full bg-white/10 blur-[70px]" />
 
           <div className="relative flex flex-col h-full">
-            {/* Center Introduction Box */}
-            <div className="px-6 sm:px-10 pt-8 pb-3 text-center">
-              <div className="inline-block bg-white/40 backdrop-blur-md rounded-2xl px-8 py-6 shadow-md max-w-2xl">
-                <h1 className="text-[clamp(30px,5vw,52px)] font-extrabold tracking-tight text-[#002d54]">
+            {/* Header Intro Box */}
+            <div className="px-10 pt-10 pb-4 text-center">
+              <div className="inline-block bg-white/50 backdrop-blur-lg 
+                rounded-2xl px-10 py-7 shadow-sm border border-white/40 max-w-2xl"
+              >
+                <h1 className="text-[clamp(28px,4vw,46px)] font-bold tracking-tight text-gray-800">
                   Welcome to Easy Go Local
                 </h1>
-                <p className="mt-3 text-sm sm:text-base text-gray-600">
-                  Discover, join, and create exciting local events in your area.  
-                  Stay connected with your community and never miss what’s happening nearby!
+                <p className="mt-3 text-sm sm:text-base text-gray-500">
+                  Discover, join, and create exciting events happening near you.  
+                  Stay connected with your local community.
                 </p>
               </div>
             </div>
 
-            <div className="px-6 sm:px-10 pb-8 flex-grow overflow-hidden">
+            {/* MAIN GRID */}
+            <div className="px-10 pb-10 flex-grow overflow-hidden">
               <div className="grid h-full gap-6 grid-cols-12">
-                {/* LEFT SIDE */}
+                {/* LEFT PANEL */}
                 <div className="col-span-12 lg:col-span-4">
-                  <div className="h-full rounded-3xl border border-white/70 bg-white/70 backdrop-blur-md shadow p-6">
+                  <div className="h-full rounded-3xl border border-white/60 
+                    bg-white/40 backdrop-blur-md shadow-sm p-6"
+                  >
                     <div className="flex items-center gap-5">
                       <button
                         onClick={goProfile}
-                        className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#004887] to-[#0078c1] text-white flex items-center justify-center font-bold text-xl shadow hover:scale-[1.03] transition"
+                        className="h-16 w-16 rounded-2xl bg-gray-900 text-white 
+                          flex items-center justify-center font-bold text-xl shadow-sm 
+                          hover:opacity-90 transition"
                       >
                         {initials}
                       </button>
@@ -94,10 +108,9 @@ function Dashboard() {
                         <div className="text-[10px] uppercase tracking-[0.15em] text-gray-500">
                           Welcome
                         </div>
-
                         <button
                           onClick={goProfile}
-                          className="text-lg font-extrabold bg-gradient-to-r from-[#002d54] to-[#0078c1] bg-clip-text text-transparent hover:opacity-90 transition"
+                          className="text-lg font-bold text-gray-800 hover:opacity-80 transition"
                         >
                           {currentUser?.name || "User"}
                         </button>
@@ -106,21 +119,25 @@ function Dashboard() {
 
                     <div className="mt-5">
                       <span
-                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${roleBadge}`}
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 
+                          text-sm font-medium ${roleBadge}`}
                       >
                         <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
                         Role: <span className="capitalize">{roleLabel}</span>
                       </span>
                     </div>
 
+                    {/* Time + Date */}
                     <div className="mt-7 space-y-3 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Local time</span>
-                        <span className="font-medium text-gray-900">{now.toLocaleTimeString()}</span>
+                        <span className="font-medium text-gray-700">
+                          {now.toLocaleTimeString()}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Date</span>
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-700">
                           {now.toLocaleDateString()}
                         </span>
                       </div>
@@ -128,17 +145,18 @@ function Dashboard() {
 
                     {/* Stats */}
                     <div className="mt-8 grid grid-cols-3 gap-3">
-                      {[
+                      {[ 
                         { label: "Saved", val: "12" },
                         { label: "Joined", val: "8" },
                         { label: "Nearby", val: "5" },
                       ].map((s) => (
                         <div
                           key={s.label}
-                          className="rounded-2xl bg-[#cde2ee]/70 border border-white/50 text-center py-3 shadow-sm"
+                          className="rounded-2xl bg-white/60 border border-white/40 
+                            backdrop-blur-md text-center py-3 shadow-sm"
                         >
-                          <div className="text-xl font-bold text-[#002d54]">{s.val}</div>
-                          <div className="text-[11px] uppercase tracking-wide text-gray-600">
+                          <div className="text-xl font-semibold text-gray-800">{s.val}</div>
+                          <div className="text-[11px] uppercase tracking-wide text-gray-500">
                             {s.label}
                           </div>
                         </div>
@@ -147,69 +165,68 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* RIGHT SIDE (Highlight Cards Only) */}
+                {/* RIGHT SECTION */}
                 <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
                     {[
                       {
                         num: 1,
                         title: "Upcoming this week",
-                        text: "Never miss local meetups and new experiences.",
+                        text: "See local meetups and activities happening soon.",
                         link: "/events",
-                        btn: "Explore events",
-                        colorFrom: "#004887",
-                        colorTo: "#0078c1",
+                        btn: "Explore",
                       },
                       {
                         num: 2,
                         title: "Create your event",
-                        text: "Host gatherings, workshops, or community activities.",
+                        text: "Host gatherings or community projects.",
                         link: "/create-event",
-                        btn: "Create event",
-                        colorFrom: "#0078c1",
-                        colorTo: "#a8daf9",
+                        btn: "Create",
                       },
                       {
                         num: 3,
                         title: "Help us improve",
-                        text: "Tell us your experience and what features you’d like.",
+                        text: "Share feedback to make the app better.",
                         link: "/feedback",
-                        btn: "Send feedback",
-                        colorFrom: "#002d54",
-                        colorTo: "#004887",
+                        btn: "Feedback",
                       },
                     ].map((c) => (
                       <div
                         key={c.num}
-                        className="rounded-3xl border border-white/70 bg-white/60 backdrop-blur-md px-5 py-5 shadow"
+                        className="rounded-3xl border border-white/50 bg-white/50 
+                          backdrop-blur-md px-5 py-5 shadow-sm"
                       >
                         <div className="flex items-center gap-3">
-                          <div
-                            className="h-10 w-10 rounded-xl text-white flex items-center justify-center font-bold"
-                            style={{
-                              background: `linear-gradient(to bottom right, ${c.colorFrom}, ${c.colorTo})`,
-                            }}
+                          <div className="h-10 w-10 rounded-xl bg-gray-900 text-white 
+                            flex items-center justify-center font-semibold shadow"
                           >
                             {c.num}
                           </div>
-                          <div className="font-semibold text-[#002d54]">{c.title}</div>
+                          <div className="font-semibold text-gray-800">{c.title}</div>
                         </div>
-                        <p className="mt-3 text-sm text-gray-600">{c.text}</p>
+
+                        <p className="mt-3 text-sm text-gray-500">{c.text}</p>
+
                         <a
                           href={c.link}
-                          className="inline-flex mt-4 rounded-full px-3 py-1.5 text-sm font-medium bg-gradient-to-r from-[#004887] to-[#0078c1] text-white shadow hover:opacity-95 transition"
+                          className="inline-flex mt-4 rounded-full px-3 py-1.5 text-sm font-medium
+                            bg-gray-900 text-white shadow hover:opacity-90 transition"
                         >
                           {c.btn}
                         </a>
                       </div>
                     ))}
+
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
+
         </div>
-      </div> 
+      </div>
     </div>
   );
 }
