@@ -93,7 +93,10 @@ function Events() {
         <Link
           to="/create-event"
           className="mt-6 px-6 py-3 text-white rounded-full font-medium shadow transition hover:opacity-90"
-          style={{ background: "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)", }} 
+          style={{
+            top: NAV_HEIGHT,
+            background: "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)",
+          }}
         >
           Create Event
         </Link>
@@ -158,10 +161,9 @@ function Events() {
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                        statusColors[event.status] ||
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[event.status] ||
                         "bg-gray-100 text-gray-700 border-gray-200"
-                      }`}
+                        }`}
                     >
                       {event.status || "Unknown"}
                     </span>
@@ -230,7 +232,7 @@ function Events() {
                   </div>
                 </div>
 
-                
+
               </article>
             );
           })}
