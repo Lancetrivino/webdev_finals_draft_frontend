@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"; 
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_BASE_URL } from "../App";
 
@@ -35,7 +35,7 @@ function RatingBar({ stars, count, total }) {
       <div className="relative h-2 flex-1 rounded bg-slate-200">
         <div
           className="absolute inset-y-0 left-0 rounded"
-          style={{ width: `${pct}%`, backgroundColor: "rgb(20 184 166)" }} // tailwind teal-400 equivalent inline for consistent rendering
+          style={{ width: `${pct}%`, backgroundColor: "rgb(20 184 166)" }}
         />
       </div>
       <div className="w-10 text-right text-sm tabular-nums text-slate-600">{count}</div>
@@ -107,6 +107,16 @@ export default function EventFeedbackPage() {
     };
   }, [EVENT_URL, REVIEWS_URL]);
 
+  // Enable smooth scrolling site-wide while this component is mounted.
+  useEffect(() => {
+    const prev = document.documentElement.style.scrollBehavior || "";
+    document.documentElement.style.scrollBehavior = "smooth";
+    return () => {
+      // restore previous value on unmount
+      document.documentElement.style.scrollBehavior = prev;
+    };
+  }, []);
+
   const summary = useMemo(() => {
     if (!reviews.length) return { avg: 0, total: 0, buckets: [0, 0, 0, 0, 0] };
     const total = reviews.length;
@@ -123,14 +133,13 @@ export default function EventFeedbackPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    // add top padding so the page content sits below a fixed navbar
+    <div className="max-w-6xl mx-auto pt-24 px-6 pb-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{event?.name || "Customers Feedback"}</h1>
           {event?.date && <p className="text-sm text-slate-500">{new Date(event.date).toLocaleString()}</p>}
         </div>
-
-        {/* Top "Write a Review" removed since there's a Leave Feedback CTA below */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-[320px,1fr]">
@@ -165,7 +174,7 @@ export default function EventFeedbackPage() {
           </Link>
         </section>
 
-        {/* Right: reviews list */}
+        {/* Right: reviews list — let the whole page scroll */}
         <section className="space-y-4">
           {reviews.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600">
