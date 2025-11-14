@@ -31,7 +31,8 @@ const NavBar = () => {
 
   // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
   const navLinkStyle = ({ isActive }) =>
-    `relative px-4 py-2 font-medium tracking-wide transition-all duration-200 text-white/90 
+    `relative inline-block min-w-[130px] text-center
+   px-4 py-2 font-medium tracking-wide transition-all duration-200 text-white/90 
    hover:text-white hover:font-semibold hover:-translate-y-0.5 
    active:translate-y-0 active:font-bold
    ${isActive ? "text-white font-bold" : ""}`;
@@ -52,7 +53,10 @@ const NavBar = () => {
             className="flex items-center gap-2"
             aria-label="Eventure Home"
           >
-            <span className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-lg hover:shadow-xl transition-all">
+            <span className="
+                inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-lg 
+                transition-all duration-200 
+                hover:scale-105 active:scale-100">
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                 <defs>
                   <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
