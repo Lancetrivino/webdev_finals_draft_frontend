@@ -12,14 +12,11 @@ function Profile() {
     name: "",
     email: "",
     address: "",
-    password: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -31,7 +28,6 @@ function Profile() {
         name: currentUser.name || "",
         email: currentUser.email || "",
         address: currentUser.address || "",
-        password: "",
       });
       setAvatarPreview(currentUser.avatar || "");
     }
@@ -49,6 +45,7 @@ function Profile() {
     }
   };
 
+  // called by the circular edit button to open file picker
   const openFilePicker = () => {
     if (fileInputRef.current) fileInputRef.current.click();
   };
@@ -63,12 +60,7 @@ function Profile() {
 
       formPayload.append("name", formData.name);
       formPayload.append("address", formData.address || "");
-
-      if (formData.password)
-        formPayload.append("password", formData.password);
-
-      if (avatar)
-        formPayload.append("avatar", avatar);
+      if (avatar) formPayload.append("avatar", avatar);
 
       const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
@@ -83,7 +75,6 @@ function Profile() {
 
       updateCurrentUser(data.user);
       toast.success("Profile updated successfully!");
-      setFormData((prev) => ({ ...prev, password: "" }));
     } catch (err) {
       toast.error(err.message || "Error updating profile.");
     } finally {
@@ -113,8 +104,9 @@ function Profile() {
             borderRadius: "18px",
           }}
         >
+          {/* grid: left = photo, right = form */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
-            {/* LEFT SIDE */}
+            {/* LEFT: Photo area */}
             <div className="flex flex-col items-center md:items-start md:pl-6">
               <h2 className="text-lg font-semibold text-slate-800 mb-4">
                 Profile Picture
@@ -144,6 +136,7 @@ function Profile() {
                   onClick={openFilePicker}
                   aria-label="Edit profile picture"
                   className="absolute -right-2 -bottom-2 w-10 h-10 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 transition"
+                  title="Change avatar"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -175,7 +168,7 @@ function Profile() {
               </p>
             </div>
 
-            {/* RIGHT SIDE */}
+            {/* RIGHT side */}
             <section className="md:col-span-2 px-2 md:px-6">
               <h2 className="text-2xl font-bold text-slate-800 mb-4">
                 My Profile
@@ -183,7 +176,7 @@ function Profile() {
 
               {currentUser && (
                 <form onSubmit={handleUpdate} className="space-y-5">
-                  {/* NAME */}
+                  {/* Name */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Full Name
@@ -198,7 +191,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* EMAIL */}
+                  {/* Email */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Email Address
@@ -212,7 +205,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* ADDRESS */}
+                  {/* Address */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Address
@@ -227,68 +220,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* PASSWORD WITH VISIBLE TOGGLE */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
-                      New Password (optional)
-                    </label>
-
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Enter a new password to change it"
-                        className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#a8daf9] pr-12"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 bg-transparent rounded"
-                      >
-                        {showPassword ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 text-slate-700"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 text-slate-700"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M17.94 17.94A10.94 10.94 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.96 10.96 0 012.25-3.75M6.1 6.1A10.94 10.94 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.96 10.96 0 01-1.67 3.01M3 3l18 18"
-                            />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-slate-500 mt-2">
-                      Leave blank to keep your current password.
-                    </p>
-                  </div>
-
-                  {/* ROLE */}
+                  {/* Role */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Role
@@ -298,7 +230,7 @@ function Profile() {
                     </p>
                   </div>
 
-                  {/* BUTTONS */}
+                  {/* Buttons */}
                   <div className="flex flex-col md:flex-row gap-3 mt-4">
                     <button
                       type="submit"
