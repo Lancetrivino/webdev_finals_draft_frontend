@@ -61,63 +61,63 @@ function Dashboard() {
               in your community. Stay updated with the latest happenings and make meaningful connections today.
             </p>
           </div>
-        </div>
-      </div>
 
-      {/* Bottom three boxes bigger, higher, and white */}
-      <div className="mt-8 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-16">
-        {[
-          {
-            num: 1,
-            title: "Upcoming this week",
-            text: "See local meetups and activities happening soon.",
-            link: "/events",
-            btn: "Explore",
-          },
-          {
-            num: 2,
-            title: "Create your event",
-            text: "Host gatherings or community projects.",
-            link: "/create-event",
-            btn: "Create",
-          },
-          {
-            num: 3,
-            title: "Help us improve",
-            text: "Share feedback to make the app better.",
-            link: "/feedback",
-            btn: "Feedback",
-          },
-        ].map((c) => (
-          <div
-            key={c.num}
-            className="rounded-2xl flex-1 flex flex-col justify-between px-6 py-6 shadow-md h-[220px] bg-white"
-          >
-            <div className="flex items-center gap-3">
+          {/* Bottom three boxes inside main container */}
+          <div className="mt-12 flex justify-center px-4 gap-8 w-full max-w-6xl">
+            {[
+              {
+                num: 1,
+                title: "Upcoming this week",
+                text: "See local meetups and activities happening soon.",
+                link: "/events",
+                btn: "Explore",
+              },
+              {
+                num: 2,
+                title: "Create your event",
+                text: "Host gatherings or community projects.",
+                link: "/create-event",
+                btn: "Create",
+              },
+              {
+                num: 3,
+                title: "Help us improve",
+                text: "Share feedback to make the app better.",
+                link: "/feedback",
+                btn: "Feedback",
+              },
+            ].map((c) => (
               <div
-                className="h-12 w-12 rounded-full bg-[#35008d] text-white
-                  flex items-center justify-center font-semibold shadow"
+                key={c.num}
+                className="rounded-2xl flex-1 flex flex-col justify-between px-6 py-6 shadow-md h-[220px] bg-white"
               >
-                {c.num}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-12 w-12 rounded-full bg-[#35008d] text-white
+                      flex items-center justify-center font-semibold shadow"
+                  >
+                    {c.num}
+                  </div>
+                  <div className="font-semibold text-[#35008d] text-lg">{c.title}</div>
+                </div>
+
+                <p className="mt-2 text-sm text-gray-600 flex-grow">{c.text}</p>
+
+                <div className="w-full">
+                  {/* Thin line above button */}
+                  <div className="h-[1px] bg-gray-300 w-full mb-2" />
+                  <a
+                    href={c.link}
+                    className="inline-flex rounded-full px-4 py-2 text-sm font-medium
+                      bg-white/30 backdrop-blur-md text-[#35008d] shadow hover:bg-white/50 transition"
+                  >
+                    {c.btn}
+                  </a>
+                </div>
               </div>
-              <div className="font-semibold text-[#35008d] text-lg">{c.title}</div>
-            </div>
-
-            <p className="mt-2 text-sm text-gray-600 flex-grow">{c.text}</p>
-
-            <div className="w-full">
-              {/* Thin line above button */}
-              <div className="h-[1px] bg-gray-300 w-full mb-2" />
-              <a
-                href={c.link}
-                className="inline-flex rounded-full px-4 py-2 text-sm font-medium
-                  bg-white/30 backdrop-blur-md text-[#35008d] shadow hover:bg-white/50 transition"
-              >
-                {c.btn}
-              </a>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       {/* Animation styles */}
