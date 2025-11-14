@@ -105,7 +105,7 @@ export default function AvailableEvents() {
 
       setEvents((prev) =>
         prev.map((e) =>
-          e._id === eventId
+          e._1d === eventId
             ? { ...e, participants: [...(e.participants || []), userId] }
             : e
         )
@@ -191,14 +191,22 @@ export default function AvailableEvents() {
 
   return (
     <div
-      className="min-h-screen px-6 py-10"
+      className="min-h-screen px-6 pb-12"
       style={{
+        // ensure page content starts *below* typical fixed navbars.
+        // default fallback is 6rem (pt-24). If your navbar height differs,
+        // set --nav-height on :root somewhere globally and it'll be used here.
+        paddingTop: "var(--nav-height, 6rem)",
         background:
           "linear-gradient(135deg, #f3e8ff 0%, #e6cfff 25%, #cca3ff 50%, #a66bff 75%, #8040ff 100%)",
       }}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Toolbar — keep it visually above background and nav */}
+        <div
+          className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          style={{ zIndex: 40, position: "relative" }}
+        >
           <h1 className="text-3xl font-bold text-slate-800">Available Events</h1>
 
           <div className="flex gap-2 items-center w-full sm:w-auto">
