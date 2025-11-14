@@ -1,9 +1,7 @@
-// frontend/src/pages/EventDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
-
 import { API_BASE_URL } from "../App";
 
 const EventDetails = () => {
@@ -14,6 +12,8 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
+  const [eventHasPassed, setEventHasPassed] = useState(false); // ✅ NEW
+  const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false); // ✅ NEW
 
   // Fetch event details
   useEffect(() => {
@@ -54,6 +54,38 @@ const EventDetails = () => {
 
     fetchEvent();
   }, [id, navigate, currentUser]);
+
+  // ✅ Check feedback eligibility
+  useEffect(() => {
+    if (!event || !currentUser) return;
+    
+    // Check if event has passed
+    const eventDate = new Date(event.date);
+    const now = new Date();
+    setEventHasPassed(now > eventDate);
+    
+    // Check if user already submitted feedback
+    const checkFeedback = async () => {
+      try {
+        const token = currentUser?.token;
+        const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const userFeedback = data.feedbacks?.find(
+            f => f.user?._id === currentUser._id || f.user === currentUser._id
+          );
+          setAlreadySubmittedFeedback(!!userFeedback);
+        }
+      } catch (error) {
+        console.error("Error checking feedback:", error);
+      }
+    };
+    
+    checkFeedback();
+  }, [event, currentUser, id]);
 
   // Handle Join
   const handleBook = async () => {
@@ -139,6 +171,8 @@ const EventDetails = () => {
     status,
     capacity,
     participants,
+    averageRating, // ✅ NEW
+    totalReviews,  // ✅ NEW
   } = event;
 
   const remainingSlots = capacity ? capacity - (participants?.length || 0) : null;
@@ -186,7 +220,7 @@ const EventDetails = () => {
         )}
         {duration && (
           <p>
-            <span className="font-semibold">🕒 Duration:</span> {duration}
+            <span className="font-semibold">🕐 Duration:</span> {duration}
           </p>
         )}
         <p>
@@ -196,6 +230,15 @@ const EventDetails = () => {
           <p className={`font-semibold ${isFull ? "text-red-600" : "text-emerald-600"}`}>
             {isFull ? "Event is Full" : `${remainingSlots} slots remaining`}
           </p>
+        )}
+        
+        {/* ✅ Rating Display */}
+        {averageRating > 0 && totalReviews > 0 && (
+          <div className="flex items-center gap-2 pt-2">
+            <span className="text-yellow-400 text-2xl">★</span>
+            <span className="text-xl font-bold text-slate-800">{averageRating.toFixed(1)}</span>
+            <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+          </div>
         )}
       </div>
 
@@ -217,27 +260,42 @@ const EventDetails = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => navigate(`/feedback/${id}`)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
-        >
-          Give Feedback
-        </button>
+      <div className="flex flex-wrap gap-4">
+        {/* ✅ Leave Review Button */}
+        {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
+          <button
+            onClick={() => navigate(`/feedback/${id}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl transition font-medium"
+          >
+            ⭐ Leave Review
+          </button>
+        )}
 
+        {/* ✅ View Reviews Button */}
+        {totalReviews > 0 && (
+          <button
+            onClick={() => navigate(`/feedback/${id}/list`)}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-xl transition font-medium"
+          >
+            📝 View Reviews ({totalReviews})
+          </button>
+        )}
+
+        {/* Join Event */}
         {currentUser && !isFull && !joined && (
           <button
             onClick={handleBook}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition font-medium"
           >
             Join Event
           </button>
         )}
 
+        {/* Leave Event */}
         {currentUser && joined && (
           <button
             onClick={handleLeave}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl transition"
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl transition font-medium"
           >
             Leave Event
           </button>

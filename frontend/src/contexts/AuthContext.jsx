@@ -1,5 +1,5 @@
-// src/contexts/AuthContext.jsx
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+// contexts/AuthContext.jsx
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "../App";
 
@@ -7,75 +7,41 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  // auth state
   const [currentUser, setCurrentUser] = useState(null);
-
-  // true while reading localStorage / initializing app
   const [initializing, setInitializing] = useState(true);
-
-  // true while performing an auth network call (login/register/logout)
   const [authLoading, setAuthLoading] = useState(false);
 
-  // On mount: load user from localStorage (synchronous) and finish initializing
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
+    const loadUser = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setCurrentUser(JSON.parse(storedUser));
+        }
+      } catch (err) {
+        console.error("Failed to parse user from storage:", err);
+      } finally {
+        setInitializing(false);
       }
-    } catch (err) {
-      console.error("Failed to read user from localStorage", err);
-    } finally {
-      setInitializing(false);
-    }
+    };
+    // call immediately (don't block UI with an artificial timeout)
+    loadUser();
   }, []);
 
-  // Helper: wait until currentUser is available (or timeout)
-  const waitForCurrentUser = useCallback((timeout = 2000, interval = 100) => {
-    return new Promise((resolve) => {
-      const start = Date.now();
-      const check = () => {
-        if (currentUser) {
-          resolve(currentUser);
-          return;
-        }
-        if (Date.now() - start >= timeout) {
-          resolve(null);
-          return;
-        }
-        setTimeout(check, interval);
-      };
-      check();
-    });
-  }, [currentUser]);
-
-  // login: accepts either (email, password) or ({ email, password })
-  const login = async (emailOrObj, maybePassword) => {
+  const login = async ({ email, password }) => {
     setAuthLoading(true);
     try {
-      let email, password;
-      if (typeof emailOrObj === "object" && emailOrObj !== null) {
-        email = emailOrObj.email;
-        password = emailOrObj.password;
-      } else {
-        email = emailOrObj;
-        password = maybePassword;
-      }
-
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid credentials");
 
       const userWithToken = { ...data.user, token: data.token };
       localStorage.setItem("user", JSON.stringify(userWithToken));
       setCurrentUser(userWithToken);
-
-      // Return the user immediately so callers can navigate safely based on returned user
       return userWithToken;
     } catch (err) {
       toast.error(err.message || "Login failed");
@@ -93,10 +59,8 @@ export const AuthProvider = ({ children }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
-
       toast.success("Account created! Please log in.");
       return true;
     } catch (err) {
@@ -127,21 +91,21 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateCurrentUser,
     isAuthenticated,
-    initializing,   // true only while initial localStorage load runs
-    authLoading,    // true when login/register requests are in progress
-    waitForCurrentUser, // helper to wait for currentUser (returns Promise)
+    initializing,
+    authLoading,
   };
 
-  // show full screen loader while the provider is initializing (prevents protected route flicker)
-  if (initializing) {
-    return (
-      <AuthContext.Provider value={value}>
-        <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
+  // ALWAYS provide the context so consumers won't encounter a "missing context" race.
+  // While initializing, render a loading screen inside the provider.
+  return (
+    <AuthContext.Provider value={value}>
+      {initializing ? (
+        <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
           Loading...
         </div>
-      </AuthContext.Provider>
-    );
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 };

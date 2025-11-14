@@ -1,29 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useAuth } from "../contexts/AuthContext";
-import { API_BASE_URL } from "../App";
-
-function Feedback() {
+export default function FeedbackEnhanced() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { eventId } = useParams();
 
+  const [event, setEvent] = useState(null);
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState("idea");
+  const [email, setEmail] = useState("");
+  const [hasJoined, setHasJoined] = useState(false);
+  const [eventHasPassed, setEventHasPassed] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const maxChars = 300;
 
+  const palette = {
+    deep: "#08324A",
+    navy: "#0B63A3",
+    blue: "#0F85D0",
+    soft: "#BFE7FF",
+    pale: "#DFF3FB",
+  };
+
+  // ✅ Check participation and event status
   useEffect(() => {
-    if (!currentUser) {
-      toast.error("Please log in to submit feedback.");
-      navigate("/login");
-    }
-  }, [currentUser, navigate]);
+    const checkEligibility = async () => {
+      if (!currentUser) {
+        toast.error("Please log in to submit feedback.");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        
+        // Fetch event details
+        const eventRes = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const eventData = await eventRes.json();
+        setEvent(eventData.event || eventData);
+
+        // Check if user joined
+        const joined = (eventData.event?.participants || eventData.participants || [])
+          .includes(currentUser._id);
+        setHasJoined(joined);
+
+        // Check if event has passed
+        const eventDate = new Date(eventData.event?.date || eventData.date);
+        const now = new Date();
+        setEventHasPassed(now > eventDate);
+
+        // Check if already submitted feedback
+        const feedbackRes = await fetch(`${API_BASE_URL}/api/feedback/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const feedbacks = await feedbackRes.json();
+        const userFeedback = Array.isArray(feedbacks) 
+          ? feedbacks.find(f => f.user?._id === currentUser._id || f.user === currentUser._id)
+          : null;
+        setAlreadySubmitted(!!userFeedback);
+
+      } catch (error) {
+        console.error("Error checking eligibility:", error);
+        toast.error("Failed to load event details");
+      }
+    };
+
+    checkEligibility();
+  }, [currentUser, eventId, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation checks
+    if (!hasJoined) {
+      toast.error("⚠️ You must join this event before giving feedback.");
+      return;
+    }
+
+    if (!eventHasPassed) {
+      toast.error("⚠️ You can submit feedback after the event ends.");
+      return;
+    }
+
+    if (alreadySubmitted) {
+      toast.error("⚠️ You have already submitted feedback for this event.");
+      return;
+    }
 
     if (!comment.trim()) {
       toast.error("⚠️ Please enter your feedback before submitting.");
@@ -46,16 +111,14 @@ function Feedback() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rating, comment }),
+        body: JSON.stringify({ rating, comment, type, email }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
       toast.success("✅ Thank you for your feedback!");
-      setComment("");
-      setRating(5);
-      setHoverRating(0);
+      setTimeout(() => navigate(`/events/${eventId}`), 1500);
     } catch (err) {
       toast.error(err.message || "Error submitting feedback.");
     } finally {
@@ -63,71 +126,77 @@ function Feedback() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-orange-900 via-orange-700 to-orange-500 p-6">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Event Feedback
-        </h2>
-        <p className="text-gray-600 text-center mb-6">
-          Your thoughts help us improve future events.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Star Rating */}
-          <div className="flex flex-col items-center">
-            <label className="block text-gray-700 font-semibold mb-2">Rating</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  aria-label={`${star} star`}
-                  disabled={loading}
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className={`text-3xl transition-transform transform ${
-                    star <= (hoverRating || rating)
-                      ? "text-yellow-400 scale-110"
-                      : "text-gray-300"
-                  }`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Comment */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Your Feedback</label>
-            <textarea
-              name="comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows="5"
-              maxLength={maxChars}
-              placeholder="Write your feedback here..."
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none resize-none"
-            ></textarea>
-            <p className="text-sm text-gray-400 text-right">{comment.length}/{maxChars}</p>
-          </div>
-
-          {/* Submit Button */}
+  // ✅ Show eligibility messages
+  if (!hasJoined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+        <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-lg">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Join Event First</h2>
+          <p className="text-gray-600 mb-6">
+            You must join this event before you can leave feedback.
+          </p>
           <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-            }`}
+            onClick={() => navigate(`/events/${eventId}`)}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            {loading ? "Submitting..." : "Submit Feedback"}
+            View Event
           </button>
-        </form>
+        </div>
       </div>
+    );
+  }
+
+  if (!eventHasPassed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+        <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-lg">
+          <div className="text-6xl mb-4">⏳</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Not Yet Complete</h2>
+          <p className="text-gray-600 mb-2">
+            You can submit feedback after the event date:
+          </p>
+          <p className="text-lg font-semibold text-blue-600 mb-6">
+            {event && new Date(event.date).toLocaleDateString()}
+          </p>
+          <button
+            onClick={() => navigate(`/events/${eventId}`)}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Event
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (alreadySubmitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+        <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-lg">
+          <div className="text-6xl mb-4">✅</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Feedback Already Submitted</h2>
+          <p className="text-gray-600 mb-6">
+            You have already submitted feedback for this event. Thank you!
+          </p>
+          <button
+            onClick={() => navigate(`/events/${eventId}`)}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            View Event
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Rest of your existing form JSX...
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{ background: `linear-gradient(90deg, ${palette.deep} 0%, ${palette.navy} 50%, ${palette.blue} 100%)` }}
+    >
+      {/* Your existing form code */}
     </div>
   );
 }
-
-export default Feedback;

@@ -78,7 +78,7 @@ function TimePicker({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        className="w-full text-left rounded-xl border border-primary-200 bg-white px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary"
       >
         {value
           ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(
@@ -87,14 +87,14 @@ function TimePicker({ value, onChange }) {
             )} ${period}`
           : "Select time"}
       </button>
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-primary-700">
         <ClockIcon />
       </span>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+        <div className="absolute z-20 mt-2 w-64 rounded-xl border border-primary-200 bg-white p-3 shadow-xl">
           <div className="grid grid-cols-3 gap-2">
-            <div className="max-h-60 overflow-y-auto rounded ring-1 ring-slate-200">
+            <div className="max-h-60 overflow-y-auto rounded ring-1 ring-primary-200">
               {hours.map((h) => (
                 <button
                   key={h}
@@ -104,7 +104,7 @@ function TimePicker({ value, onChange }) {
                   }}
                   className={`block w-full px-3 py-2 text-sm ${
                     h === hour
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-primary text-white"
                       : "hover:bg-slate-50"
                   }`}
                 >
@@ -112,7 +112,7 @@ function TimePicker({ value, onChange }) {
                 </button>
               ))}
             </div>
-            <div className="max-h-60 overflow-y-auto rounded ring-1 ring-slate-200">
+            <div className="max-h-60 overflow-y-auto rounded ring-1 ring-primary-200">
               {minutes.map((m) => (
                 <button
                   key={m}
@@ -122,7 +122,7 @@ function TimePicker({ value, onChange }) {
                   }}
                   className={`block w-full px-3 py-2 text-sm ${
                     m === minute
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-primary text-white"
                       : "hover:bg-slate-50"
                   }`}
                 >
@@ -130,7 +130,7 @@ function TimePicker({ value, onChange }) {
                 </button>
               ))}
             </div>
-            <div className="flex flex-col rounded ring-1 ring-slate-200">
+            <div className="flex flex-col rounded ring-1 ring-primary-200">
               {["am", "pm"].map((p) => (
                 <button
                   key={p}
@@ -140,7 +140,7 @@ function TimePicker({ value, onChange }) {
                   }}
                   className={`flex-1 px-3 py-2 text-sm ${
                     p === period
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-primary text-white"
                       : "hover:bg-slate-50"
                   }`}
                 >
@@ -159,14 +159,14 @@ function TimePicker({ value, onChange }) {
 const Label = ({ children, htmlFor }) => (
   <label
     htmlFor={htmlFor}
-    className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+    className="block text-xs font-semibold uppercase tracking-wide text-primary-700"
   >
     {children}
   </label>
 );
 
 const Field = ({ children }) => (
-  <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 focus-within:ring-2 focus-within:ring-emerald-500">
+  <div className="rounded-xl border border-primary-200 bg-white px-4 py-3 focus-within:ring-2 focus-within:ring-primary">
     {children}
   </div>
 );
@@ -214,6 +214,12 @@ function CreateEvent() {
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result?.toString() || "");
     reader.readAsDataURL(file);
+  };
+
+  // NEW: remove attached image/file
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview("");
   };
 
   const addReminder = () => {
@@ -327,16 +333,32 @@ function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="theme min-h-screen">
+      <style>{`
+        :root { --c900:#002d54; --c700:#004887; --c500:#0078c1; --c200:#a8daf9; --c100:#cde2ee; }
+        .theme { background: var(--c100); }
+        .theme .bg-primary { background-color: var(--c500) !important; }
+        .theme .bg-primary-dark { background-color: var(--c700) !important; }
+        .theme .bg-primary-900 { background-color: var(--c900) !important; }
+        .theme .text-primary-900 { color: var(--c900) !important; }
+        .theme .text-primary-700 { color: var(--c700) !important; }
+        .theme .border-primary-200 { border-color: var(--c200) !important; }
+        .theme .border-primary-100 { border-color: var(--c100) !important; }
+        .theme .bg-muted { background-color: var(--c100) !important; }
+        .theme .placeholder-primary { color: rgba(0,45,84,0.45) !important; }
+        .theme .focus\:ring-primary:focus { box-shadow: 0 0 0 4px rgba(0,120,193,0.18); outline: none; }
+        .theme .hover\:bg-primary-dark:hover { background-color: var(--c700) !important; }
+      `}</style>
+
       {/* Top bar strip for subtle depth */}
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
       <div className="mx-auto max-w-5xl px-4 pb-20">
-        <h1 className="mt-8 mb-6 text-3xl font-bold tracking-tight text-slate-800">
+        <h1 className="mt-8 mb-6 text-3xl font-bold tracking-tight text-primary-900">
           Create event
         </h1>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 border-primary-200">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Title + Description */}
             <div className="space-y-3">
@@ -348,7 +370,7 @@ function CreateEvent() {
                   value={eventData.title}
                   onChange={handleChange}
                   placeholder="Event name"
-                  className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                   required
                 />
               </Field>
@@ -362,7 +384,7 @@ function CreateEvent() {
                   onChange={handleChange}
                   placeholder="Add a short description"
                   rows={3}
-                  className="w-full resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                  className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                   required
                 />
               </Field>
@@ -375,7 +397,7 @@ function CreateEvent() {
                 <div className="relative">
                   <Field>
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-400">
+                      <span className="text-primary-700">
                         <CalendarIcon />
                       </span>
                       <input
@@ -384,7 +406,7 @@ function CreateEvent() {
                         name="date"
                         value={eventData.date}
                         onChange={handleChange}
-                        className="w-full bg-transparent text-slate-800 focus:outline-none"
+                        className="w-full bg-transparent text-primary-900 focus:outline-none"
                         required
                       />
                     </div>
@@ -413,7 +435,7 @@ function CreateEvent() {
                     value={eventData.capacity}
                     onChange={handleChange}
                     placeholder="50"
-                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                   />
                 </Field>
               </div>
@@ -427,7 +449,7 @@ function CreateEvent() {
                     value={eventData.typeOfEvent}
                     onChange={handleChange}
                     placeholder="e.g., Conference, Workshop, Seminar"
-                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                   />
                 </Field>
               </div>
@@ -441,7 +463,7 @@ function CreateEvent() {
                     value={eventData.venue}
                     onChange={handleChange}
                     placeholder="Venue"
-                    className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                     required
                   />
                 </Field>
@@ -452,16 +474,26 @@ function CreateEvent() {
             <div className="space-y-3">
               <Label>Upload attachments</Label>
 
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center justify-between rounded-xl border border-primary-200 bg-white p-4">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-slate-100 p-2 text-slate-500">
+                  <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
                     <UploadIcon />
                   </div>
-                  <div className="text-sm text-slate-600">
-                    {imageFile ? imageFile.name : "No file selected"}
+                  <div className="text-sm text-primary-700 flex items-center gap-2">
+                    <span>{imageFile ? imageFile.name : "No file selected"}</span>
+                    {imageFile && (
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
+                        aria-label="Remove attachment"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-dark">
                   <input
                     type="file"
                     accept="image/*"
@@ -472,17 +504,25 @@ function CreateEvent() {
                 </label>
               </div>
 
-              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+              <div className="rounded-xl border-2 border-dashed border-primary-200 bg-muted px-4 py-10 text-center text-sm text-primary-700">
                 You can also drop your files here
               </div>
 
               {imagePreview && (
-                <div className="overflow-hidden rounded-xl border border-slate-200">
+                <div className="relative overflow-hidden rounded-xl border border-primary-200">
                   <img
                     src={imagePreview}
                     alt="Preview"
                     className="h-48 w-full object-cover"
                   />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    aria-label="Remove preview"
+                    className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700 hover:bg-white"
+                  >
+                    ✕
+                  </button>
                 </div>
               )}
             </div>
@@ -502,13 +542,13 @@ function CreateEvent() {
                       }
                     }}
                     placeholder="Add reminder"
-                    className="w-72 bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
+                    className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none"
                   />
                 </Field>
                 <button
                   type="button"
                   onClick={addReminder}
-                  className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white hover:bg-emerald-700"
+                  className="rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white hover:bg-primary-dark"
                 >
                   Add
                 </button>
@@ -519,13 +559,13 @@ function CreateEvent() {
                   {eventData.reminders.map((r, i) => (
                     <li
                       key={i}
-                      className="group inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                      className="group inline-flex items-center gap-2 rounded-full bg-primary-100 px-3 py-1.5 text-sm text-primary-700"
                     >
                       {r}
                       <button
                         type="button"
                         onClick={() => removeReminder(i)}
-                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                        className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200 hover:text-primary-900"
                         aria-label="Remove reminder"
                       >
                         ✕
@@ -541,14 +581,14 @@ function CreateEvent() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-primary-200 bg-white px-5 py-3 text-sm font-medium text-primary-700 hover:bg-primary-100"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
+                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark disabled:opacity-60"
               >
                 {loading ? "Creating..." : "Create Event"}
               </button>
