@@ -53,7 +53,7 @@ function Dashboard() {
       className="fixed left-0 right-0 bottom-0"
       style={{
         top: NAV_HEIGHT,
-        background: "linear-gradient(180deg, #002d54 0%, #0078c1 45%, #cde2ee 100%)",
+        background: "linear-gradient(180deg, #000000ff 0%, #000000ff 45%, #000000ff 100%)",
       }}
     >
       <div className="h-full w-full flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6">
