@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react"; 
 import { useParams, Link } from "react-router-dom";
 import { API_BASE_URL } from "../App";
 
@@ -8,7 +8,7 @@ function Star({ filled }) {
   return (
     <svg
       aria-hidden="true"
-      className={`h-4 w-4 ${filled ? "fill-yellow-400" : "fill-gray-200"}`}
+      className={`h-4 w-4 ${filled ? "fill-amber-400" : "fill-slate-200"}`}
       viewBox="0 0 20 20"
     >
       <path d="M10 15.27 16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
@@ -31,34 +31,37 @@ function RatingBar({ stars, count, total }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 text-sm text-gray-600">{stars}★</div>
-      <div className="relative h-2 flex-1 rounded bg-gray-100">
-        <div className="absolute inset-y-0 left-0 rounded bg-yellow-400" style={{ width: `${pct}%` }} />
+      <div className="w-8 text-sm text-slate-600">{stars}★</div>
+      <div className="relative h-2 flex-1 rounded bg-slate-200">
+        <div
+          className="absolute inset-y-0 left-0 rounded"
+          style={{ width: `${pct}%`, backgroundColor: "rgb(20 184 166)" }} // tailwind teal-400 equivalent inline for consistent rendering
+        />
       </div>
-      <div className="w-10 text-right text-sm tabular-nums text-gray-600">{count}</div>
+      <div className="w-10 text-right text-sm tabular-nums text-slate-600">{count}</div>
     </div>
   );
 }
 
 function ReviewCard({ review }) {
   return (
-    <article className="rounded-2xl border p-4 hover:shadow-sm transition">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-sm transition">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600">
+          <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-700">
             {review.user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div>
-            <p className="font-medium">{review.user?.name || "Anonymous"}</p>
-            <p className="text-xs text-gray-500">
+            <p className="font-medium text-slate-900">{review.user?.name || "Anonymous"}</p>
+            <p className="text-xs text-slate-500">
               {new Date(review.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
         <Stars value={review.rating} />
       </div>
-      {review.title && <h3 className="mt-3 font-semibold">{review.title}</h3>}
-      {review.comment && <p className="mt-2 text-gray-700">{review.comment}</p>}
+      {review.title && <h3 className="mt-3 font-semibold text-slate-900">{review.title}</h3>}
+      {review.comment && <p className="mt-2 text-slate-700">{review.comment}</p>}
     </article>
   );
 }
@@ -116,39 +119,35 @@ export default function EventFeedbackPage() {
   }, [reviews]);
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto p-6 text-gray-600">Loading feedback…</div>;
+    return <div className="max-w-6xl mx-auto p-6 text-slate-600">Loading feedback…</div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{event?.name || "Customers Feedback"}</h1>
-          {event?.date && <p className="text-sm text-gray-500">{new Date(event.date).toLocaleString()}</p>}
+          <h1 className="text-2xl font-bold text-slate-900">{event?.name || "Customers Feedback"}</h1>
+          {event?.date && <p className="text-sm text-slate-500">{new Date(event.date).toLocaleString()}</p>}
         </div>
-        <Link
-          to={`/feedback/${eventId}/new`}
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-        >
-          Write a Review
-        </Link>
+
+        {/* Top "Write a Review" removed since there's a Leave Feedback CTA below */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-[320px,1fr]">
         {/* Left: ratings summary */}
-        <section className="rounded-2xl border p-5">
-          <h2 className="text-lg font-semibold">Ratings & Reviews</h2>
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <h2 className="text-lg font-semibold text-slate-900">Ratings & Reviews</h2>
 
           <div className="mt-4 flex items-center gap-4">
-            <div className="text-4xl font-bold tabular-nums">{summary.avg.toFixed(1)}</div>
+            <div className="text-4xl font-bold tabular-nums text-slate-900">{summary.avg.toFixed(1)}</div>
             <div>
               <Stars value={summary.avg} />
-              <p className="mt-1 text-sm text-gray-500">{summary.total} review{summary.total !== 1 ? "s" : ""}</p>
+              <p className="mt-1 text-sm text-slate-500">{summary.total} review{summary.total !== 1 ? "s" : ""}</p>
             </div>
           </div>
 
           <div className="mt-6 space-y-2">
-            {[5, 4, 3, 2, 1].map((s, i) => (
+            {[5, 4, 3, 2, 1].map((s) => (
               <RatingBar
                 key={s}
                 stars={s}
@@ -160,7 +159,7 @@ export default function EventFeedbackPage() {
 
           <Link
             to={`/feedback/${eventId}/new`}
-            className="mt-6 inline-block w-full rounded-xl bg-gray-900 px-4 py-2 text-center text-white hover:bg-black"
+            className="mt-6 inline-block w-full rounded-xl bg-teal-600 px-4 py-2 text-center text-white hover:bg-teal-700"
           >
             Leave Feedback
           </Link>
@@ -169,7 +168,9 @@ export default function EventFeedbackPage() {
         {/* Right: reviews list */}
         <section className="space-y-4">
           {reviews.length === 0 ? (
-            <div className="rounded-2xl border p-6 text-gray-600">No reviews yet. Be the first!</div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600">
+              No reviews yet. Be the first!
+            </div>
           ) : (
             reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
           )}
