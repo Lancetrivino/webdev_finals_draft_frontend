@@ -32,8 +32,9 @@ const NavBar = () => {
   // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
 const navLinkStyle = ({ isActive }) =>
   `relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200
-   text-white/90 hover:text-white hover:brightness-150
+   text-white/90 hover:text-white hover:-translate-y-1 hover:brightness-125
    ${isActive ? "after:block after:h-[2px] after:w-full after:bg-white after:mt-1" : ""}`;
+
 
   return (
     <header
