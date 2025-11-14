@@ -33,12 +33,9 @@ const NavBar = () => {
 const navLinkStyle = ({ isActive }) =>
   `relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200
    text-white/90 
-   hover:text-white 
-   hover:brightness-150
-   hover:scale-105
+   hover:text-white hover:brightness-150 hover:scale-105
    active:scale-95
-   ${isActive ? "text-white" : ""}`;
-
+   ${isActive ? "text-white font-extrabold scale-105" : ""}`;
 
   return (
     <header
@@ -86,18 +83,10 @@ const navLinkStyle = ({ isActive }) =>
           </NavLink>
 
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/events" className={navLinkStyle}>
-              Events
-            </NavLink>
-            <NavLink to="/available-events" className={navLinkStyle}>
-              Available Events
-            </NavLink>
-            <NavLink to="/create-event" className={navLinkStyle}>
-              Create Event
-            </NavLink>
-            <NavLink to="/feedback" className={navLinkStyle}>
-              Feedback
-            </NavLink>
+            <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
+            <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
+            <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
 
             {currentUser?.role === "Admin" && (
               <NavLink to="/admin" className={navLinkStyle}>
