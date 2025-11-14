@@ -25,7 +25,7 @@ function Dashboard() {
   }, [currentUser]);
 
   const NAV_HEIGHT = 80;
-  const welcomeMessage = `Hello ${currentUser?.name || "User"}!`;
+  const welcomeMessage = `Hello, ${currentUser?.name || "User"}!`;
 
   return (
     <div
