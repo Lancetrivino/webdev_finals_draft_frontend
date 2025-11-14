@@ -31,10 +31,10 @@ const NavBar = () => {
 
   // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
   const navLinkStyle = ({ isActive }) =>
-    `relative px-3 py-2 font-medium transition-all duration-200 text-white/90 
-     hover:text-white hover:-translate-y-1 hover:font-semibold 
-     active:translate-y-0 active:font-bold
-     ${isActive ? "text-white font-bold" : ""}`;
+    `relative px-4 py-2 font-medium tracking-wide transition-all duration-200 text-white/90 
+   hover:text-white hover:font-semibold hover:-translate-y-0.5 
+   active:translate-y-0 active:font-bold
+   ${isActive ? "text-white font-bold" : ""}`;
 
   return (
     <header
@@ -64,15 +64,17 @@ const NavBar = () => {
               </svg>
 
               {/* ⭐ ADDED HOVER + PRESS EFFECT TO EVENTURE LOGO TEXT */}
-              <span className="
+              <span
+              className="
                 text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2]
                 bg-clip-text text-transparent tracking-tight
                 transition-all duration-200 
-                hover:-translate-y-1 hover:font-black
-                active:translate-y-0 active:font-extrabold
-              ">
-                Eventure
-              </span>
+                hover:scale-105 hover:font-black
+                active:scale-100 active:font-extrabold"
+            >
+              Eventure
+            </span>
+
             </span>
           </NavLink>
 
