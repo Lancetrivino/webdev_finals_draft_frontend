@@ -93,7 +93,7 @@ function Events() {
         <Link
           to="/create-event"
           className="mt-6 px-6 py-3 text-white rounded-full font-medium shadow transition hover:opacity-90"
-          style={{ background: palette.blue }}
+          style={{ background: "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)", }} 
         >
           Create Event
         </Link>
