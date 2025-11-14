@@ -7,7 +7,8 @@ export default function AvailableEvents() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [joinedEventIds, setJoinedEventIds] = useState([]);
-  const [sortOption, setSortOption] = useState("date"); // default sort by date
+  const [sortOption, setSortOption] = useState("date");
+  const [processingEvent, setProcessingEvent] = useState(null); // ✅ NEW: Track which event is being processed
 
   const navigate = useNavigate();
 
@@ -35,7 +36,6 @@ export default function AvailableEvents() {
         // The endpoint already returns only approved events, no need to filter
         setEvents(data);
 
-        // ✅ FIX: Use 'data' instead of 'approvedEvents'
         // Mark events the user already joined
         const joined = data
           .filter((e) => e.participants?.includes(userId))
@@ -79,13 +79,20 @@ export default function AvailableEvents() {
     return filteredEvents;
   }, [q, events, sortOption]);
 
-  // ✅ Handle Book Event
+  // ✅ Enhanced Handle Join Event with Loading State
   const handleBook = async (eventId) => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser) return toast.info("Please login first.");
-    const { token, _id: userId } = storedUser;
+    if (!storedUser) {
+      toast.info("Please login first.");
+      navigate("/login");
+      return;
+    }
 
+    const { token, _id: userId } = storedUser;
     const API_BASE = import.meta.env.VITE_API_URL;
+
+    setProcessingEvent(eventId); // ✅ Show loading state
+
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/join`, {
         method: "POST",
@@ -96,10 +103,19 @@ export default function AvailableEvents() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to book event");
+      if (!res.ok) throw new Error(data.message || "Failed to join event");
 
-      toast.success(data.message || "Successfully registered for event!");
+      // ✅ Get event name for better success message
+      const eventName = events.find((e) => e._id === eventId)?.title || "event";
+      toast.success(`🎉 You've successfully joined "${eventName}"!`, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+
+      // Update joined events list
       setJoinedEventIds((prev) => [...prev, eventId]);
+
+      // Update events state
       setEvents((prev) =>
         prev.map((e) =>
           e._id === eventId
@@ -112,17 +128,30 @@ export default function AvailableEvents() {
       );
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Error booking event.");
+      toast.error(error.message || "Error joining event.", {
+        position: "top-center",
+      });
+    } finally {
+      setProcessingEvent(null); // ✅ Clear loading state
     }
   };
 
-  // ✅ Handle Leave Event
+  // ✅ Enhanced Handle Leave Event with Loading State
   const handleLeave = async (eventId) => {
+    const eventName =
+      events.find((e) => e._id === eventId)?.title || "this event";
+
+    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`)) {
+      return; // User cancelled
+    }
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) return toast.info("Please login first.");
     const { token, _id: userId } = storedUser;
 
     const API_BASE = import.meta.env.VITE_API_URL;
+
+    setProcessingEvent(eventId); // ✅ Show loading state
+
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/leave`, {
         method: "POST",
@@ -135,8 +164,17 @@ export default function AvailableEvents() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave event");
 
-      toast.success(data.message || "Successfully unregistered from event!");
+      // ✅ Get event name for better success message
+      const eventName = events.find((e) => e._id === eventId)?.title || "event";
+      toast.success(`You've left "${eventName}"`, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+
+      // Update joined events list
       setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
+
+      // Update events state
       setEvents((prev) =>
         prev.map((e) =>
           e._id === eventId
@@ -151,7 +189,11 @@ export default function AvailableEvents() {
       );
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Error leaving event.");
+      toast.error(error.message || "Error leaving event.", {
+        position: "top-center",
+      });
+    } finally {
+      setProcessingEvent(null); // ✅ Clear loading state
     }
   };
 
@@ -159,7 +201,12 @@ export default function AvailableEvents() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600 text-lg font-medium">Loading events...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg font-medium">
+            Loading events...
+          </p>
+        </div>
       </div>
     );
   }
@@ -209,6 +256,7 @@ export default function AvailableEvents() {
             const remaining = (e.capacity || 0) - (e.participants?.length || 0);
             const isFull = remaining <= 0;
             const joined = joinedEventIds.includes(e._id);
+            const isProcessing = processingEvent === e._id; // ✅ Check if this event is being processed
 
             return (
               <article
@@ -231,6 +279,8 @@ export default function AvailableEvents() {
                   <p className="mt-2 line-clamp-2 text-sm text-slate-600">
                     {e.description}
                   </p>
+
+                  {/* ✅ Rating Display */}
                   {e.averageRating > 0 && e.totalReviews > 0 && (
                     <div className="flex items-center gap-2 mt-3">
                       <span className="text-yellow-400 text-lg">★</span>
@@ -256,21 +306,76 @@ export default function AvailableEvents() {
                     {joined ? (
                       <button
                         onClick={() => handleLeave(e._id)}
-                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-md transition hover:bg-red-700 active:scale-95"
+                        disabled={isProcessing}
+                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-md transition hover:bg-red-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Leave
+                        {isProcessing ? (
+                          <span className="flex items-center gap-2">
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Leaving...
+                          </span>
+                        ) : (
+                          "Leave"
+                        )}
                       </button>
                     ) : (
                       <button
-                        onClick={() => navigate(`/book/${e._id}`)}
-                        disabled={isFull}
+                        onClick={() => handleBook(e._id)}
+                        disabled={isFull || isProcessing}
                         className={`rounded-full px-4 py-2 text-sm font-medium text-white shadow-md transition active:scale-95 ${
-                          isFull
+                          isFull || isProcessing
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
                       >
-                        Book
+                        {isProcessing ? (
+                          <span className="flex items-center gap-2">
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Joining...
+                          </span>
+                        ) : isFull ? (
+                          "Full"
+                        ) : (
+                          "Join Event"
+                        )}
                       </button>
                     )}
                   </div>
