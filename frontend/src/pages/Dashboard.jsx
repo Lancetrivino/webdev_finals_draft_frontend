@@ -38,10 +38,10 @@ function Dashboard() {
         background: "#f5f5f5",
       }}
     >
-      <div className="min-h-full w-full flex flex-col items-center px-6 py-6">
+      <div className="min-h-full w-full flex flex-col items-center px-6 py-12">
         <div
-          className="relative w-[min(1400px,98vw)] rounded-[28px] border border-white/20
-            bg-white/40 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-10"
+          className="relative w-[min(1400px,95vw)] min-h-[80vh] rounded-[32px] border border-white/20
+            bg-white/50 backdrop-blur-xl shadow-[0_12px_50px_rgba(0,0,0,0.12)] p-12 flex flex-col justify-center items-center text-center"
         >
           {/* TIME & DATE TOP-RIGHT */}
           <div className="absolute top-6 right-6 text-right text-gray-600">
@@ -49,41 +49,37 @@ function Dashboard() {
             <div className="text-xs">{now.toLocaleDateString()}</div>
           </div>
 
-          {/* LEFT TEXT PANEL */}
-          <div className="flex flex-col lg:flex-row gap-10">
-            <div className="flex-1 flex flex-col justify-center">
-              <h1 className="text-[clamp(28px,4vw,46px)] font-bold tracking-tight text-[#35008d]">
-                Welcome, {currentUser?.name || "User"}!<br />
-                Your Event Management System
-              </h1>
-              <p className="mt-4 text-gray-700 text-sm sm:text-base max-w-lg">
-                Manage, explore, and join events with ease. Connect your community, organize your
-                activities, and stay updated with what’s happening around you.
-              </p>
-            </div>
-          </div>
+          {/* MAIN WELCOME TEXT */}
+          <h1 className="text-[clamp(30px,5vw,50px)] font-extrabold text-transparent bg-clip-text
+            bg-gradient-to-r from-[#35008d] via-[#4c00cb] to-[#6000ff] tracking-tight">
+            Welcome back, {currentUser?.name || "User"}!
+          </h1>
+          <p className="mt-4 text-gray-700 text-base sm:text-lg max-w-2xl leading-relaxed">
+            Dive into your Event Management System! Explore upcoming events, host your own, and
+            connect with your community effortlessly. Let's make every moment count.
+          </p>
 
           {/* BOTTOM LARGE BOXES */}
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="mt-12 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 num: 1,
-                title: "Upcoming this week",
-                text: "See local meetups and activities happening soon.",
+                title: "Upcoming Events",
+                text: "Discover local meetups and exciting activities happening soon.",
                 link: "/events",
                 btn: "Explore",
               },
               {
                 num: 2,
-                title: "Create your event",
-                text: "Host gatherings or community projects.",
+                title: "Create Your Event",
+                text: "Host gatherings or community projects to engage others.",
                 link: "/create-event",
                 btn: "Create",
               },
               {
                 num: 3,
-                title: "Help us improve",
-                text: "Share feedback to make the app better.",
+                title: "Feedback & Support",
+                text: "Share your thoughts to help us improve your experience.",
                 link: "/feedback",
                 btn: "Feedback",
               },
@@ -91,11 +87,11 @@ function Dashboard() {
               <div
                 key={c.num}
                 className="rounded-3xl border border-white/30 bg-white/50
-                  backdrop-blur-lg px-6 py-7 shadow-sm flex flex-col h-[200px]"
+                  backdrop-blur-lg px-6 py-7 shadow-sm flex flex-col h-[240px] hover:translate-y-1 hover:shadow-md transition"
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-11 w-11 rounded-xl bg-[#4200af] text-white 
+                    className="h-12 w-12 rounded-xl bg-[#4200af] text-white 
                       flex items-center justify-center font-semibold shadow"
                   >
                     {c.num}
@@ -109,7 +105,7 @@ function Dashboard() {
 
                 <a
                   href={c.link}
-                  className="inline-flex rounded-full px-3 py-1.5 text-sm font-medium
+                  className="inline-flex rounded-full px-4 py-2 text-sm font-medium
                   bg-[#5800ea] text-white shadow hover:opacity-90 transition self-start"
                 >
                   {c.btn}
