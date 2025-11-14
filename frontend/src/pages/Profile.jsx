@@ -22,7 +22,7 @@ function Profile() {
         name: currentUser.name || "",
         email: currentUser.email || "",
       });
-      setAvatarPreview(currentUser.avatar || ""); // Show existing avatar if any
+      setAvatarPreview(currentUser.avatar || "");
     }
   }, [currentUser, navigate]);
 
@@ -59,7 +59,6 @@ function Profile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update profile.");
 
-      // Update context & localStorage without forcing logout
       updateCurrentUser(data.user);
       toast.success("✅ Profile updated successfully!");
     } catch (err) {
@@ -75,85 +74,105 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-right from-orange-900 via-orange-700 to-orange-500 p-6">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          My Profile
-        </h2>
+    // ensure content sits below a fixed navbar and the full card is visible
+    <div className="min-h-screen bg-[#EDE9E6] pt-24 pb-12 flex items-start justify-center px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-visible">
+        <div className="px-8 py-8">
+          <h2 className="text-2xl font-bold text-[#2C2C2C] text-center mb-4">My Profile</h2>
 
-        {currentUser && (
-          <form onSubmit={handleUpdate} className="space-y-4">
-            {/* Avatar Upload */}
-            <div className="flex flex-col items-center">
-              <label className="block text-gray-700 font-semibold mb-2">Profile Picture</label>
-              <div className="w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-gray-300">
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xl">
-                    👤
-                  </div>
-                )}
+          {currentUser && (
+            <form onSubmit={handleUpdate} className="space-y-5">
+              {/* Avatar */}
+              <div className="flex flex-col items-center">
+                <label className="block text-sm font-semibold text-[#2C2C2C] mb-2">Profile Picture</label>
+
+                <div
+                  className="w-28 h-28 rounded-full overflow-hidden mb-3 flex items-center justify-center border-2"
+                  style={{
+                    borderColor: "rgba(44,44,44,0.06)",
+                    background: avatarPreview
+                      ? "transparent"
+                      : "linear-gradient(135deg,#EDE9E6,#C9BEB3)",
+                  }}
+                >
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Avatar Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-2xl text-[#2C2C2C]">👤</div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="text-sm text-slate-600"
+                />
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="text-sm"
-              />
-            </div>
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-1">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-400 outline-none"
-                required
-              />
-            </div>
+              {/* Full Name */}
+              <div>
+                <label className="block text-sm font-semibold text-[#2C2C2C] mb-1">Full Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#C9BEB3] transition"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-1">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                disabled
-                className="w-full border border-gray-300 rounded-lg p-3 bg-gray-100 cursor-not-allowed"
-              />
-            </div>
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-semibold text-[#2C2C2C] mb-1">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  disabled
+                  className="w-full border border-gray-200 rounded-lg p-3 bg-gray-100 cursor-not-allowed text-slate-700"
+                />
+              </div>
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-1">Role</label>
-              <p className="w-full border border-gray-200 rounded-lg p-3 bg-gray-100 text-gray-700 capitalize">
-                {currentUser.role}
-              </p>
-            </div>
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-semibold text-[#2C2C2C] mb-1">Role</label>
+                <p className="w-full border border-gray-100 rounded-lg p-3 bg-gray-50 text-slate-700 capitalize">
+                  {currentUser.role}
+                </p>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 font-semibold text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 flex items-center justify-center gap-2 ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-orange-800 via-orange-600 to-orange-500 hover:opacity-90"
-              }`}
-            >
-              {loading && <div className="w-5 h-5 border-2 border-t-white border-gray-200 rounded-full animate-spin"></div>}
-              {loading ? "Saving..." : "Update Profile"}
-            </button>
-          </form>
-        )}
+              {/* Update button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-3 rounded-lg text-white font-semibold shadow-md transition-transform transform hover:scale-[1.02] flex items-center justify-center gap-3 ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#7A6C5D] hover:bg-[#5F5245]"
+                }`}
+              >
+                {loading && (
+                  <div className="w-5 h-5 border-2 border-t-white border-gray-200 rounded-full animate-spin"></div>
+                )}
+                {loading ? "Saving..." : "Update Profile"}
+              </button>
+            </form>
+          )}
 
-        <button
-          onClick={handleLogout}
-          className="w-full mt-4 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full mt-4 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
