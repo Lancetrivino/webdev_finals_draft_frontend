@@ -44,14 +44,14 @@ function Dashboard() {
         <span>{now.toLocaleDateString()}</span>
       </div>
 
-      {/* Main container with background image */}
-      <div className="min-h-full w-full flex items-center justify-center px-6 py-16">
+      {/* Main container with background image, moved upward */}
+      <div className="min-h-full w-full flex items-start justify-center px-6 py-12">
         <div
           className="relative w-[min(1400px,98vw)] flex flex-col items-center
             rounded-[28px] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]
-            py-32"
+            py-28"
           style={{
-            background: `url('/path/to/your/image.jpg') center/cover no-repeat`,
+            background: `url('/dashboard_balloon.jpg') center/cover no-repeat`,
             backdropFilter: 'blur(6px)',
           }}
         >
@@ -71,8 +71,8 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom three boxes slightly upward and bigger with spacing below */}
-      <div className="mt-4 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-12">
+      {/* Bottom three boxes moved higher */}
+      <div className="mt-0 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-16">
         {[
           {
             num: 1,
