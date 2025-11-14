@@ -69,9 +69,22 @@ function Events() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: palette.cream }}>
-        <p className="text-lg font-medium text-gray-700">Loading events...</p>
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
+          backgroundSize: "600% 600%",
+          animation: "multiStopGradient 18s ease infinite",
+        }}
+      >
+        <style>{`
+          @keyframes multiStopGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}</style>
+        <p className="text-lg font-medium text-white">Loading events...</p>
       </div>
     );
   }
@@ -79,15 +92,28 @@ function Events() {
   if (events.length === 0) {
     const role = JSON.parse(localStorage.getItem("user"))?.role || "User";
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6"
-        style={{ backgroundColor: palette.cream }}>
-        <h2 className="text-2xl font-semibold" style={{ color: palette.brown }}>
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center px-6"
+        style={{
+          background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
+          backgroundSize: "600% 600%",
+          animation: "multiStopGradient 18s ease infinite",
+        }}
+      >
+        <style>{`
+          @keyframes multiStopGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}</style>
+        <h2 className="text-2xl font-semibold text-white">
           {role === "Admin"
             ? "No events available."
             : "You haven't created any events yet."}
         </h2>
 
-        <p className="mt-2 text-center max-w-xl" style={{ color: palette.brown }}>
+        <p className="mt-2 text-center max-w-xl text-white">
           {role === "Admin"
             ? "Create your first event to get started!"
             : "Create an event and it will appear here after admin approval."}
@@ -116,13 +142,25 @@ function Events() {
   return (
     <div
       className="min-h-screen py-10 px-6"
-      style={{ backgroundColor: palette.cream }}
+      style={{
+        background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
+        backgroundSize: "600% 600%",
+        animation: "multiStopGradient 18s ease infinite",
+      }}
     >
+      <style>{`
+        @keyframes multiStopGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+      
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold" style={{ color: palette.brown }}>
+          <h2 className="text-3xl font-bold text-white">
             {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
               ? "All Events"
               : "My Events"}
