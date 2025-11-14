@@ -35,7 +35,7 @@ function Dashboard() {
         zIndex: 0,
         height: `calc(100vh - ${NAV_HEIGHT + 12}px)`,
         WebkitOverflowScrolling: "touch",
-        background: `url('/assets/event-table.jpg') center/cover no-repeat`,
+        background: `url('/assets/pink_balloon.jpg') center/cover no-repeat`,
       }}
     >
       {/* Top-right time and date side by side */}
