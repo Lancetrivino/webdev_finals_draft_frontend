@@ -83,92 +83,101 @@ function Profile() {
 
   return (
     <div
-      className="min-h-screen flex items-start justify-center pt-24 pb-12 px-4"
+      className="min-h-screen flex items-start justify-center pt-24 pb-12 px-6"
       style={{
         background:
           "linear-gradient(135deg,#6b39c9 0%, #7a48d6 20%, #4da6d8 60%, #2fa8c9 100%)",
       }}
     >
-      <main className="w-full max-w-md">
+      <main className="w-full max-w-4xl">
         <div
-          className="mx-auto rounded-3xl shadow-2xl overflow-hidden"
+          className="mx-auto rounded-2xl shadow-2xl overflow-hidden"
           style={{
             background:
-              "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.94) 100%)",
-            borderRadius: "24px",
-            maxWidth: 720,
+              "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.96) 100%)",
+            borderRadius: "18px",
           }}
         >
-          <div className="flex justify-center">
-            <section className="w-full max-w-md px-8 py-10">
-              <h2 className="text-2xl font-bold text-[#1b1b1b] text-center mb-4">
-                My Profile
-              </h2>
+          {/* Use a grid so left column can show the photo and right column the form */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
+            {/* LEFT: Photo area (visible, larger) */}
+            <div className="flex flex-col items-center md:items-start md:pl-6">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Profile Picture</h2>
+
+              <div
+                className="w-40 h-40 rounded-full overflow-hidden mb-4 flex items-center justify-center relative"
+                style={{
+                  border: "2px solid rgba(0,0,0,0.06)",
+                  background: avatarPreview
+                    ? "transparent"
+                    : "linear-gradient(135deg,#EDE9E6,#C9BEB3)",
+                }}
+              >
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-4xl text-slate-700">👤</div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={openFilePicker}
+                  aria-label="Edit profile picture"
+                  className="absolute -right-2 -bottom-2 w-10 h-10 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 transition"
+                  title="Change avatar"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 text-[#7A6C5D]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.232 5.232l3.536 3.536M3 21h4.586a1 1 0 00.707-.293L19.414 9.586a2 2 0 000-2.828l-3.172-3.172a2 2 0 00-2.828 0L5.293 12.414A1 1 0 005 13.121V17a1 1 0 001 1z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+
+              <p className="text-sm text-slate-600 text-center md:text-left">
+                Click the pencil to change your profile photo.
+              </p>
+
+              <div className="mt-6 w-full md:w-auto">
+                <button
+                  onClick={handleLogout}
+                  className="w-full md:w-auto rounded-full py-2 px-6 bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT: Form area spanning two columns on md */}
+            <section className="md:col-span-2 px-2 md:px-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">My Profile</h2>
 
               {currentUser && (
                 <form onSubmit={handleUpdate} className="space-y-5">
-                  {/* Avatar + edit button */}
-                  <div className="flex flex-col items-center relative">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Profile Picture
-                    </label>
-
-                    <div
-                      className="w-28 h-28 rounded-full overflow-hidden mb-3 flex items-center justify-center relative"
-                      style={{
-                        border: "2px solid rgba(0,0,0,0.06)",
-                        background: avatarPreview
-                          ? "transparent"
-                          : "linear-gradient(135deg,#EDE9E6,#C9BEB3)",
-                      }}
-                    >
-                      {avatarPreview ? (
-                        <img
-                          src={avatarPreview}
-                          alt="Avatar Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-2xl text-slate-700">👤</div>
-                      )}
-
-                      {/* Edit button (bottom-right overlay) */}
-                      <button
-                        type="button"
-                        onClick={openFilePicker}
-                        aria-label="Edit profile picture"
-                        className="absolute -right-2 -bottom-2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 transition"
-                        title="Change avatar"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4 text-[#7A6C5D]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.232 5.232l3.536 3.536M3 21h4.586a1 1 0 00.707-.293L19.414 9.586a2 2 0 000-2.828l-3.172-3.172a2 2 0 00-2.828 0L5.293 12.414A1 1 0 005 13.121V17a1 1 0 001 1z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      className="hidden"
-                    />
-                  </div>
-
-                  {/* Full Name */}
+                  {/* Name */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Full Name
                     </label>
                     <input
@@ -176,14 +185,14 @@ function Profile() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full rounded-full border-2 border-black/20 bg-white/70 px-5 py-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#C9BEB3]/25 transition"
+                      className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#a8daf9]"
                       required
                     />
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Email Address
                     </label>
                     <input
@@ -191,13 +200,13 @@ function Profile() {
                       name="email"
                       value={formData.email}
                       disabled
-                      className="w-full rounded-full border-2 border-black/10 bg-gray-100 px-5 py-3 text-sm text-slate-700 cursor-not-allowed"
+                      className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-gray-50 cursor-not-allowed"
                     />
                   </div>
 
                   {/* Address */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Address
                     </label>
                     <input
@@ -206,42 +215,54 @@ function Profile() {
                       value={formData.address}
                       onChange={handleChange}
                       placeholder="Add your address"
-                      className="w-full rounded-full border-2 border-black/20 bg-white/70 px-5 py-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#C9BEB3]/25 transition"
+                      className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#a8daf9]"
                     />
                   </div>
 
                   {/* Role */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Role
                     </label>
-                    <p className="w-full rounded-full border-2 border-black/10 bg-gray-50 px-5 py-3 text-sm text-slate-700 capitalize">
+                    <p className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-gray-50">
                       {currentUser.role}
                     </p>
                   </div>
 
-                  {/* Update button */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full rounded-full py-3 text-lg font-bold transition flex items-center justify-center ${
-                      loading
-                        ? "bg-gray-400 cursor-not-allowed text-white"
-                        : "bg-[#1f2937] hover:bg-black text-[#5ea0ff]"
-                    }`}
-                  >
-                    {loading ? "Saving..." : "Update Profile"}
-                  </button>
+                  {/* Buttons */}
+                  <div className="flex flex-col md:flex-row gap-3 mt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`flex-1 rounded-full py-3 text-lg font-semibold transition flex items-center justify-center ${
+                        loading
+                          ? "bg-gray-400 cursor-not-allowed text-white"
+                          : "bg-[#1f2937] hover:bg-black text-[#5ea0ff]"
+                      }`}
+                    >
+                      {loading ? "Saving..." : "Update Profile"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // reset avatar preview to current user avatar if exists
+                        setAvatar(null);
+                        setAvatarPreview(currentUser?.avatar || "");
+                        setFormData({
+                          name: currentUser.name || "",
+                          email: currentUser.email || "",
+                          address: currentUser.address || "",
+                        });
+                        toast.info("Changes reverted.");
+                      }}
+                      className="flex-1 rounded-full py-3 border border-slate-200 bg-white text-slate-700 font-medium hover:bg-gray-50 transition"
+                    >
+                      Reset
+                    </button>
+                  </div>
                 </form>
               )}
-
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="w-full mt-4 rounded-full py-3 bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 transition"
-              >
-                Logout
-              </button>
             </section>
           </div>
         </div>
