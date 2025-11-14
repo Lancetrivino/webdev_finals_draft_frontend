@@ -10,8 +10,6 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Instead of returning null (which can cause subtle layout/hook ordering issues
-  // in some app setups), always render the component but hide it on public pages.
   const isAuthPage =
     location.pathname === "/login" ||
     location.pathname === "/register" ||
@@ -31,17 +29,18 @@ const NavBar = () => {
       .join("");
   }, [currentUser]);
 
+  // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
   const navLinkStyle = ({ isActive }) =>
-  `relative px-3 py-2 font-medium transition text-white/90 hover:text-white drop-shadow 
-   ${isActive ? "text-white font-semibold" : ""}`;
+    `relative px-3 py-2 font-medium transition-all duration-200 text-white/90 
+     hover:text-white hover:-translate-y-1 hover:font-semibold 
+     active:translate-y-0 active:font-bold
+     ${isActive ? "text-white font-bold" : ""}`;
 
   return (
-    // When on public pages we keep the navbar mounted but visually hidden.
     <header
-  className={`fixed top-0 left-0 right-0 z-[50] h-20 
+      className={`fixed top-0 left-0 right-0 z-[50] h-20 
     bg-gradient-to-r from-[#35008d] via-[#4c00cb] to-[#6000ff]
     backdrop-blur-md shadow-lg transition-transform ${
-
         isAuthPage ? "pointer-events-none opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
       }`}
       aria-hidden={isAuthPage}
@@ -63,7 +62,15 @@ const NavBar = () => {
                 </defs>
                 <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
               </svg>
-              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent tracking-tight">
+
+              {/* ⭐ ADDED HOVER + PRESS EFFECT TO EVENTURE LOGO TEXT */}
+              <span className="
+                text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2]
+                bg-clip-text text-transparent tracking-tight
+                transition-all duration-200 
+                hover:-translate-y-1 hover:font-black
+                active:translate-y-0 active:font-extrabold
+              ">
                 Eventure
               </span>
             </span>
