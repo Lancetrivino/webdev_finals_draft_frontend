@@ -35,7 +35,7 @@ function Dashboard() {
         zIndex: 0,
         height: `calc(100vh - ${NAV_HEIGHT + 12}px)`,
         WebkitOverflowScrolling: "touch",
-        background: "#f9fafb",
+        background: `url('/assets/dashboard_balloon.jpg') center/cover no-repeat`,
       }}
     >
       {/* Top-right time and date side by side */}
@@ -44,20 +44,13 @@ function Dashboard() {
         <span>{now.toLocaleDateString()}</span>
       </div>
 
-      {/* Main container with background image, moved upward */}
-      <div className="min-h-full w-full flex items-start justify-center px-6 py-8">
+      {/* Main container with blur and transparency */}
+      <div className="min-h-full w-full flex items-start justify-center px-6 py-12">
         <div
           className="relative w-[min(1400px,98vw)] flex flex-col items-center
             rounded-[28px] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]
-            py-24"
-          style={{
-            background: `url('/assets/dashboard_balloon.jpg') center/cover no-repeat`,
-            backdropFilter: 'blur(6px)',
-          }}
+            py-24 bg-white/30 backdrop-blur-xl"
         >
-          {/* Overlay to blend background */}
-          <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
-
           {/* Centered welcome text with animation */}
           <div className="relative z-10 text-center max-w-2xl px-6 animate-fade-in-up">
             <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-[#35008d]">
@@ -71,8 +64,8 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom three boxes moved closer and bigger */}
-      <div className="mt-6 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-16">
+      {/* Bottom three boxes bigger, higher, and white */}
+      <div className="mt-8 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-16">
         {[
           {
             num: 1,
@@ -98,26 +91,23 @@ function Dashboard() {
         ].map((c) => (
           <div
             key={c.num}
-            className="rounded-2xl flex-1 flex flex-col justify-between px-6 py-6 shadow-md h-[200px]"
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-            }}
+            className="rounded-2xl flex-1 flex flex-col justify-between px-6 py-6 shadow-md h-[220px] bg-white"
           >
             <div className="flex items-center gap-3">
               <div
-                className="h-12 w-12 rounded-full bg-white flex items-center justify-center shadow"
+                className="h-12 w-12 rounded-full bg-[#35008d] text-white
+                  flex items-center justify-center font-semibold shadow"
               >
-                <span className="font-bold text-[#4c00cb] text-lg">{c.num}</span>
+                {c.num}
               </div>
-              <div className="font-semibold text-white text-lg">{c.title}</div>
+              <div className="font-semibold text-[#35008d] text-lg">{c.title}</div>
             </div>
 
-            <p className="mt-2 text-sm text-white flex-grow">{c.text}</p>
+            <p className="mt-2 text-sm text-gray-600 flex-grow">{c.text}</p>
 
             <div className="w-full">
               {/* Thin line above button */}
-              <div className="h-[1px] bg-white/60 w-full mb-2" />
+              <div className="h-[1px] bg-gray-300 w-full mb-2" />
               <a
                 href={c.link}
                 className="inline-flex rounded-full px-4 py-2 text-sm font-medium
