@@ -49,8 +49,11 @@ function Dashboard() {
     <div
       className="fixed left-0 right-0 bottom-0"
       style={{
-        top: NAV_HEIGHT,
-        background: "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)",
+        // push it a bit lower than the nav and ensure it doesn't stack above the nav
+        top: NAV_HEIGHT + 12, 
+        zIndex: 0,
+        background:
+          "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)",
       }}
     >
       <div className="h-full w-full flex items-center justify-center px-6 py-6">
@@ -67,7 +70,8 @@ function Dashboard() {
           <div className="pointer-events-none absolute -bottom-24 left-8 w-64 h-64 rounded-full bg-[#cde2ee]/50 blur-[70px]" />
 
           {/* MAIN LAYOUT */}
-          <div className="relative grid grid-cols-12 h-full px-10 py-10 gap-6">
+          {/* added a little top padding so the content doesn't sit flush with the rounded edge */}
+          <div className="relative grid grid-cols-12 h-full px-10 py-10 gap-6 pt-4">
 
             {/* LEFT TEXT PANEL */}
             <div className="col-span-12 lg:col-span-6 flex flex-col justify-center pr-6">
