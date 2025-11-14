@@ -10,8 +10,6 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Instead of returning null (which can cause subtle layout/hook ordering issues
-  // in some app setups), always render the component but hide it on public pages.
   const isAuthPage =
     location.pathname === "/login" ||
     location.pathname === "/register" ||
@@ -31,14 +29,18 @@ const NavBar = () => {
       .join("");
   }, [currentUser]);
 
-  const navLinkStyle = ({ isActive }) =>
-    `relative px-3 py-2 font-medium transition text-white/90 hover:text-white
-     ${isActive ? "text-white" : ""}`;
+  // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
+const navLinkStyle = ({ isActive }) =>
+  `relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200
+   text-white/90 hover:text-white hover:-translate-y-1 hover:brightness-125
+   ${isActive ? "after:block after:h-[2px] after:w-full after:bg-white after:mt-1" : ""}`;
+
 
   return (
-    // When on public pages we keep the navbar mounted but visually hidden.
     <header
-      className={`fixed top-0 left-0 right-0 z-[50] h-20 bg-white/10 backdrop-blur-md shadow-lg transition-transform ${
+      className={`fixed top-0 left-0 right-0 z-[50] h-20 
+    bg-gradient-to-r from-[#35008d] via-[#4c00cb] to-[#6000ff]
+    backdrop-blur-md shadow-lg transition-transform ${
         isAuthPage ? "pointer-events-none opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
       }`}
       aria-hidden={isAuthPage}
@@ -50,7 +52,10 @@ const NavBar = () => {
             className="flex items-center gap-2"
             aria-label="Eventure Home"
           >
-            <span className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-lg hover:shadow-xl transition-all">
+            <span className="
+                inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white shadow-lg 
+                transition-all duration-200 
+                hover:scale-105 active:scale-100">
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                 <defs>
                   <linearGradient id="ev-grad" x1="0" y1="0" x2="1" y2="1">
@@ -60,25 +65,28 @@ const NavBar = () => {
                 </defs>
                 <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
               </svg>
-              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent tracking-tight">
-                Eventure
-              </span>
+
+              {/* ⭐ ADDED HOVER + PRESS EFFECT TO EVENTURE LOGO TEXT */}
+              <span
+              className="
+                text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2]
+                bg-clip-text text-transparent tracking-tight
+                transition-all duration-200 
+                hover:scale-105 hover:font-black
+                active:scale-100 active:font-extrabold"
+            >
+              Eventure
+            </span>
+
             </span>
           </NavLink>
 
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/events" className={navLinkStyle}>
-              Events
-            </NavLink>
-            <NavLink to="/available-events" className={navLinkStyle}>
-              Available Events
-            </NavLink>
-            <NavLink to="/create-event" className={navLinkStyle}>
-              Create Event
-            </NavLink>
-            <NavLink to="/feedback" className={navLinkStyle}>
-              Feedback
-            </NavLink>
+            <NavLink to="/events" className={navLinkStyle}>Events</NavLink>
+            <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
+            <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
+            <NavLink to="/feedback" className={navLinkStyle}>Feedback</NavLink>
+
 
             {currentUser?.role === "Admin" && (
               <NavLink to="/admin" className={navLinkStyle}>
