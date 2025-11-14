@@ -32,13 +32,15 @@ const NavBar = () => {
   }, [currentUser]);
 
   const navLinkStyle = ({ isActive }) =>
-    `relative px-3 py-2 font-medium transition text-white/90 hover:text-white
-     ${isActive ? "text-white" : ""}`;
+  `relative px-3 py-2 font-medium transition text-white/90 hover:text-white drop-shadow
+   ${isActive ? "text-white font-semibold" : ""}`;
 
   return (
     // When on public pages we keep the navbar mounted but visually hidden.
     <header
-      className={`fixed top-0 left-0 right-0 z-[50] h-20 bg-white/10 backdrop-blur-md shadow-lg transition-transform ${
+      className={`fixed top-0 left-0 right-0 z-[50] h-20 
+    bg-gradient-to-r from-[#f3e8ff] via-[#e6cfff] to-[#8040ff] 
+    backdrop-blur-md shadow-lg transition-transform ${
         isAuthPage ? "pointer-events-none opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
       }`}
       aria-hidden={isAuthPage}
