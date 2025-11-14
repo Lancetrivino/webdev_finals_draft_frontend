@@ -25,7 +25,6 @@ function Dashboard() {
   }, [currentUser]);
 
   const NAV_HEIGHT = 80;
-
   const welcomeMessage = `Hello ${currentUser?.name || "User"}!`;
 
   return (
@@ -46,25 +45,22 @@ function Dashboard() {
       </div>
 
       {/* Main container with background image */}
-      <div className="min-h-full w-full flex items-center justify-center px-6 py-12">
+      <div className="min-h-full w-full flex items-center justify-center px-6 py-16">
         <div
           className="relative w-[min(1400px,98vw)] flex flex-col items-center
             rounded-[28px] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]
-            py-24"
+            py-32"
           style={{
             background: `url('/path/to/your/image.jpg') center/cover no-repeat`,
             backdropFilter: 'blur(6px)',
           }}
         >
           {/* Overlay to darken/blend background for better text visibility */}
-          <div className="absolute inset-0 bg-white/30 backdrop-blur-md"></div>
+          <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
 
           {/* Centered welcome text */}
           <div className="relative z-10 text-center max-w-2xl px-6">
-            <h1
-              className="text-[clamp(32px,5vw,48px)] font-extrabold text-transparent bg-clip-text"
-              style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
-            >
+            <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-[#35008d]">
               {welcomeMessage}
             </h1>
             <p className="mt-4 text-gray-700 text-base sm:text-lg leading-relaxed">
@@ -75,8 +71,8 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom three boxes moved outside main container and bigger */}
-      <div className="mt-12 flex justify-center px-4 gap-6 max-w-6xl mx-auto">
+      {/* Bottom three boxes moved upward and bigger */}
+      <div className="mt-8 flex justify-center px-4 gap-8 max-w-6xl mx-auto">
         {[
           {
             num: 1,
@@ -103,11 +99,11 @@ function Dashboard() {
           <div
             key={c.num}
             className="rounded-2xl border border-white/30 bg-white/40
-              backdrop-blur-lg px-6 py-6 shadow-md flex-1 flex flex-col justify-between h-[180px]"
+              backdrop-blur-lg px-6 py-6 shadow-md flex-1 flex flex-col justify-between h-[200px]"
           >
             <div className="flex items-center gap-3">
               <div
-                className="h-10 w-10 rounded-xl bg-[#667eea] text-white 
+                className="h-12 w-12 rounded-xl bg-[#667eea] text-white 
                   flex items-center justify-center font-semibold shadow"
               >
                 {c.num}
@@ -115,7 +111,7 @@ function Dashboard() {
               <div className="font-semibold text-[#4c00cb] text-lg">{c.title}</div>
             </div>
 
-            <p className="mt-2 text-sm text-gray-600 flex-grow">{c.text}</p>
+            <p className="mt-3 text-sm text-gray-600 flex-grow">{c.text}</p>
 
             <div className="w-full">
               {/* Thin line above button */}
