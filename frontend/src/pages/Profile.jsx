@@ -12,12 +12,14 @@ function Profile() {
     name: "",
     email: "",
     address: "",
-    password: "", // <-- new password field (optional)
+    password: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // toggle state
+  const [showPassword, setShowPassword] = useState(false);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function Profile() {
         name: currentUser.name || "",
         email: currentUser.email || "",
         address: currentUser.address || "",
-        password: "", // keep empty unless user enters a new password
+        password: "",
       });
       setAvatarPreview(currentUser.avatar || "");
     }
@@ -47,7 +49,6 @@ function Profile() {
     }
   };
 
-  // called by the circular edit button to open file picker
   const openFilePicker = () => {
     if (fileInputRef.current) fileInputRef.current.click();
   };
@@ -59,11 +60,15 @@ function Profile() {
     try {
       const token = localStorage.getItem("token");
       const formPayload = new FormData();
+
       formPayload.append("name", formData.name);
       formPayload.append("address", formData.address || "");
-      // only append password if user entered one
-      if (formData.password) formPayload.append("password", formData.password);
-      if (avatar) formPayload.append("avatar", avatar);
+
+      if (formData.password)
+        formPayload.append("password", formData.password);
+
+      if (avatar)
+        formPayload.append("avatar", avatar);
 
       const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
@@ -78,7 +83,6 @@ function Profile() {
 
       updateCurrentUser(data.user);
       toast.success("Profile updated successfully!");
-      // clear password field after successful update
       setFormData((prev) => ({ ...prev, password: "" }));
     } catch (err) {
       toast.error(err.message || "Error updating profile.");
@@ -90,10 +94,6 @@ function Profile() {
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword((s) => !s);
   };
 
   return (
@@ -113,11 +113,12 @@ function Profile() {
             borderRadius: "18px",
           }}
         >
-          {/* grid: left = photo, right = form */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
-            {/* LEFT: Photo area (visible, larger) */}
+            {/* LEFT SIDE */}
             <div className="flex flex-col items-center md:items-start md:pl-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Profile Picture</h2>
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">
+                Profile Picture
+              </h2>
 
               <div
                 className="w-40 h-40 rounded-full overflow-hidden mb-4 flex items-center justify-center relative"
@@ -143,7 +144,6 @@ function Profile() {
                   onClick={openFilePicker}
                   aria-label="Edit profile picture"
                   className="absolute -right-2 -bottom-2 w-10 h-10 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 transition"
-                  title="Change avatar"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -175,13 +175,15 @@ function Profile() {
               </p>
             </div>
 
-            {/* RIGHT: Form area spanning two columns on md */}
+            {/* RIGHT SIDE */}
             <section className="md:col-span-2 px-2 md:px-6">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">My Profile</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">
+                My Profile
+              </h2>
 
               {currentUser && (
                 <form onSubmit={handleUpdate} className="space-y-5">
-                  {/* Name */}
+                  {/* NAME */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Full Name
@@ -196,7 +198,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* Email */}
+                  {/* EMAIL */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Email Address
@@ -210,7 +212,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* Address */}
+                  {/* ADDRESS */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Address
@@ -225,7 +227,7 @@ function Profile() {
                     />
                   </div>
 
-                  {/* Password (optional) with show/hide toggle */}
+                  {/* PASSWORD WITH VISIBLE TOGGLE */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       New Password (optional)
@@ -239,41 +241,43 @@ function Profile() {
                         onChange={handleChange}
                         placeholder="Enter a new password to change it"
                         className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#a8daf9] pr-12"
-                        autoComplete="new-password"
                       />
 
                       <button
                         type="button"
-                        onClick={toggleShowPassword}
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        aria-pressed={showPassword}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded focus:outline-none"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 bg-transparent rounded"
                       >
-                        {/* eye / eye-off icons (inline SVG) */}
                         {showPassword ? (
-                          // eye (visible)
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 text-slate-600"
-                            viewBox="0 0 24 24"
+                            className="w-5 h-5 text-slate-700"
                             fill="none"
+                            viewBox="0 0 24 24"
                             stroke="currentColor"
                             strokeWidth="1.5"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                            <circle cx="12" cy="12" r="3" />
                           </svg>
                         ) : (
-                          // eye-off (hidden) — icon similar to the one you liked
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 text-slate-600"
-                            viewBox="0 0 24 24"
+                            className="w-5 h-5 text-slate-700"
                             fill="none"
+                            viewBox="0 0 24 24"
                             stroke="currentColor"
                             strokeWidth="1.5"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.94 17.94A10.94 10.94 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.96 10.96 0 012.25-3.75M6.1 6.1A10.94 10.94 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.96 10.96 0 01-1.67 3.01M3 3l18 18" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M17.94 17.94A10.94 10.94 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.96 10.96 0 012.25-3.75M6.1 6.1A10.94 10.94 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.96 10.96 0 01-1.67 3.01M3 3l18 18"
+                            />
                           </svg>
                         )}
                       </button>
@@ -284,7 +288,7 @@ function Profile() {
                     </p>
                   </div>
 
-                  {/* Role */}
+                  {/* ROLE */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase">
                       Role
@@ -294,7 +298,7 @@ function Profile() {
                     </p>
                   </div>
 
-                  {/* Buttons: Update + Logout (logout now in reset position) */}
+                  {/* BUTTONS */}
                   <div className="flex flex-col md:flex-row gap-3 mt-4">
                     <button
                       type="submit"
