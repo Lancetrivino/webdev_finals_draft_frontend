@@ -26,7 +26,7 @@ function Dashboard() {
 
   const NAV_HEIGHT = 80;
 
-  const welcomeMessage = `Hello ${currentUser?.name || "User"}! Ready to explore today's events and make things happen?`;
+  const welcomeMessage = `Hello ${currentUser?.name || "User"}!`;
 
   return (
     <div
@@ -53,17 +53,14 @@ function Dashboard() {
             bg-white/30 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.08)]
             py-20"
         >
-          {/* Accent gradient top line */}
-          <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-lg"
-               style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }} />
-
+          
           {/* Centered welcome text */}
           <div className="text-center max-w-2xl px-6">
-            <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-transparent bg-clip-text"
-                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-transparent bg-clip-text">
               {welcomeMessage}
             </h1>
             <p className="mt-4 text-gray-600 text-base sm:text-lg leading-relaxed">
+              Ready to explore today's events and make things happen?
               Discover, join, and create events in your community. Stay updated with the latest happenings
               and make meaningful connections today.
             </p>
