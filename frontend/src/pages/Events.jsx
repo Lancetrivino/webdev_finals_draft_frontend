@@ -230,21 +230,7 @@ function Events() {
                   </div>
                 </div>
 
-                {/* Three Circles */}
-                <div className="absolute left-4 bottom-4 flex gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: palette.accent }}
-                  />
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: palette.blue }}
-                  />
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: palette.navy }}
-                  />
-                </div>
+                
               </article>
             );
           })}
