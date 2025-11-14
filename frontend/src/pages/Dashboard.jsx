@@ -26,90 +26,100 @@ function Dashboard() {
 
   const NAV_HEIGHT = 80;
 
+  const welcomeMessage = `Hello ${currentUser?.name || "User"}! Ready to explore today's events and make things happen?`;
+
   return (
     <div
-      className="fixed left-0 right-0 bottom-0"
+      className="fixed left-0 right-0 bottom-0 overflow-y-auto"
       style={{
         top: NAV_HEIGHT + 12,
         zIndex: 0,
         height: `calc(100vh - ${NAV_HEIGHT + 12}px)`,
-        overflowY: "auto",
         WebkitOverflowScrolling: "touch",
-        background: "#f5f5f5",
+        background: "#f9fafb",
       }}
     >
-      <div className="min-h-full w-full flex flex-col items-center px-6 py-12">
+      {/* Top-right time and date */}
+      <div className="fixed top-[92px] right-8 flex flex-col items-end text-right text-sm sm:text-base text-gray-700 font-medium z-10">
+        <span>{now.toLocaleTimeString()}</span>
+        <span>{now.toLocaleDateString()}</span>
+      </div>
+
+      {/* Main container */}
+      <div className="min-h-full w-full flex items-center justify-center px-6 py-12">
         <div
-          className="relative w-[min(1400px,95vw)] min-h-[80vh] rounded-[32px] border border-white/20
-            bg-white/50 backdrop-blur-xl shadow-[0_12px_50px_rgba(0,0,0,0.12)] p-12 flex flex-col justify-center items-center text-center"
+          className="relative w-[min(1400px,98vw)] flex flex-col items-center 
+            rounded-[28px] overflow-visible border border-white/30
+            bg-white/30 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.08)]
+            py-20"
         >
-          {/* TIME & DATE TOP-RIGHT */}
-          <div className="absolute top-6 right-6 text-right text-gray-600">
-            <div className="text-sm font-medium">{now.toLocaleTimeString()}</div>
-            <div className="text-xs">{now.toLocaleDateString()}</div>
+          {/* Accent gradient top line */}
+          <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-lg"
+               style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }} />
+
+          {/* Centered welcome text */}
+          <div className="text-center max-w-2xl px-6">
+            <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-transparent bg-clip-text"
+                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+              {welcomeMessage}
+            </h1>
+            <p className="mt-4 text-gray-600 text-base sm:text-lg leading-relaxed">
+              Discover, join, and create events in your community. Stay updated with the latest happenings
+              and make meaningful connections today.
+            </p>
           </div>
 
-          {/* MAIN WELCOME TEXT */}
-          <h1 className="text-[clamp(30px,5vw,50px)] font-extrabold text-transparent bg-clip-text
-            bg-gradient-to-r from-[#35008d] via-[#4c00cb] to-[#6000ff] tracking-tight">
-            Welcome back, {currentUser?.name || "User"}!
-          </h1>
-          <p className="mt-4 text-gray-700 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Dive into your Event Management System! Explore upcoming events, host your own, and
-            connect with your community effortlessly. Let's make every moment count.
-          </p>
-
-          {/* BOTTOM LARGE BOXES */}
-          <div className="mt-12 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Bottom three boxes */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl px-4">
             {[
               {
                 num: 1,
-                title: "Upcoming Events",
-                text: "Discover local meetups and exciting activities happening soon.",
+                title: "Upcoming this week",
+                text: "See local meetups and activities happening soon.",
                 link: "/events",
                 btn: "Explore",
               },
               {
                 num: 2,
-                title: "Create Your Event",
-                text: "Host gatherings or community projects to engage others.",
+                title: "Create your event",
+                text: "Host gatherings or community projects.",
                 link: "/create-event",
                 btn: "Create",
               },
               {
                 num: 3,
-                title: "Feedback & Support",
-                text: "Share your thoughts to help us improve your experience.",
+                title: "Help us improve",
+                text: "Share feedback to make the app better.",
                 link: "/feedback",
                 btn: "Feedback",
               },
             ].map((c) => (
               <div
                 key={c.num}
-                className="rounded-3xl border border-white/30 bg-white/50
-                  backdrop-blur-lg px-6 py-7 shadow-sm flex flex-col h-[240px] hover:translate-y-1 hover:shadow-md transition"
+                className="rounded-2xl border border-white/30 bg-white/40 
+                  backdrop-blur-lg px-5 py-5 shadow-sm h-[160px] flex flex-col justify-between"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="h-12 w-12 rounded-xl bg-[#4200af] text-white 
-                      flex items-center justify-center font-semibold shadow"
-                  >
+                  <div className="h-9 w-9 rounded-xl bg-[#667eea] text-white 
+                    flex items-center justify-center font-semibold shadow">
                     {c.num}
                   </div>
-                  <div className="font-semibold text-[#35008d] text-lg">{c.title}</div>
+                  <div className="font-semibold text-[#4c00cb] text-lg">{c.title}</div>
                 </div>
 
-                <p className="mt-3 text-sm text-gray-600 flex-grow">{c.text}</p>
+                <p className="mt-2 text-sm text-gray-600 flex-grow">{c.text}</p>
 
-                <div className="mt-4 h-[1px] bg-gray-300 w-full mb-3"></div>
-
-                <a
-                  href={c.link}
-                  className="inline-flex rounded-full px-4 py-2 text-sm font-medium
-                  bg-[#5800ea] text-white shadow hover:opacity-90 transition self-start"
-                >
-                  {c.btn}
-                </a>
+                <div className="w-full">
+                  {/* Thin line above button */}
+                  <div className="h-[1px] bg-gray-300 w-full mb-2" />
+                  <a
+                    href={c.link}
+                    className="inline-flex rounded-full px-3 py-1.5 text-sm font-medium
+                      bg-[#5800ea] text-white shadow hover:opacity-90 transition"
+                  >
+                    {c.btn}
+                  </a>
+                </div>
               </div>
             ))}
           </div>
