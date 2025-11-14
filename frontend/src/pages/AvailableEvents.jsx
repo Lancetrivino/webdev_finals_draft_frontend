@@ -231,6 +231,18 @@ export default function AvailableEvents() {
                   <p className="mt-2 line-clamp-2 text-sm text-slate-600">
                     {e.description}
                   </p>
+                  {e.averageRating > 0 && e.totalReviews > 0 && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="text-yellow-400 text-lg">★</span>
+                      <span className="font-semibold text-slate-800">
+                        {e.averageRating.toFixed(1)}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        ({e.totalReviews}{" "}
+                        {e.totalReviews === 1 ? "review" : "reviews"})
+                      </span>
+                    </div>
+                  )}
 
                   <div className="mt-4 flex items-center justify-between">
                     <span

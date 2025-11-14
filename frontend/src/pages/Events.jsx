@@ -37,7 +37,9 @@ function Events() {
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
         setEvents(data);
       } catch (error) {
-        toast.error("Failed to load events. Check your connection or permissions.");
+        toast.error(
+          "Failed to load events. Check your connection or permissions."
+        );
       } finally {
         setLoading(false);
       }
@@ -79,7 +81,9 @@ function Events() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#DFF3FB] px-6">
         <h2 className="text-2xl font-semibold text-gray-700">
-          {role === "Admin" ? "No events available." : "You haven't created any events yet."}
+          {role === "Admin"
+            ? "No events available."
+            : "You haven't created any events yet."}
         </h2>
         <p className="text-gray-500 mt-2 text-center max-w-xl">
           {role === "Admin"
@@ -110,10 +114,7 @@ function Events() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h2
-            className="text-3xl font-bold"
-            style={{ color: palette.deep }}
-          >
+          <h2 className="text-3xl font-bold" style={{ color: palette.deep }}>
             {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
               ? "All Events"
               : "My Events"}
@@ -130,7 +131,8 @@ function Events() {
         {/* Event Cards */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
-            const remainingSlots = event.capacity - (event.participants?.length || 0);
+            const remainingSlots =
+              event.capacity - (event.participants?.length || 0);
             return (
               <article
                 key={event._id}
@@ -147,13 +149,19 @@ function Events() {
                   ) : (
                     <div
                       className="w-full h-full bg-gradient-to-br from-[#BFE7FF] via-[#0F85D0] to-[#08324A]"
-                      style={{ borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem" }}
+                      style={{
+                        borderTopLeftRadius: "1rem",
+                        borderTopRightRadius: "1rem",
+                      }}
                     />
                   )}
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[event.status] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                        statusColors[event.status] ||
+                        "bg-gray-100 text-gray-700 border-gray-200"
+                      }`}
                     >
                       {event.status || "Unknown"}
                     </span>
@@ -162,11 +170,33 @@ function Events() {
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-[#08324A] mb-2">{event.title}</h3>
+                  <h3 className="text-lg font-bold text-[#08324A] mb-2">
+                    {event.title}
+                  </h3>
+                  {event.averageRating > 0 && event.totalReviews > 0 && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-yellow-400 text-lg">★</span>
+                      <span className="font-semibold text-[#08324A]">
+                        {event.averageRating.toFixed(1)}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        ({event.totalReviews}{" "}
+                        {event.totalReviews === 1 ? "review" : "reviews"})
+                      </span>
+                    </div>
+                  )}
+
                   <div className="text-sm text-gray-600 space-y-1 mb-3">
-                    <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-                    <p><strong>Venue:</strong> {event.venue}</p>
-                    <p><strong>Remaining Slots:</strong> {remainingSlots}</p>
+                    <p>
+                      <strong>Date:</strong>{" "}
+                      {new Date(event.date).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <strong>Venue:</strong> {event.venue}
+                    </p>
+                    <p>
+                      <strong>Remaining Slots:</strong> {remainingSlots}
+                    </p>
                   </div>
                   <p className="text-sm text-gray-500 line-clamp-3 mb-4">
                     {event.description}
@@ -202,9 +232,18 @@ function Events() {
 
                 {/* Three Circles */}
                 <div className="absolute left-4 bottom-4 flex gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ background: palette.accent }} />
-                  <span className="w-3 h-3 rounded-full" style={{ background: palette.blue }} />
-                  <span className="w-3 h-3 rounded-full" style={{ background: palette.navy }} />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.accent }}
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.blue }}
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: palette.navy }}
+                  />
                 </div>
               </article>
             );
