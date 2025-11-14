@@ -98,7 +98,7 @@ function Profile() {
             borderRadius: "18px",
           }}
         >
-          {/* Use a grid so left column can show the photo and right column the form */}
+          {/* grid: left = photo, right = form */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
             {/* LEFT: Photo area (visible, larger) */}
             <div className="flex flex-col items-center md:items-start md:pl-6">
@@ -158,15 +158,6 @@ function Profile() {
               <p className="text-sm text-slate-600 text-center md:text-left">
                 Click the pencil to change your profile photo.
               </p>
-
-              <div className="mt-6 w-full md:w-auto">
-                <button
-                  onClick={handleLogout}
-                  className="w-full md:w-auto rounded-full py-2 px-6 bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition"
-                >
-                  Logout
-                </button>
-              </div>
             </div>
 
             {/* RIGHT: Form area spanning two columns on md */}
@@ -229,7 +220,7 @@ function Profile() {
                     </p>
                   </div>
 
-                  {/* Buttons */}
+                  {/* Buttons: Update + Logout (logout now in reset position) */}
                   <div className="flex flex-col md:flex-row gap-3 mt-4">
                     <button
                       type="submit"
@@ -245,20 +236,10 @@ function Profile() {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        // reset avatar preview to current user avatar if exists
-                        setAvatar(null);
-                        setAvatarPreview(currentUser?.avatar || "");
-                        setFormData({
-                          name: currentUser.name || "",
-                          email: currentUser.email || "",
-                          address: currentUser.address || "",
-                        });
-                        toast.info("Changes reverted.");
-                      }}
-                      className="flex-1 rounded-full py-3 border border-slate-200 bg-white text-slate-700 font-medium hover:bg-gray-50 transition"
+                      onClick={handleLogout}
+                      className="flex-1 rounded-full py-3 border border-slate-200 bg-white text-red-600 font-semibold hover:bg-gray-50 transition"
                     >
-                      Reset
+                      Logout
                     </button>
                   </div>
                 </form>
