@@ -48,7 +48,7 @@ function Dashboard() {
       <div className="min-h-full w-full flex items-start justify-center px-6 py-12">
         <div
           className="relative w-[min(1400px,98vw)] flex flex-col items-center
-            rounded-[28px] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]
+            rounded-[15px] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]
             py-24 bg-white/30 backdrop-blur-xl"
         >
           {/* Centered welcome text with animation */}
@@ -109,7 +109,10 @@ function Dashboard() {
                   <a
                     href={c.link}
                     className="inline-flex rounded-full px-4 py-2 text-sm font-medium
-                      bg-white/30 backdrop-blur-md text-[#35008d] shadow hover:bg-white/50 transition"
+                      text-white shadow transition hover:opacity-90"
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    }}
                   >
                     {c.btn}
                   </a>
