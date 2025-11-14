@@ -30,7 +30,7 @@ function Dashboard() {
     return "bg-[#cde2ee] text-[#002d54] border-[#a8daf9]";
   }, [roleLabel]);
 
-  const NAV_HEIGHT = 80;
+  const NAV_HEIGHT = 80; // match actual navbar height
 
   useEffect(() => {
     const prevHtml = document.documentElement.style.overflow;
@@ -49,9 +49,8 @@ function Dashboard() {
     <div
       className="fixed left-0 right-0 bottom-0"
       style={{
-        // push it a bit lower than the nav and ensure it doesn't stack above the nav
-        top: NAV_HEIGHT + 12, 
-        zIndex: 0,
+        top: NAV_HEIGHT + 12, // ensures dashboard starts BELOW navbar
+        zIndex: 0,            // ensures navbar & dropdown are ABOVE dashboard
         background:
           "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)",
       }}
@@ -70,7 +69,6 @@ function Dashboard() {
           <div className="pointer-events-none absolute -bottom-24 left-8 w-64 h-64 rounded-full bg-[#cde2ee]/50 blur-[70px]" />
 
           {/* MAIN LAYOUT */}
-          {/* added a little top padding so the content doesn't sit flush with the rounded edge */}
           <div className="relative grid grid-cols-12 h-full px-10 py-10 gap-6 pt-4">
 
             {/* LEFT TEXT PANEL */}
@@ -88,7 +86,7 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* USER PANEL — moved to upper-right */}
+            {/* USER PANEL */}
             <div className="col-span-12 lg:col-span-6 flex justify-end">
               <div
                 className="rounded-3xl border border-white/60 
