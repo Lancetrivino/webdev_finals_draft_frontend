@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import React, { useMemo, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,13 +10,12 @@ const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // hide navbar on auth pages (same behavior you had)
-  if (
+  // Instead of returning null (which can cause subtle layout/hook ordering issues
+  // in some app setups), always render the component but hide it on public pages.
+  const isAuthPage =
     location.pathname === "/login" ||
     location.pathname === "/register" ||
-    location.pathname === "/"
-  )
-    return null;
+    location.pathname === "/";
 
   const handleLogout = () => {
     logout();
@@ -36,12 +36,15 @@ const NavBar = () => {
      ${isActive ? "text-white" : ""}`;
 
   return (
-    // make the navbar fixed and above the dashboard
-    <header className="fixed top-0 left-0 right-0 z-[50] h-20 bg-white/10 backdrop-blur-md shadow-lg">
-      {/* keep the inner content vertically centered */}
+    // When on public pages we keep the navbar mounted but visually hidden.
+    <header
+      className={`fixed top-0 left-0 right-0 z-[50] h-20 bg-white/10 backdrop-blur-md shadow-lg transition-transform ${
+        isAuthPage ? "pointer-events-none opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
+      }`}
+      aria-hidden={isAuthPage}
+    >
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center">
         <div className="flex items-center justify-between w-full">
-          {/* Brand */}
           <NavLink
             to="/dashboard"
             className="flex items-center gap-2"
@@ -63,7 +66,6 @@ const NavBar = () => {
             </span>
           </NavLink>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
             <NavLink to="/events" className={navLinkStyle}>
               Events
@@ -84,7 +86,6 @@ const NavBar = () => {
               </NavLink>
             )}
 
-            {/* Avatar menu */}
             <div className="relative ml-2">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
@@ -95,7 +96,6 @@ const NavBar = () => {
               </button>
 
               {avatarOpen && (
-                // IMPORTANT: z-[60] ensures dropdown is higher than the dashboard (which is z:0)
                 <div
                   className="absolute right-0 mt-3 w-48 rounded-2xl bg-white py-2 shadow-xl z-[60]"
                   onMouseLeave={() => setAvatarOpen(false)}
@@ -121,94 +121,36 @@ const NavBar = () => {
             </div>
           </nav>
 
-          {/* Mobile hamburger */}
           <button
             className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Toggle menu"
           >
             {menuOpen ? (
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
           </button>
         </div>
       </div>
 
-      {/* Mobile dropdown */}
       {menuOpen && (
         <div className="md:hidden bg-white/10 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 pb-4">
             <div className="flex flex-col gap-2">
-              <NavLink
-                to="/events"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Events
-              </NavLink>
-              <NavLink
-                to="/available-events"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Available Events
-              </NavLink>
-              <NavLink
-                to="/create-event"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Create Event
-              </NavLink>
-              <NavLink
-                to="/feedback"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Feedback
-              </NavLink>
-              <NavLink
-                to="/profile"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                onClick={() => setMenuOpen(false)}
-              >
-                Profile
-              </NavLink>
+              <NavLink to="/events" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Events</NavLink>
+              <NavLink to="/available-events" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Available Events</NavLink>
+              <NavLink to="/create-event" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Create Event</NavLink>
+              <NavLink to="/feedback" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Feedback</NavLink>
+              <NavLink to="/profile" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Profile</NavLink>
 
               {currentUser?.role === "Admin" && (
-                <NavLink
-                  to="/admin"
-                  className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Admin
-                </NavLink>
+                <NavLink to="/admin" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Admin</NavLink>
               )}
 
               <button
