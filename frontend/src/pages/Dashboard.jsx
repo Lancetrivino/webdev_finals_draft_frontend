@@ -30,18 +30,11 @@ function Dashboard() {
     return "bg-[#cde2ee] text-[#002d54] border-[#a8daf9]";
   }, [roleLabel]);
 
-  const NAV_HEIGHT = 80; // match actual navbar height
+  // NAV height must match your navbar (h-20 -> 80px)
+  const NAV_HEIGHT = 80;
 
-  useEffect(() => {
-    const prevHtml = document.documentElement.style.overflow;
-    const prevBody = document.body.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prevHtml;
-      document.body.style.overflow = prevBody;
-    };
-  }, []);
+  // removed global overflow: hidden effect so the page can scroll normally
+  // (no useEffect modifying document.body/documentElement)
 
   const goProfile = () => navigate("/profile");
 
@@ -49,17 +42,23 @@ function Dashboard() {
     <div
       className="fixed left-0 right-0 bottom-0"
       style={{
-        top: NAV_HEIGHT + 12, // ensures dashboard starts BELOW navbar
-        zIndex: 0,            // ensures navbar & dropdown are ABOVE dashboard
+        top: NAV_HEIGHT + 12, // push dashboard below navbar
+        zIndex: 0, // ensure navbar & dropdown sit above
+        // make the dashboard region a scrollable viewport
+        height: `calc(100vh - ${NAV_HEIGHT + 12}px)`,
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
         background:
           "linear-gradient(180deg, #f9fafb 0%, #f1f5f9 50%, #e2e8f0 100%)",
       }}
     >
-      <div className="h-full w-full flex items-center justify-center px-6 py-6">
+      {/* Centering wrapper — still flexible but now inside the scrollable region */}
+      <div className="min-h-full w-full flex items-start justify-center px-6 py-6">
         <div
-          className="relative w-[min(1400px,98vw)] h-[min(820px,92vh)]
-          rounded-[28px] overflow-hidden border border-white/40
-          bg-white/40 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+          className="relative w-[min(1400px,98vw)] max-h-[100%]
+            rounded-[28px] overflow-visible border border-white/40
+            bg-white/40 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+          // keep the inner card visually independent; allow its content to flow
         >
           {/* Accent line */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/60" />
@@ -86,7 +85,7 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* USER PANEL */}
+            {/* USER PANEL — moved to upper-right */}
             <div className="col-span-12 lg:col-span-6 flex justify-end">
               <div
                 className="rounded-3xl border border-white/60 
