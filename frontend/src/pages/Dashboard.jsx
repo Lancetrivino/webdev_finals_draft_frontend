@@ -53,7 +53,7 @@ function Dashboard() {
           <div className="flex flex-col lg:flex-row gap-10">
             <div className="flex-1 flex flex-col justify-center">
               <h1 className="text-[clamp(28px,4vw,46px)] font-bold tracking-tight text-[#35008d]">
-                Hello, {currentUser?.name || "User"}!<br />
+                Welcome, {currentUser?.name || "User"}!<br />
                 Your Event Management System
               </h1>
               <p className="mt-4 text-gray-700 text-sm sm:text-base max-w-lg">
