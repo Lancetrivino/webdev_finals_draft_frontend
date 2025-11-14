@@ -58,8 +58,8 @@ function Dashboard() {
           {/* Overlay to darken/blend background for better text visibility */}
           <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
 
-          {/* Centered welcome text */}
-          <div className="relative z-10 text-center max-w-2xl px-6">
+          {/* Centered welcome text with animation */}
+          <div className="relative z-10 text-center max-w-2xl px-6 animate-fade-in-up">
             <h1 className="text-[clamp(32px,5vw,48px)] font-extrabold text-[#35008d]">
               {welcomeMessage}
             </h1>
@@ -71,8 +71,8 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom three boxes moved upward and bigger */}
-      <div className="mt-8 flex justify-center px-4 gap-8 max-w-6xl mx-auto">
+      {/* Bottom three boxes slightly upward and bigger with spacing below */}
+      <div className="mt-4 flex justify-center px-4 gap-8 max-w-6xl mx-auto mb-12">
         {[
           {
             num: 1,
@@ -127,6 +127,17 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* Animation styles */}
+      <style>{`
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
