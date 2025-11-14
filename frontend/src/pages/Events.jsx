@@ -7,15 +7,6 @@ function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // NEW COLOR PALETTE
-  const palette = {
-    coral: "#ffaa9a",
-    peach: "#fed0ba",
-    cream: "#fdf6da",
-    tan: "#d7b19d",
-    brown: "#9a8576",
-  };
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
@@ -71,20 +62,12 @@ function Events() {
     return (
       <div 
         className="min-h-screen flex items-center justify-center"
-        style={{
-          background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
-          backgroundSize: "600% 600%",
-          animation: "multiStopGradient 18s ease infinite",
-        }}
+        style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
       >
-        <style>{`
-          @keyframes multiStopGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `}</style>
-        <p className="text-lg font-medium text-white">Loading events...</p>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-white">Loading events...</p>
+        </div>
       </div>
     );
   }
@@ -94,124 +77,104 @@ function Events() {
     return (
       <div 
         className="min-h-screen flex flex-col items-center justify-center px-6"
-        style={{
-          background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
-          backgroundSize: "600% 600%",
-          animation: "multiStopGradient 18s ease infinite",
-        }}
+        style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
       >
-        <style>{`
-          @keyframes multiStopGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `}</style>
-        <h2 className="text-2xl font-semibold text-white">
-          {role === "Admin"
-            ? "No events available."
-            : "You haven't created any events yet."}
-        </h2>
-
-        <p className="mt-2 text-center max-w-xl text-white">
-          {role === "Admin"
-            ? "Create your first event to get started!"
-            : "Create an event and it will appear here after admin approval."}
-        </p>
-
-        <Link
-          to="/create-event"
-          className="mt-6 px-6 py-3 rounded-full font-medium shadow transition hover:opacity-90"
-          style={{
-            background: palette.coral,
-            color: "#fff",
-          }}
-        >
-          Create Event
-        </Link>
+        <div className="text-center max-w-md">
+          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-3">
+            {role === "Admin" ? "No events available" : "No events yet"}
+          </h2>
+          <p className="text-white/90 mb-8">
+            {role === "Admin"
+              ? "Create your first event to get started!"
+              : "Create an event and it will appear here after admin approval."}
+          </p>
+          <Link
+            to="/create-event"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-white text-purple-600 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create Event
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const statusColors = {
-    Approved: "bg-green-100 text-green-700 border-green-200",
-    Pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    Rejected: "bg-red-100 text-red-700 border-red-200",
+  const statusStyles = {
+    Approved: "bg-green-500 text-white",
+    Pending: "bg-yellow-500 text-white",
+    Rejected: "bg-red-500 text-white",
   };
 
   return (
-    <div
-      className="min-h-screen py-10 px-6"
-      style={{
-        background: "linear-gradient(270deg, #C87350, #E5946B, #FFBC80, #C87350, #E5946B, #FFBC80)",
-        backgroundSize: "600% 600%",
-        animation: "multiStopGradient 18s ease infinite",
-      }}
+    <div 
+      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8"
+      style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
     >
-      <style>{`
-        @keyframes multiStopGradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-      
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold text-white">
-            {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
-              ? "All Events"
-              : "My Events"}
-          </h2>
-
-          <Link
-            to="/create-event"
-            className="px-6 py-3 rounded-full font-medium transition hover:opacity-90"
-            style={{ background: palette.coral, color: "#fff" }}
-          >
-            + Create Event
-          </Link>
+        <div className="mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">
+                {JSON.parse(localStorage.getItem("user"))?.role === "Admin"
+                  ? "All Events"
+                  : "My Events"}
+              </h1>
+              <p className="text-white/80">
+                {events.length} {events.length === 1 ? "event" : "events"} available
+              </p>
+            </div>
+            <Link
+              to="/create-event"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create Event
+            </Link>
+          </div>
         </div>
 
-        {/* Event Cards */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Event Cards Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
-            const remainingSlots =
-              event.capacity - (event.participants?.length || 0);
+            const remainingSlots = event.capacity - (event.participants?.length || 0);
 
             return (
               <article
                 key={event._id}
-                className="relative rounded-2xl border shadow-sm hover:shadow-md transition-all duration-300"
-                style={{
-                  backgroundColor: palette.peach,
-                  borderColor: palette.tan,
-                }}
+                className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
               >
-                {/* Image */}
-                <div className="relative h-48 rounded-t-2xl overflow-hidden">
+                {/* Image Section */}
+                <div className="relative h-56 overflow-hidden bg-gradient-to-br from-purple-200 to-indigo-200">
                   {event.image || event.imageData ? (
                     <img
                       src={event.image || event.imageData}
                       alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div
-                      className="w-full h-full"
-                      style={{
-                        background: `linear-gradient(135deg, ${palette.coral}, ${palette.tan})`,
-                      }}
-                    />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className="w-20 h-20 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   )}
-
-                  <div className="absolute top-3 right-3">
+                  
+                  {/* Status Badge */}
+                  <div className="absolute top-4 right-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                        statusColors[event.status] ||
-                        "bg-gray-100 text-gray-700 border-gray-200"
+                      className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${
+                        statusStyles[event.status] || "bg-gray-500 text-white"
                       }`}
                     >
                       {event.status || "Unknown"}
@@ -219,56 +182,90 @@ function Events() {
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-2" style={{ color: palette.brown }}>
+                {/* Content Section */}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-purple-600 transition-colors">
                     {event.title}
                   </h3>
 
+                  {/* Rating */}
                   {event.averageRating > 0 && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-yellow-500 text-lg">★</span>
-                      <span className="font-semibold" style={{ color: palette.brown }}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-5 h-5 ${
+                              i < Math.round(event.averageRating)
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700">
                         {event.averageRating.toFixed(1)}
                       </span>
-                      <span className="text-gray-600 text-sm">
-                        ({event.totalReviews}{event.totalReviews === 1 ? " review" : " reviews"})
+                      <span className="text-sm text-gray-500">
+                        ({event.totalReviews})
                       </span>
                     </div>
                   )}
 
-                  <div className="text-sm space-y-1 mb-3" style={{ color: palette.brown }}>
-                    <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-                    <p><strong>Venue:</strong> {event.venue}</p>
-                    <p><strong>Remaining Slots:</strong> {remainingSlots}</p>
+                  {/* Event Details */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{new Date(event.date).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="line-clamp-1">{event.venue}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span className="font-semibold">{remainingSlots} slots left</span>
+                    </div>
                   </div>
 
-                  <p className="text-sm mb-4" style={{ color: palette.brown }}>
+                  <p className="text-sm text-gray-600 mb-6 line-clamp-2">
                     {event.description}
                   </p>
 
-                  <div className="flex justify-between items-center gap-2">
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-2">
                     <Link
                       to={`/events/${event._id}`}
-                      className="px-4 py-2 text-sm font-medium rounded-full transition"
-                      style={{ background: palette.coral, color: "#fff" }}
+                      style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                      className="w-full text-center px-4 py-2.5 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
                     >
                       View Details
                     </Link>
-
                     <div className="flex gap-2">
                       <Link
                         to={`/events/edit/${event._id}`}
-                        className="px-3 py-2 text-sm rounded-full font-medium transition"
-                        style={{ background: palette.tan, color: "#fff" }}
+                        className="flex-1 text-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
                       >
                         Edit
                       </Link>
-
                       <button
                         onClick={() => handleDelete(event._id)}
-                        className="px-3 py-2 text-sm rounded-full font-medium transition"
-                        style={{ background: "#E63946", color: "#fff" }}
+                        className="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors"
                       >
                         Delete
                       </button>
