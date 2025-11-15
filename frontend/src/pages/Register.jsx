@@ -80,7 +80,7 @@ function Register() {
         <div
           className="bg-white rounded-2xl p-10 md:p-12"
           style={{
-            borderRadius: "18px",
+            borderRadius: "16px",
             background:
               "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,250,255,0.98))",
             boxShadow:
