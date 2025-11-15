@@ -351,7 +351,7 @@ function CreateEvent() {
 
   {/* Right Side Image */}
   <img
-    assets="/gradient_purp.jpg"
+    public="/gradient_purp.jpg"
     className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
     alt=""
   />
