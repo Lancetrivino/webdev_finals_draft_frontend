@@ -339,7 +339,22 @@ function CreateEvent() {
   };
 
   return (
-    <div className="theme min-h-screen">
+    <div
+  className="relative min-h-screen bg-white overflow-hidden"
+>
+  {/* Left Side Image */}
+  <img
+    src="/left-bg.png"
+    className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
+    alt=""
+  />
+
+  {/* Right Side Image */}
+  <img
+    src="/right-bg.png"
+    className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
+    alt=""
+  />
       <style>{`
         :root { --c900:#002d54; --c700:#004887; --c500:#0078c1; --c200:#a8daf9; --c100:#cde2ee; }
         .theme { background: var(--c100); }
@@ -355,12 +370,17 @@ function CreateEvent() {
 
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
-      <div className="mx-auto max-w-5xl px-4 pb-20">
-        <h1 className="mt-8 mb-6 text-3xl font-bold tracking-tight text-primary-900">
+      <div className="mx-auto max-w-5xl px-4 pb-20 mt-10 relative z-10">
+        <h1 className="text-center mt-16 mb-10 text-3xl font-bold tracking-tight text-primary-900">
           Create event
         </h1>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 border-primary-200">
+        <div className="rounded-2xl bg-white p-6 shadow-sm border-2"
+     style={{
+       borderImage: "linear-gradient(90deg, #ffaa9a, #fed9b7, #ffb6c1, #ff8ba0) 1",
+     }}
+>
+
           <form onSubmit={handleSubmit} className="space-y-8">
 
             {/* Title + Description */}
