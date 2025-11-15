@@ -131,15 +131,14 @@ function Profile() {
                   <div className="text-4xl text-slate-700">👤</div>
                 )}
 
-                {/* + Circle button at bottom-right */}
+                {/* + Circle button centered on the RIGHT edge (half overlapping) */}
                 <button
                   type="button"
                   onClick={openFilePicker}
                   aria-label="Add or change profile photo"
-                  className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-[#4EA1FF] border-2 border-white shadow-md flex items-center justify-center hover:scale-105 transition"
+                  className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#4EA1FF] border-2 border-white shadow-md flex items-center justify-center hover:scale-105 transition"
                   title="Add / change photo"
                 >
-                  {/* plus icon (white) */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="w-4 h-4 text-white"
