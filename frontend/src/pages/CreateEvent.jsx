@@ -343,18 +343,19 @@ function CreateEvent() {
   className="relative min-h-screen bg-white overflow-hidden"
 >
   {/* Left Side Image */}
-  <img
-    aasets="/gradient_purp.jpg"
-    className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
-    alt=""
-  />
+<img
+  src="/assets/gradient_purp.jpg"
+  className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
+  alt=""
+/>
 
-  {/* Right Side Image */}
-  <img
-    public="/gradient_purp.jpg"
-    className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
-    alt=""
-  />
+{/* Right Side Image */}
+<img
+  src="/assets/gradient_purp.jpg"
+  className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
+  alt=""
+/>
+
       <style>{`
         :root { --c900:#002d54; --c700:#004887; --c500:#0078c1; --c200:#a8daf9; --c100:#cde2ee; }
         .theme { background: var(--c100); }
