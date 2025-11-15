@@ -72,17 +72,20 @@ function Events() {
     );
   }
 
-  if (events.length === 0) {
-    const role = JSON.parse(localStorage.getItem("user"))?.role || "User";
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gray-50">
-        <div
-  className="text-center max-w-md rounded-3xl shadow-lg p-[3px]"
-  style={{
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-  }}
->
-  <div className="bg-white rounded-3xl p-12">
+if (events.length === 0) {
+  const role = JSON.parse(localStorage.getItem("user"))?.role || "User";
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gray-50">
+      
+      {/* GRADIENT OUTLINE CONTAINER */}
+      <div
+        className="text-center max-w-md rounded-3xl shadow-lg p-[3px]"
+        style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        }}
+      >
+        {/* WHITE BOX INSIDE */}
+        <div className="bg-white rounded-3xl p-12">
 
           <div 
             className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
@@ -91,16 +94,18 @@ function Events() {
             <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            </div>
           </div>
+
           <h2 className="text-2xl font-bold text-gray-900 mb-3">
             {role === "Admin" ? "No events available" : "No events yet"}
           </h2>
+
           <p className="text-gray-600 mb-8 leading-relaxed">
             {role === "Admin"
               ? "Create your first event to get started!"
               : "Create an event and it will appear here after admin approval."}
           </p>
+
           <Link
             to="/create-event"
             className="inline-flex items-center gap-2 px-8 py-3 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
@@ -111,10 +116,13 @@ function Events() {
             </svg>
             Create Event
           </Link>
+
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   const statusStyles = {
     Approved: "bg-green-500 text-white",
