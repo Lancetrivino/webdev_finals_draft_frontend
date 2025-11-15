@@ -131,26 +131,24 @@ function Profile() {
                   <div className="text-4xl text-slate-700">👤</div>
                 )}
 
+                {/* + Circle button at bottom-right */}
                 <button
                   type="button"
                   onClick={openFilePicker}
-                  aria-label="Edit profile picture"
-                  className="absolute -right-2 -bottom-2 w-10 h-10 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 transition"
-                  title="Change avatar"
+                  aria-label="Add or change profile photo"
+                  className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-[#4EA1FF] border-2 border-white shadow-md flex items-center justify-center hover:scale-105 transition"
+                  title="Add / change photo"
                 >
+                  {/* plus icon (white) */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4 text-[#7A6C5D]"
+                    className="w-4 h-4 text-white"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.5"
+                    strokeWidth="2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.232 5.232l3.536 3.536M3 21h4.586a1 1 0 00.707-.293L19.414 9.586a2 2 0 000-2.828l-3.172-3.172a2 2 0 00-2.828 0L5.293 12.414A1 1 0 005 13.121V17a1 1 0 001 1z"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
                   </svg>
                 </button>
               </div>
@@ -164,15 +162,13 @@ function Profile() {
               />
 
               <p className="text-sm text-slate-600 text-center md:text-left">
-                Click the pencil to change your profile photo.
+                Click the <span className="font-semibold">+</span> to change your profile photo.
               </p>
             </div>
 
             {/* RIGHT side */}
             <section className="md:col-span-2 px-2 md:px-6">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                My Profile
-              </h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">My Profile</h2>
 
               {currentUser && (
                 <form onSubmit={handleUpdate} className="space-y-5">
