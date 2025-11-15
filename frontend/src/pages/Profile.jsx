@@ -162,7 +162,7 @@ function Profile() {
               />
 
               <p className="text-sm text-slate-600 text-center md:text-left">
-                Click the button to change your profile photo.
+               
               </p>
             </div>
 
