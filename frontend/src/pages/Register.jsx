@@ -71,7 +71,7 @@ function Register() {
       }}
     >
       <div
-        className="w-[770px] max-w-full mx-4 rounded-2xl shadow-2xl"
+        className="w-[760px] max-w-full mx-4 rounded-2xl shadow-2xl"
         style={{
           borderRadius: "18px",
           boxShadow: "0 20px 50px rgba(16,24,40,0.25)",
