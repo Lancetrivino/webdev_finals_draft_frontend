@@ -134,12 +134,14 @@ export default function EventFeedbackPage() {
 
   return (
     // soft page background for easier reading
-    <div
-      className="min-h-screen"
-      style={{
-        background: "linear-gradient(180deg, #f8fbff 0%, #eef7fb 60%, #f6faff 100%)",
-      }}
-    >
+   <div
+  className="min-h-screen"
+  style={{
+    background:
+      "linear-gradient(135deg, rgba(123, 85, 220, 0.25) 0%, rgba(140, 110, 235, 0.25) 20%, rgba(120, 175, 225, 0.25) 60%, rgba(85, 185, 225, 0.25) 100%)",
+  }}
+>
+
       {/* main container stays centered and comfortable width */}
       <div className="max-w-6xl mx-auto pt-24 px-6 pb-8">
         <div className="mb-6 flex items-center justify-between">
