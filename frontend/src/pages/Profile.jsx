@@ -112,8 +112,9 @@ function Profile() {
                 Profile Picture
               </h2>
 
+              {/* NOTE: overflow-visible so the plus button can overlap and not be clipped */}
               <div
-                className="w-40 h-40 rounded-full overflow-hidden mb-4 flex items-center justify-center relative"
+                className="w-40 h-40 rounded-full overflow-visible mb-4 flex items-center justify-center relative"
                 style={{
                   border: "2px solid rgba(0,0,0,0.06)",
                   background: avatarPreview
@@ -125,27 +126,27 @@ function Profile() {
                   <img
                     src={avatarPreview}
                     alt="Avatar Preview"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
                   <div className="text-4xl text-slate-700">👤</div>
                 )}
 
-                {/* Clean, neat white circle with black + positioned at the RIGHT side (half-overlap) */}
+                {/* IG-style white circle with thick border + centered plus, bottom-right half-overlap */}
                 <button
                   type="button"
                   onClick={openFilePicker}
                   aria-label="Add or change profile photo"
                   title="Add / change photo"
-                  className="absolute right-0 top-3/4 transform translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border-2 border-gray-100 shadow flex items-center justify-center hover:scale-105 transition"
+                  className="absolute right-0 bottom-0 transform translate-x-1/2 translate-y-1/2 w-12 h-12 rounded-full bg-white border-4 border-black shadow-lg flex items-center justify-center hover:scale-105 transition z-10"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5 text-black"
+                    className="w-6 h-6 text-black"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
                   </svg>
@@ -161,7 +162,7 @@ function Profile() {
               />
 
               <p className="text-sm text-slate-600 text-center md:text-left">
-                Click the <span className="font-semibold">+</span> to change your profile photo.
+                Click the button to change your profile photo.
               </p>
             </div>
 
