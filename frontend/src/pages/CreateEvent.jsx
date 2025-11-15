@@ -344,14 +344,14 @@ function CreateEvent() {
 >
   {/* Left Side Image */}
   <img
-    src="/gradient_purp.jpg"
+    aasets="/gradient_purp.jpg"
     className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
     alt=""
   />
 
   {/* Right Side Image */}
   <img
-    src="/gradient_purp.jpg"
+    assets="/gradient_purp.jpg"
     className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
     alt=""
   />
