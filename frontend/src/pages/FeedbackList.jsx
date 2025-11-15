@@ -32,10 +32,10 @@ function RatingBar({ stars, count, total }) {
   return (
     <div className="flex items-center gap-3">
       <div className="w-8 text-sm text-slate-600">{stars}★</div>
-      <div className="relative h-2 flex-1 rounded bg-slate-200">
+      <div className="relative h-2 flex-1 rounded bg-slate-100">
         <div
           className="absolute inset-y-0 left-0 rounded"
-          style={{ width: `${pct}%`, backgroundColor: "rgb(20 184 166)" }}
+          style={{ width: `${pct}%`, backgroundColor: "rgb(96 165 250)" }} // softer blue
         />
       </div>
       <div className="w-10 text-right text-sm tabular-nums text-slate-600">{count}</div>
@@ -45,7 +45,7 @@ function RatingBar({ stars, count, total }) {
 
 function ReviewCard({ review }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-sm transition">
+    <article className="rounded-2xl border border-slate-100 bg-white p-4 hover:shadow-sm transition">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-700">
@@ -133,57 +133,65 @@ export default function EventFeedbackPage() {
   }
 
   return (
-    // add top padding so the page content sits below a fixed navbar
-    <div className="max-w-6xl mx-auto pt-24 px-6 pb-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{event?.name || "Customers Feedback"}</h1>
-          {event?.date && <p className="text-sm text-slate-500">{new Date(event.date).toLocaleString()}</p>}
+    // soft page background for easier reading
+    <div
+      className="min-h-screen"
+      style={{
+        background: "linear-gradient(180deg, #f8fbff 0%, #eef7fb 60%, #f6faff 100%)",
+      }}
+    >
+      {/* main container stays centered and comfortable width */}
+      <div className="max-w-6xl mx-auto pt-24 px-6 pb-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">{event?.name || "Customers Feedback"}</h1>
+            {event?.date && <p className="text-sm text-slate-500">{new Date(event.date).toLocaleString()}</p>}
+          </div>
         </div>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-[320px,1fr]">
-        {/* Left: ratings summary */}
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="text-lg font-semibold text-slate-900">Ratings & Reviews</h2>
+        <div className="grid gap-6 md:grid-cols-[320px,1fr]">
+          {/* Left: ratings summary */}
+          <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900">Ratings & Reviews</h2>
 
-          <div className="mt-4 flex items-center gap-4">
-            <div className="text-4xl font-bold tabular-nums text-slate-900">{summary.avg.toFixed(1)}</div>
-            <div>
-              <Stars value={summary.avg} />
-              <p className="mt-1 text-sm text-slate-500">{summary.total} review{summary.total !== 1 ? "s" : ""}</p>
+            <div className="mt-4 flex items-center gap-4">
+              <div className="text-4xl font-bold tabular-nums text-slate-900">{summary.avg.toFixed(1)}</div>
+              <div>
+                <Stars value={summary.avg} />
+                <p className="mt-1 text-sm text-slate-500">{summary.total} review{summary.total !== 1 ? "s" : ""}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-6 space-y-2">
-            {[5, 4, 3, 2, 1].map((s) => (
-              <RatingBar
-                key={s}
-                stars={s}
-                count={summary.buckets[s - 1]}
-                total={summary.total}
-              />
-            ))}
-          </div>
-
-          <Link
-            to={`/feedback/${eventId}/new`}
-            className="mt-6 inline-block w-full rounded-xl bg-teal-600 px-4 py-2 text-center text-white hover:bg-teal-700"
-          >
-            Leave Feedback
-          </Link>
-        </section>
-
-        {/* Right: reviews list — let the whole page scroll */}
-        <section className="space-y-4">
-          {reviews.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600">
-              No reviews yet. Be the first!
+            <div className="mt-6 space-y-3">
+              {[5, 4, 3, 2, 1].map((s) => (
+                <RatingBar
+                  key={s}
+                  stars={s}
+                  count={summary.buckets[s - 1]}
+                  total={summary.total}
+                />
+              ))}
             </div>
-          ) : (
-            reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
-          )}
-        </section>
+
+            <Link
+              to={`/feedback/${eventId}/new`}
+              className="mt-6 inline-block w-full rounded-xl bg-teal-600 px-4 py-2 text-center text-white hover:bg-teal-700"
+            >
+              Leave Feedback
+            </Link>
+          </section>
+
+          {/* Right: reviews list — let the whole page scroll */}
+          <section className="space-y-4">
+            {reviews.length === 0 ? (
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 text-slate-600 shadow-sm">
+                No reviews yet. Be the first!
+              </div>
+            ) : (
+              reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
