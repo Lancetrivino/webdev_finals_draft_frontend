@@ -12,6 +12,7 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [eventHasPassed, setEventHasPassed] = useState(false);
   const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false);
 
@@ -20,7 +21,7 @@ const EventDetails = () => {
     const fetchEvent = async () => {
       setLoading(true);
       try {
-        const token = currentUser?.token;
+        const token = currentUser?.token || localStorage.getItem("token");
         const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -34,14 +35,16 @@ const EventDetails = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch event");
 
-        setEvent(data.event ?? data);
+        const eventData = data.event ?? data;
+        setEvent(eventData);
 
+        // Check if user already joined
         if (currentUser) {
-          setJoined(
-            (data.event?.participants || data.participants || []).includes(
-              currentUser._id
-            )
-          );
+          const participantIds = eventData.participants || [];
+          const userId = currentUser._id || currentUser.id;
+          const isJoined = participantIds.includes(userId);
+          setJoined(isJoined);
+          console.log("Join status:", { isJoined, userId, participantIds });
         }
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
@@ -64,15 +67,16 @@ const EventDetails = () => {
     
     const checkFeedback = async () => {
       try {
-        const token = currentUser?.token;
+        const token = currentUser?.token || localStorage.getItem("token");
         const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (res.ok) {
           const data = await res.json();
+          const userId = currentUser._id || currentUser.id;
           const userFeedback = data.feedbacks?.find(
-            f => f.user?._id === currentUser._id || f.user === currentUser._id
+            f => (f.user?._id === userId || f.user === userId)
           );
           setAlreadySubmittedFeedback(!!userFeedback);
         }
@@ -85,47 +89,66 @@ const EventDetails = () => {
   }, [event, currentUser, id]);
 
   // Handle Join
-  const handleBook = async () => {
-    const token = currentUser?.token;
-    if (!token) {
+  const handleJoin = async () => {
+    if (!currentUser) {
       toast.info("Please login first.");
       navigate("/login");
       return;
     }
 
+    setProcessing(true);
+    
     try {
+      const token = currentUser?.token || localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/events/${id}/join`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join event");
 
-      toast.success(data.message || "Successfully joined the event!");
+      toast.success("🎉 " + (data.message || "Successfully joined the event!"));
       setJoined(true);
+      
+      // Update participants count
       setEvent((prev) => ({
         ...prev,
-        participants: [...(prev.participants || []), currentUser._id],
+        participants: [...(prev.participants || []), currentUser._id || currentUser.id],
       }));
     } catch (err) {
+      console.error("Join error:", err);
       toast.error(err.message || "Error joining event.");
+    } finally {
+      setProcessing(false);
     }
   };
 
   // Handle Leave
   const handleLeave = async () => {
-    const token = currentUser?.token;
-    if (!token) {
+    if (!currentUser) {
       toast.info("Please login first.");
       navigate("/login");
       return;
     }
 
+    if (!window.confirm("Are you sure you want to leave this event?")) {
+      return;
+    }
+
+    setProcessing(true);
+
     try {
+      const token = currentUser?.token || localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/events/${id}/leave`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
       });
 
       const data = await res.json();
@@ -133,12 +156,18 @@ const EventDetails = () => {
 
       toast.success(data.message || "Successfully left the event!");
       setJoined(false);
+      
+      // Update participants count
+      const userId = currentUser._id || currentUser.id;
       setEvent((prev) => ({
         ...prev,
-        participants: (prev.participants || []).filter((uid) => uid !== currentUser._id),
+        participants: (prev.participants || []).filter((uid) => uid !== userId),
       }));
     } catch (err) {
+      console.error("Leave error:", err);
       toast.error(err.message || "Error leaving event.");
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -201,9 +230,9 @@ const EventDetails = () => {
               {status && (
                 <span
                   className={`px-5 py-2 text-sm rounded-full font-bold shadow-lg ${
-                    status === "Approved"
+                    status === "Approved" || status === "approved"
                       ? "bg-green-100 text-green-700 border-2 border-green-300"
-                      : status === "Pending"
+                      : status === "Pending" || status === "pending"
                       ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
                       : "bg-red-100 text-red-700 border-2 border-red-300"
                   }`}
@@ -301,6 +330,19 @@ const EventDetails = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Join Status Indicator */}
+                  {currentUser && joined && (
+                    <div className="flex items-center gap-3 p-3 bg-green-100 rounded-lg border-2 border-green-300">
+                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        ✓
+                      </div>
+                      <div>
+                        <p className="text-xs text-green-600 font-medium">Status</p>
+                        <p className="font-bold text-green-700">You've joined this event</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -330,6 +372,7 @@ const EventDetails = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4">
+              {/* Leave Review Button */}
               {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
                 <button
                   onClick={() => navigate(`/feedback/${id}`)}
@@ -339,6 +382,7 @@ const EventDetails = () => {
                 </button>
               )}
 
+              {/* View Reviews Button */}
               {totalReviews > 0 && (
                 <button
                   onClick={() => navigate(`/feedback/${id}/list`)}
@@ -348,21 +392,46 @@ const EventDetails = () => {
                 </button>
               )}
 
+              {/* Join Event Button */}
               {currentUser && !isFull && !joined && (
                 <button
-                  onClick={handleBook}
-                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  onClick={handleJoin}
+                  disabled={processing}
+                  className={`px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
+                    processing ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
-                  Join Event
+                  {processing ? "Joining..." : "✓ Join Event"}
                 </button>
               )}
 
+              {/* Leave Event Button */}
               {currentUser && joined && (
                 <button
                   onClick={handleLeave}
-                  className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  disabled={processing}
+                  className={`px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
+                    processing ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
-                  Leave Event
+                  {processing ? "Leaving..." : "✕ Leave Event"}
+                </button>
+              )}
+
+              {/* Show if event is full */}
+              {isFull && !joined && (
+                <div className="w-full px-8 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold text-center">
+                  🚫 Event is Full
+                </div>
+              )}
+
+              {/* Show if not logged in */}
+              {!currentUser && (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="px-8 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  Login to Join
                 </button>
               )}
             </div>
