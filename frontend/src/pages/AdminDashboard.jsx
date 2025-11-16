@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [processing, setProcessing] = useState(false);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("events");
-  const [eventView, setEventView] = useState("all"); // "all" or "my"
+  const [eventView, setEventView] = useState("all");
 
   // Redirect non-admins
   useEffect(() => {
@@ -33,7 +33,6 @@ export default function AdminDashboard() {
 
   const getToken = () => currentUser?.token || "";
 
-  // Fetch events and users
   const fetchEvents = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/events`, {
@@ -69,9 +68,7 @@ export default function AdminDashboard() {
     }
   }, [currentUser]);
 
-  // Event actions
   const handleApproveEvent = async (id) => {
-    console.log("Approving event:", id);
     setProcessing(true);
     try {
       const res = await fetch(`${API_BASE}/api/events/${id}/approve`, {
@@ -99,7 +96,6 @@ export default function AdminDashboard() {
 
   const handleRejectEvent = async () => {
     if (!rejectTarget) return;
-    console.log("Rejecting event:", rejectTarget);
     setProcessing(true);
     try {
       const res = await fetch(`${API_BASE}/api/events/${rejectTarget}/reject`, {
@@ -129,7 +125,6 @@ export default function AdminDashboard() {
 
   const handleDeleteEvent = async () => {
     if (!deleteTarget) return;
-    console.log("Deleting event:", deleteTarget);
     setProcessing(true);
     try {
       const res = await fetch(`${API_BASE}/api/events/${deleteTarget}`, {
@@ -154,9 +149,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // User actions
   const handleRoleChange = async (userId, newRole) => {
-    console.log("Changing role for user:", userId, "to", newRole);
     setProcessing(true);
     try {
       const res = await fetch(`${API_BASE}/api/users/${userId}/role`, {
@@ -185,7 +178,6 @@ export default function AdminDashboard() {
 
   const handleDeactivateUser = async () => {
     if (!deactivateTarget) return;
-    console.log("Updating user status:", deactivateTarget);
     setProcessing(true);
     try {
       const { userId, active } = deactivateTarget;
@@ -215,16 +207,13 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filter events based on search and view
   const filteredEvents = useMemo(() => {
     let filtered = events;
     
-    // Filter by ownership if viewing "my events"
     if (eventView === "my") {
       filtered = filtered.filter(e => e.createdBy === currentUser?._id || e.userId === currentUser?._id);
     }
     
-    // Filter by search term
     filtered = filtered.filter(e => 
       e.title.toLowerCase().includes(search.toLowerCase())
     );
@@ -237,74 +226,120 @@ export default function AdminDashboard() {
     [users, search]
   );
 
+  const stats = useMemo(() => {
+    const pending = events.filter(e => e.status?.toLowerCase() === "pending").length;
+    const approved = events.filter(e => e.status?.toLowerCase() === "approved").length;
+    const rejected = events.filter(e => e.status?.toLowerCase() === "rejected").length;
+    const activeUsers = users.filter(u => u.active).length;
+    
+    return { pending, approved, rejected, totalEvents: events.length, activeUsers, totalUsers: users.length };
+  }, [events, users]);
+
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-gray-700">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 p-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header & Tabs */}
-        <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setTab("events")} 
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-                tab === "events" 
-                  ? "bg-orange-600 text-white shadow-lg" 
-                  : "bg-white text-gray-700 shadow hover:bg-gray-50"
-              }`}
-            >
-              Events
-            </button>
-            <button 
-              onClick={() => setTab("users")} 
-              className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-                tab === "users" 
-                  ? "bg-orange-600 text-white shadow-lg" 
-                  : "bg-white text-gray-700 shadow hover:bg-gray-50"
-              }`}
-            >
-              Users
-            </button>
+        {/* Header */}
+        <div className="mb-8 bg-white rounded-3xl shadow-2xl p-8 border-2 border-violet-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-5xl font-black mb-3 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600">Manage events and users</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <button 
+                onClick={() => setTab("events")} 
+                className={`px-6 py-3 rounded-xl font-bold transition-all duration-200 transform hover:scale-105 ${
+                  tab === "events" 
+                    ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg" 
+                    : "bg-white text-gray-700 shadow border-2 border-violet-200 hover:border-violet-400"
+                }`}
+              >
+                📅 Events
+              </button>
+              <button 
+                onClick={() => setTab("users")} 
+                className={`px-6 py-3 rounded-xl font-bold transition-all duration-200 transform hover:scale-105 ${
+                  tab === "users" 
+                    ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg" 
+                    : "bg-white text-gray-700 shadow border-2 border-violet-200 hover:border-violet-400"
+                }`}
+              >
+                👥 Users
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-orange-200">
+            <div className="text-4xl font-black text-orange-600 mb-2">{stats.pending}</div>
+            <div className="text-sm font-semibold text-gray-600">Pending Events</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-green-200">
+            <div className="text-4xl font-black text-green-600 mb-2">{stats.approved}</div>
+            <div className="text-sm font-semibold text-gray-600">Approved Events</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-red-200">
+            <div className="text-4xl font-black text-red-600 mb-2">{stats.rejected}</div>
+            <div className="text-sm font-semibold text-gray-600">Rejected Events</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-violet-200">
+            <div className="text-4xl font-black text-violet-600 mb-2">{stats.activeUsers}</div>
+            <div className="text-sm font-semibold text-gray-600">Active Users</div>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6 bg-white rounded-2xl p-4 shadow-lg border-2 border-violet-200">
+          <div className="relative">
             <input 
               type="text" 
               placeholder={`Search ${tab}...`} 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
-              className="px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400" 
+              className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-violet-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-200 outline-none transition-all"
             />
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
         </div>
 
-        {/* Event View Toggle (only show on events tab) */}
+        {/* Event View Toggle */}
         {tab === "events" && (
           <div className="mb-6 flex gap-3">
             <button
               onClick={() => setEventView("all")}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-6 py-3 rounded-xl font-bold transition-all ${
                 eventView === "all"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-700 shadow hover:bg-gray-50"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                  : "bg-white text-gray-700 shadow border-2 border-violet-200 hover:border-violet-400"
               }`}
             >
               All Events ({events.length})
             </button>
             <button
               onClick={() => setEventView("my")}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-6 py-3 rounded-xl font-bold transition-all ${
                 eventView === "my"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-700 shadow hover:bg-gray-50"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                  : "bg-white text-gray-700 shadow border-2 border-violet-200 hover:border-violet-400"
               }`}
             >
               My Events ({events.filter(e => e.createdBy === currentUser?._id || e.userId === currentUser?._id).length})
@@ -312,59 +347,53 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Event Status Chart */}
+        {/* Status Chart */}
         {tab === "events" && (
-          <div className="bg-white rounded-2xl shadow p-6 mb-6">
-            <h2 className="text-gray-700 font-semibold mb-4 text-center">
-              {eventView === "all" ? "All Events Status Overview" : "My Events Status Overview"}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-2 border-violet-200">
+            <h2 className="text-gray-800 font-bold mb-4 text-lg">
+              {eventView === "all" ? "All Events Status" : "My Events Status"}
             </h2>
-            <div className="w-full h-8 flex rounded-xl overflow-hidden border">
+            <div className="w-full h-10 flex rounded-xl overflow-hidden border-2 border-violet-200 shadow-md">
               <div 
-                className="bg-orange-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
+                className="bg-orange-500 h-full flex items-center justify-center text-white text-sm font-bold transition-all" 
                 style={{ 
-                  width: `${(filteredEvents.filter(e => (e.status || '').toLowerCase() === "pending").length / (filteredEvents.length || 1)) * 100}%`,
-                  minWidth: filteredEvents.filter(e => (e.status || '').toLowerCase() === "pending").length > 0 ? '40px' : '0'
+                  width: `${(filteredEvents.filter(e => e.status?.toLowerCase() === "pending").length / (filteredEvents.length || 1)) * 100}%`,
+                  minWidth: filteredEvents.filter(e => e.status?.toLowerCase() === "pending").length > 0 ? '50px' : '0'
                 }} 
               >
-                {filteredEvents.filter(e => (e.status || '').toLowerCase() === "pending").length > 0 && 
-                  `${filteredEvents.filter(e => (e.status || '').toLowerCase() === "pending").length}`
-                }
+                {filteredEvents.filter(e => e.status?.toLowerCase() === "pending").length || ''}
               </div>
               <div 
-                className="bg-green-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
+                className="bg-green-500 h-full flex items-center justify-center text-white text-sm font-bold transition-all" 
                 style={{ 
-                  width: `${(filteredEvents.filter(e => (e.status || '').toLowerCase() === "approved").length / (filteredEvents.length || 1)) * 100}%`,
-                  minWidth: filteredEvents.filter(e => (e.status || '').toLowerCase() === "approved").length > 0 ? '40px' : '0'
+                  width: `${(filteredEvents.filter(e => e.status?.toLowerCase() === "approved").length / (filteredEvents.length || 1)) * 100}%`,
+                  minWidth: filteredEvents.filter(e => e.status?.toLowerCase() === "approved").length > 0 ? '50px' : '0'
                 }} 
               >
-                {filteredEvents.filter(e => (e.status || '').toLowerCase() === "approved").length > 0 && 
-                  `${filteredEvents.filter(e => (e.status || '').toLowerCase() === "approved").length}`
-                }
+                {filteredEvents.filter(e => e.status?.toLowerCase() === "approved").length || ''}
               </div>
               <div 
-                className="bg-red-500 h-full flex items-center justify-center text-white text-xs font-semibold" 
+                className="bg-red-500 h-full flex items-center justify-center text-white text-sm font-bold transition-all" 
                 style={{ 
-                  width: `${(filteredEvents.filter(e => (e.status || '').toLowerCase() === "rejected").length / (filteredEvents.length || 1)) * 100}%`,
-                  minWidth: filteredEvents.filter(e => (e.status || '').toLowerCase() === "rejected").length > 0 ? '40px' : '0'
+                  width: `${(filteredEvents.filter(e => e.status?.toLowerCase() === "rejected").length / (filteredEvents.length || 1)) * 100}%`,
+                  minWidth: filteredEvents.filter(e => e.status?.toLowerCase() === "rejected").length > 0 ? '50px' : '0'
                 }} 
               >
-                {filteredEvents.filter(e => (e.status || '').toLowerCase() === "rejected").length > 0 && 
-                  `${filteredEvents.filter(e => (e.status || '').toLowerCase() === "rejected").length}`
-                }
+                {filteredEvents.filter(e => e.status?.toLowerCase() === "rejected").length || ''}
               </div>
             </div>
-            <div className="flex justify-center gap-6 mt-4 text-sm">
+            <div className="flex justify-center gap-8 mt-4 text-sm font-semibold">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                <span>Pending ({filteredEvents.filter(e => (e.status || '').toLowerCase() === "pending").length})</span>
+                <span>Pending ({filteredEvents.filter(e => e.status?.toLowerCase() === "pending").length})</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Approved ({filteredEvents.filter(e => (e.status || '').toLowerCase() === "approved").length})</span>
+                <span>Approved ({filteredEvents.filter(e => e.status?.toLowerCase() === "approved").length})</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span>Rejected ({filteredEvents.filter(e => (e.status || '').toLowerCase() === "rejected").length})</span>
+                <span>Rejected ({filteredEvents.filter(e => e.status?.toLowerCase() === "rejected").length})</span>
               </div>
             </div>
           </div>
@@ -372,185 +401,186 @@ export default function AdminDashboard() {
 
         {/* Events Table */}
         {tab === "events" && (
-          <div className="bg-white shadow rounded-2xl p-6 overflow-x-auto">
-            <h2 className="text-xl font-semibold mb-4">
+          <div className="bg-white shadow-lg rounded-2xl p-6 overflow-x-auto border-2 border-violet-200">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
               {eventView === "all" ? "All Events Management" : "My Events"}
             </h2>
             {filteredEvents.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">
-                {eventView === "my" ? "You haven't created any events yet" : "No events found"}
-              </p>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📅</div>
+                <p className="text-gray-500 text-lg">
+                  {eventView === "my" ? "You haven't created any events yet" : "No events found"}
+                </p>
+              </div>
             ) : (
-              <table className="w-full text-left border-collapse min-w-[600px]">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border-b p-3 font-semibold text-gray-700">Title</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Date</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Location</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Status</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.map(event => {
-                    // Normalize status to lowercase for comparison
-                    const eventStatus = (event.status || '').toLowerCase().trim();
-                    
-                    return (
-                      <tr key={event._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="p-3 border-b">{event.title}</td>
-                        <td className="p-3 border-b">{new Date(event.date).toLocaleDateString()}</td>
-                        <td className="p-3 border-b">{event.location || "N/A"}</td>
-                        <td className="p-3 border-b">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            eventStatus === "approved" 
-                              ? "bg-green-100 text-green-700" 
-                              : eventStatus === "rejected"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-orange-100 text-orange-700"
-                          }`}>
-                            {event.status}
-                          </span>
-                        </td>
-                        <td className="p-3 border-b">
-                          <div className="flex gap-2 flex-wrap">
-                            {/* Show approve/reject for pending events (only in "All Events" view) */}
-                            {eventView === "all" && eventStatus === "pending" && (
-                              <>
-                                <button 
-                                  disabled={processing} 
-                                  onClick={() => {
-                                    console.log('Approving event:', event._id);
-                                    handleApproveEvent(event._id);
-                                  }} 
-                                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  Approve
-                                </button>
-                                <button 
-                                  disabled={processing} 
-                                  onClick={() => {
-                                    console.log('Setting reject target:', event._id);
-                                    setRejectTarget(event._id);
-                                  }} 
-                                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  Reject
-                                </button>
-                              </>
-                            )}
-                            
-                            {/* Always show delete button */}
-                            <button 
-                              disabled={processing} 
-                              onClick={() => setDeleteTarget(event._id)} 
-                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
+                  <thead>
+                    <tr className="bg-violet-50 border-b-2 border-violet-200">
+                      <th className="p-4 font-bold text-gray-800">Title</th>
+                      <th className="p-4 font-bold text-gray-800">Date</th>
+                      <th className="p-4 font-bold text-gray-800">Location</th>
+                      <th className="p-4 font-bold text-gray-800">Status</th>
+                      <th className="p-4 font-bold text-gray-800">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEvents.map(event => {
+                      const eventStatus = (event.status || '').toLowerCase().trim();
+                      
+                      return (
+                        <tr key={event._id} className="hover:bg-violet-50 transition-colors border-b border-violet-100">
+                          <td className="p-4 font-medium text-gray-900">{event.title}</td>
+                          <td className="p-4 text-gray-700">{new Date(event.date).toLocaleDateString()}</td>
+                          <td className="p-4 text-gray-700">{event.location || event.venue || "N/A"}</td>
+                          <td className="p-4">
+                            <span className={`px-4 py-2 rounded-full text-xs font-bold ${
+                              eventStatus === "approved" 
+                                ? "bg-green-100 text-green-700 border-2 border-green-300" 
+                                : eventStatus === "rejected"
+                                ? "bg-red-100 text-red-700 border-2 border-red-300"
+                                : "bg-orange-100 text-orange-700 border-2 border-orange-300"
+                            }`}>
+                              {event.status}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-2 flex-wrap">
+                              {eventView === "all" && eventStatus === "pending" && (
+                                <>
+                                  <button 
+                                    disabled={processing} 
+                                    onClick={() => handleApproveEvent(event._id)} 
+                                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                                  >
+                                    ✓ Approve
+                                  </button>
+                                  <button 
+                                    disabled={processing} 
+                                    onClick={() => setRejectTarget(event._id)} 
+                                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                                  >
+                                    ✕ Reject
+                                  </button>
+                                </>
+                              )}
+                              
+                              <button 
+                                disabled={processing} 
+                                onClick={() => setDeleteTarget(event._id)} 
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                              >
+                                🗑 Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
 
         {/* Users Table */}
         {tab === "users" && (
-          <div className="bg-white shadow rounded-2xl p-6 overflow-x-auto">
-            <h2 className="text-xl font-semibold mb-4">Users Management</h2>
+          <div className="bg-white shadow-lg rounded-2xl p-6 overflow-x-auto border-2 border-violet-200">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Users Management</h2>
             {filteredUsers.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No users found</p>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">👥</div>
+                <p className="text-gray-500 text-lg">No users found</p>
+              </div>
             ) : (
-              <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="border-b p-3 font-semibold text-gray-700">Name</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Email</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Role</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Active</th>
-                    <th className="border-b p-3 font-semibold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map(user => (
-                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-3 border-b">{user.name}</td>
-                      <td className="p-3 border-b">{user.email}</td>
-                      <td className="p-3 border-b">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.role === "Admin" 
-                            ? "bg-purple-100 text-purple-700" 
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="p-3 border-b">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.active 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-gray-100 text-gray-700"
-                        }`}>
-                          {user.active ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td className="p-3 border-b">
-                        <div className="flex gap-2 flex-wrap">
-                          <button 
-                            disabled={processing || user._id === currentUser?._id} 
-                            onClick={() => handleRoleChange(user._id, user.role === "User" ? "Admin" : "User")} 
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            title={user._id === currentUser?._id ? "Cannot change your own role" : "Toggle role between User and Admin"}
-                          >
-                            {user.role === "User" ? "Make Admin" : "Make User"}
-                          </button>
-                          <button 
-                            disabled={processing || user._id === currentUser?._id} 
-                            onClick={() => setDeactivateTarget({ userId: user._id, active: !user.active })} 
-                            className={`px-3 py-1 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                              user.active 
-                                ? "bg-red-500 hover:bg-red-600 text-white" 
-                                : "bg-green-500 hover:bg-green-600 text-white"
-                            }`}
-                            title={user._id === currentUser?._id ? "Cannot deactivate your own account" : user.active ? "Deactivate user" : "Activate user"}
-                          >
-                            {user.active ? "Deactivate" : "Activate"}
-                          </button>
-                        </div>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[900px]">
+                  <thead>
+                    <tr className="bg-violet-50 border-b-2 border-violet-200">
+                      <th className="p-4 font-bold text-gray-800">Name</th>
+                      <th className="p-4 font-bold text-gray-800">Email</th>
+                      <th className="p-4 font-bold text-gray-800">Role</th>
+                      <th className="p-4 font-bold text-gray-800">Status</th>
+                      <th className="p-4 font-bold text-gray-800">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map(user => (
+                      <tr key={user._id} className="hover:bg-violet-50 transition-colors border-b border-violet-100">
+                        <td className="p-4 font-medium text-gray-900">{user.name}</td>
+                        <td className="p-4 text-gray-700">{user.email}</td>
+                        <td className="p-4">
+                          <span className={`px-4 py-2 rounded-full text-xs font-bold ${
+                            user.role === "Admin" 
+                              ? "bg-purple-100 text-purple-700 border-2 border-purple-300" 
+                              : "bg-blue-100 text-blue-700 border-2 border-blue-300"
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-4 py-2 rounded-full text-xs font-bold ${
+                            user.active 
+                              ? "bg-green-100 text-green-700 border-2 border-green-300" 
+                              : "bg-gray-100 text-gray-700 border-2 border-gray-300"
+                          }`}>
+                            {user.active ? "✓ Active" : "✕ Inactive"}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2 flex-wrap">
+                            <button 
+                              disabled={processing || user._id === currentUser?._id} 
+                              onClick={() => handleRoleChange(user._id, user.role === "User" ? "Admin" : "User")} 
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                              title={user._id === currentUser?._id ? "Cannot change your own role" : "Toggle role"}
+                            >
+                              {user.role === "User" ? "↑ Make Admin" : "↓ Make User"}
+                            </button>
+                            <button 
+                              disabled={processing || user._id === currentUser?._id} 
+                              onClick={() => setDeactivateTarget({ userId: user._id, active: !user.active })} 
+                              className={`px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md ${
+                                user.active 
+                                  ? "bg-red-500 hover:bg-red-600 text-white" 
+                                  : "bg-green-500 hover:bg-green-600 text-white"
+                              }`}
+                              title={user._id === currentUser?._id ? "Cannot modify your own account" : user.active ? "Deactivate" : "Activate"}
+                            >
+                              {user.active ? "⊗ Deactivate" : "✓ Activate"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
 
       </div>
 
-      {/* Delete Event Modal */}
+      {/* Modals */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirm Delete</h3>
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-2 border-violet-200">
+            <h3 className="text-2xl font-bold mb-4 text-gray-800">Confirm Delete</h3>
             <p className="mb-6 text-gray-600">Are you sure you want to delete this event? This action cannot be undone.</p>
             <div className="flex justify-end gap-4">
               <button 
                 onClick={() => setDeleteTarget(null)} 
                 disabled={processing}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleDeleteEvent} 
                 disabled={processing}
-                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-colors disabled:opacity-50 shadow-lg"
               >
                 {processing ? "Deleting..." : "Delete"}
               </button>
@@ -559,24 +589,23 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Reject Event Modal */}
       {rejectTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirm Reject</h3>
-            <p className="mb-6 text-gray-600">Are you sure you want to reject this event? The event will be marked as rejected.</p>
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-2 border-violet-200">
+            <h3 className="text-2xl font-bold mb-4 text-gray-800">Confirm Reject</h3>
+            <p className="mb-6 text-gray-600">Are you sure you want to reject this event?</p>
             <div className="flex justify-end gap-4">
               <button 
                 onClick={() => setRejectTarget(null)} 
                 disabled={processing}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleRejectEvent} 
                 disabled={processing}
-                className="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white font-bold transition-colors disabled:opacity-50 shadow-lg"
               >
                 {processing ? "Rejecting..." : "Reject"}
               </button>
@@ -585,11 +614,10 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Deactivate User Modal */}
       {deactivateTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-2 border-violet-200">
+            <h3 className="text-2xl font-bold mb-4 text-gray-800">
               {deactivateTarget.active ? "Activate User" : "Deactivate User"}
             </h3>
             <p className="mb-6 text-gray-600">
@@ -600,14 +628,14 @@ export default function AdminDashboard() {
               <button 
                 onClick={() => setDeactivateTarget(null)} 
                 disabled={processing}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleDeactivateUser} 
                 disabled={processing}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                className={`px-6 py-3 rounded-xl font-bold transition-colors disabled:opacity-50 shadow-lg ${
                   deactivateTarget.active 
                     ? "bg-green-500 hover:bg-green-600 text-white" 
                     : "bg-red-500 hover:bg-red-600 text-white"
