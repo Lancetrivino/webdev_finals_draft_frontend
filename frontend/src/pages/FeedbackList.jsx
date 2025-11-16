@@ -29,11 +29,14 @@ function RatingBar({ stars, count, total }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 text-sm text-gray-600">{stars}★</div>
-      <div className="relative h-2 flex-1 rounded bg-gray-100">
-        <div className="absolute inset-y-0 left-0 rounded bg-yellow-400" style={{ width: `${pct}%` }} />
+      <div className="w-8 text-sm text-gray-600 font-medium">{stars}★</div>
+      <div className="relative h-3 flex-1 rounded-full bg-violet-100 overflow-hidden">
+        <div 
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500" 
+          style={{ width: `${pct}%` }} 
+        />
       </div>
-      <div className="w-10 text-right text-sm tabular-nums text-gray-600">{count}</div>
+      <div className="w-10 text-right text-sm tabular-nums text-gray-600 font-medium">{count}</div>
     </div>
   );
 }
@@ -42,33 +45,37 @@ function ReviewCard({ review }) {
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
 
   return (
-    <article className="rounded-2xl border p-4 hover:shadow-sm transition">
-      <div className="flex items-start justify-between mb-3">
+    <article className="rounded-2xl border-2 border-violet-200 p-6 hover:shadow-lg transition-all duration-200 bg-white">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow">
+          <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-lg font-bold text-white shadow-lg">
             {review.user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-medium">{review.user?.name || "Anonymous"}</p>
+              <p className="font-semibold text-gray-900">{review.user?.name || "Anonymous"}</p>
               {review.verified && (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold border border-green-200">
                   ✓ Verified
                 </span>
               )}
             </div>
             <p className="text-xs text-gray-500">
-              {new Date(review.createdAt).toLocaleDateString()}
+              {new Date(review.createdAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
             </p>
           </div>
         </div>
         <Stars value={review.rating} />
       </div>
 
-      {review.title && <h3 className="mt-3 font-semibold">{review.title}</h3>}
-      {review.comment && <p className="mt-2 text-gray-700">{review.comment}</p>}
+      {review.title && <h3 className="mt-3 font-semibold text-gray-900">{review.title}</h3>}
+      {review.comment && <p className="mt-2 text-gray-700 leading-relaxed">{review.comment}</p>}
 
-      {/* ✅ Display Photos */}
+      {/* Display Photos */}
       {review.photos && review.photos.length > 0 && (
         <div className="mt-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -81,7 +88,7 @@ function ReviewCard({ review }) {
                 <img
                   src={photoUrl}
                   alt={`Review photo ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition"
+                  className="w-full h-32 object-cover rounded-lg border-2 border-violet-200 hover:border-violet-500 transition"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition rounded-lg flex items-center justify-center">
@@ -95,22 +102,22 @@ function ReviewCard({ review }) {
         </div>
       )}
 
-      {/* ✅ Lightbox Modal */}
+      {/* Lightbox Modal */}
       {lightboxPhoto && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
           onClick={() => setLightboxPhoto(null)}
         >
           <button
             onClick={() => setLightboxPhoto(null)}
-            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
+            className="absolute top-4 right-4 text-white text-3xl hover:text-violet-300 transition z-10"
           >
             ✕
           </button>
           <img
             src={lightboxPhoto}
             alt="Full size"
-            className="max-w-full max-h-full object-contain rounded-lg"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -144,7 +151,6 @@ export default function EventFeedbackPage() {
         const rev = await revRes.json();
         if (isMounted) {
           setEvent(ev);
-          // Handle both array and object with feedbacks property
           const feedbacksArray = Array.isArray(rev) ? rev : (rev?.feedbacks || rev?.items || []);
           setReviews(feedbacksArray);
         }
@@ -172,71 +178,110 @@ export default function EventFeedbackPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-6 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading feedback…</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600 font-medium">Loading feedback…</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{event?.title || "Event Feedback"}</h1>
-          {event?.date && <p className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</p>}
-        </div>
-        <Link
-          to={`/feedback/${eventId}`}
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-        >
-          Write a Review
-        </Link>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-[320px,1fr]">
-        {/* Left: ratings summary */}
-        <section className="rounded-2xl border p-5 bg-white">
-          <h2 className="text-lg font-semibold">Ratings & Reviews</h2>
-
-          <div className="mt-4 flex items-center gap-4">
-            <div className="text-4xl font-bold tabular-nums">{summary.avg.toFixed(1)}</div>
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 bg-white rounded-2xl shadow-lg p-8 border-2 border-violet-200">
+          <div className="h-1 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500 rounded-full mb-6" />
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <Stars value={summary.avg} />
-              <p className="mt-1 text-sm text-gray-500">{summary.total} review{summary.total !== 1 ? "s" : ""}</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{event?.title || "Event Feedback"}</h1>
+              {event?.date && (
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <span>📅</span>
+                  <span>{new Date(event.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3">
+              {/* FIXED: Navigate to /available-events instead of /events */}
+              <Link
+                to="/available-events"
+                className="px-6 py-3 rounded-xl bg-violet-100 text-violet-700 hover:bg-violet-200 font-semibold transition-all duration-200 border-2 border-violet-300"
+              >
+                ← Back to Events
+              </Link>
+              <Link
+                to={`/feedback/${eventId}`}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                Write a Review
+              </Link>
             </div>
           </div>
+        </div>
 
-          <div className="mt-6 space-y-2">
-            {[5, 4, 3, 2, 1].map((s) => (
-              <RatingBar
-                key={s}
-                stars={s}
-                count={summary.buckets[s - 1]}
-                total={summary.total}
-              />
-            ))}
-          </div>
+        <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
+          {/* Left: ratings summary */}
+          <section className="rounded-2xl border-2 border-violet-200 p-6 bg-white shadow-lg h-fit">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Ratings & Reviews</h2>
 
-          <Link
-            to={`/feedback/${eventId}`}
-            className="mt-6 inline-block w-full rounded-xl bg-gray-900 px-4 py-2 text-center text-white hover:bg-black"
-          >
-            Leave Feedback
-          </Link>
-        </section>
-
-        {/* Right: reviews list */}
-        <section className="space-y-4">
-          {reviews.length === 0 ? (
-            <div className="rounded-2xl border p-6 text-gray-600 bg-white text-center">
-              <div className="text-4xl mb-2">📝</div>
-              <p>No reviews yet. Be the first!</p>
+            <div className="flex items-center gap-6 mb-6 p-6 bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200">
+              <div className="text-5xl font-bold text-violet-600 tabular-nums">
+                {summary.avg.toFixed(1)}
+              </div>
+              <div>
+                <Stars value={summary.avg} />
+                <p className="mt-2 text-sm text-gray-600 font-medium">
+                  Based on {summary.total} review{summary.total !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
-          ) : (
-            reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
-          )}
-        </section>
+
+            <div className="space-y-3 mb-6">
+              {[5, 4, 3, 2, 1].map((s) => (
+                <RatingBar
+                  key={s}
+                  stars={s}
+                  count={summary.buckets[s - 1]}
+                  total={summary.total}
+                />
+              ))}
+            </div>
+
+            <Link
+              to={`/feedback/${eventId}`}
+              className="block w-full text-center px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              Leave Feedback
+            </Link>
+          </section>
+
+          {/* Right: reviews list */}
+          <section className="space-y-4">
+            {reviews.length === 0 ? (
+              <div className="rounded-2xl border-2 border-violet-200 p-12 text-center bg-white shadow-lg">
+                <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <span className="text-4xl">📝</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No reviews yet</h3>
+                <p className="text-gray-600 mb-6">Be the first to share your experience!</p>
+                <Link
+                  to={`/feedback/${eventId}`}
+                  className="inline-block px-8 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  Write First Review
+                </Link>
+              </div>
+            ) : (
+              reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

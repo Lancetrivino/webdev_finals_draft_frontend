@@ -12,8 +12,8 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
-  const [eventHasPassed, setEventHasPassed] = useState(false); // ✅ NEW
-  const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false); // ✅ NEW
+  const [eventHasPassed, setEventHasPassed] = useState(false);
+  const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false);
 
   // Fetch event details
   useEffect(() => {
@@ -36,7 +36,6 @@ const EventDetails = () => {
 
         setEvent(data.event ?? data);
 
-        // Check if user already joined
         if (currentUser) {
           setJoined(
             (data.event?.participants || data.participants || []).includes(
@@ -55,16 +54,14 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, navigate, currentUser]);
 
-  // ✅ Check feedback eligibility
+  // Check feedback eligibility
   useEffect(() => {
     if (!event || !currentUser) return;
     
-    // Check if event has passed
     const eventDate = new Date(event.date);
     const now = new Date();
     setEventHasPassed(now > eventDate);
     
-    // Check if user already submitted feedback
     const checkFeedback = async () => {
       try {
         const token = currentUser?.token;
@@ -147,15 +144,21 @@ const EventDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600 text-lg font-medium">Loading event details...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600 font-medium">Loading event details...</p>
+        </div>
       </div>
     );
 
   if (!event)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600 text-lg">Event not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+        <div className="text-center bg-white rounded-2xl p-12 shadow-2xl border-2 border-violet-200">
+          <div className="text-6xl mb-4">😞</div>
+          <p className="text-xl text-gray-600 font-semibold">Event not found.</p>
+        </div>
       </div>
     );
 
@@ -171,135 +174,200 @@ const EventDetails = () => {
     status,
     capacity,
     participants,
-    averageRating, // ✅ NEW
-    totalReviews,  // ✅ NEW
+    averageRating,
+    totalReviews,
   } = event;
 
   const remainingSlots = capacity ? capacity - (participants?.length || 0) : null;
   const isFull = remainingSlots !== null && remainingSlots <= 0;
 
   return (
-    <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-emerald-700">{title}</h1>
-        {status && (
-          <span
-            className={`px-4 py-1 text-sm rounded-full font-semibold ${
-              status === "Approved"
-                ? "bg-green-100 text-green-700"
-                : status === "Pending"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {status}
-          </span>
-        )}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-violet-200">
+          {/* Gradient Header Bar */}
+          <div className="h-2 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
+          
+          {/* Header */}
+          <div className="p-8">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
+                <div className="flex items-center gap-2 text-violet-600">
+                  <span>📍</span>
+                  <span className="text-lg font-medium">{venue || "—"}</span>
+                </div>
+              </div>
+              {status && (
+                <span
+                  className={`px-5 py-2 text-sm rounded-full font-bold shadow-lg ${
+                    status === "Approved"
+                      ? "bg-green-100 text-green-700 border-2 border-green-300"
+                      : status === "Pending"
+                      ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
+                      : "bg-red-100 text-red-700 border-2 border-red-300"
+                  }`}
+                >
+                  {status}
+                </span>
+              )}
+            </div>
 
-      {/* Image */}
-      {imageData && (
-        <img
-          src={imageData}
-          alt={title}
-          className="w-full max-h-80 object-cover rounded-xl mb-6 shadow-md"
-        />
-      )}
+            {/* Image */}
+            {imageData && (
+              <div className="rounded-2xl overflow-hidden mb-8 shadow-xl border-2 border-violet-200">
+                <img
+                  src={imageData}
+                  alt={title}
+                  className="w-full max-h-96 object-cover"
+                />
+              </div>
+            )}
 
-      {/* Event Details */}
-      <div className="space-y-2 text-slate-700 mb-6">
-        <p>
-          <span className="font-semibold">📅 Date:</span>{" "}
-          {date ? new Date(date).toLocaleDateString() : "—"}
-        </p>
-        {time && (
-          <p>
-            <span className="font-semibold">⏰ Time:</span> {time}
-          </p>
-        )}
-        {duration && (
-          <p>
-            <span className="font-semibold">🕐 Duration:</span> {duration}
-          </p>
-        )}
-        <p>
-          <span className="font-semibold">📍 Venue:</span> {venue || "—"}
-        </p>
-        {remainingSlots !== null && (
-          <p className={`font-semibold ${isFull ? "text-red-600" : "text-emerald-600"}`}>
-            {isFull ? "Event is Full" : `${remainingSlots} slots remaining`}
-          </p>
-        )}
-        
-        {/* ✅ Rating Display */}
-        {averageRating > 0 && totalReviews > 0 && (
-          <div className="flex items-center gap-2 pt-2">
-            <span className="text-yellow-400 text-2xl">★</span>
-            <span className="text-xl font-bold text-slate-800">{averageRating.toFixed(1)}</span>
-            <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+            {/* Event Details Grid */}
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-violet-50 rounded-xl p-6 border-2 border-violet-200">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                      📅
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-medium">Date</p>
+                      <p className="text-gray-900 font-semibold">
+                        {date ? new Date(date).toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        }) : "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {time && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        ⏰
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Time</p>
+                        <p className="text-gray-900 font-semibold">{time}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {duration && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        🕐
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Duration</p>
+                        <p className="text-gray-900 font-semibold">{duration}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-violet-50 rounded-xl p-6 border-2 border-violet-200">
+                <div className="space-y-4">
+                  {remainingSlots !== null && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        👥
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Availability</p>
+                        <p className={`font-bold text-lg ${isFull ? "text-red-600" : "text-green-600"}`}>
+                          {isFull ? "Event is Full" : `${remainingSlots} slots remaining`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {averageRating > 0 && totalReviews > 0 && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        ⭐
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Rating</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-violet-600">{averageRating.toFixed(1)}</span>
+                          <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">About This Event</h2>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line bg-violet-50 p-6 rounded-xl border-2 border-violet-200">
+                {description || "No description provided."}
+              </p>
+            </div>
+
+            {/* Reminders */}
+            {reminders && reminders.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2>
+                <ul className="space-y-2">
+                  {reminders.map((reminder, idx) => (
+                    <li key={idx} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200">
+                      <span className="text-violet-600 font-bold">•</span>
+                      <span className="text-gray-700">{reminder}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-4">
+              {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
+                <button
+                  onClick={() => navigate(`/feedback/${id}`)}
+                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  ⭐ Leave Review
+                </button>
+              )}
+
+              {totalReviews > 0 && (
+                <button
+                  onClick={() => navigate(`/feedback/${id}/list`)}
+                  className="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  📝 View Reviews ({totalReviews})
+                </button>
+              )}
+
+              {currentUser && !isFull && !joined && (
+                <button
+                  onClick={handleBook}
+                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  Join Event
+                </button>
+              )}
+
+              {currentUser && joined && (
+                <button
+                  onClick={handleLeave}
+                  className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  Leave Event
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* Description */}
-      <p className="text-slate-700 mb-8 whitespace-pre-line">
-        {description || "No description provided."}
-      </p>
-
-      {/* Reminders */}
-      {reminders && reminders.length > 0 && (
-        <div className="mb-8">
-          <h2 className="font-semibold text-lg mb-2">Reminders:</h2>
-          <ul className="list-disc list-inside text-slate-700 space-y-1">
-            {reminders.map((reminder, idx) => (
-              <li key={idx}>{reminder}</li>
-            ))}
-          </ul>
         </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4">
-        {/* ✅ Leave Review Button */}
-        {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
-          <button
-            onClick={() => navigate(`/feedback/${id}`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl transition font-medium"
-          >
-            ⭐ Leave Review
-          </button>
-        )}
-
-        {/* ✅ View Reviews Button */}
-        {totalReviews > 0 && (
-          <button
-            onClick={() => navigate(`/feedback/${id}/list`)}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-xl transition font-medium"
-          >
-            📝 View Reviews ({totalReviews})
-          </button>
-        )}
-
-        {/* Join Event */}
-        {currentUser && !isFull && !joined && (
-          <button
-            onClick={handleBook}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl transition font-medium"
-          >
-            Join Event
-          </button>
-        )}
-
-        {/* Leave Event */}
-        {currentUser && joined && (
-          <button
-            onClick={handleLeave}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl transition font-medium"
-          >
-            Leave Event
-          </button>
-        )}
       </div>
     </div>
   );
