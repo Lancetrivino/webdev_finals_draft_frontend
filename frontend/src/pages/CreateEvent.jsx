@@ -164,7 +164,7 @@ function TimePicker({ value, onChange, selectedDate }) {
             </div>
 
             <div className="flex flex-col rounded ring-1 ring-primary-200">
-              {["am", "pm"].map((p) => (
+              {['am', 'pm'].map((p) => (
                 <button
                   key={p}
                   onClick={() => {
@@ -172,7 +172,9 @@ function TimePicker({ value, onChange, selectedDate }) {
                     commitChange(hour, minute, p);
                   }}
                   className={`flex-1 px-3 py-2 text-sm ${
-                    p === period ? "bg-primary text-white" : "hover:bg-slate-50"
+                    p === period
+                      ? "bg-primary text-white"
+                      : "hover:bg-slate-50"
                   }`}
                 >
                   {p}
@@ -352,58 +354,58 @@ function CreateEvent() {
         alt=""
       />
 
-      <style>{`
-        /* card shell: keep page background untouched */
+      <style>{` 
+        /* card shell */
         .card-shell {
           position: relative;
           border-radius: 16px;
           overflow: visible;
         }
 
-        /* Main interior card: frosted glass + soft gradient vignette */
+        /* Main interior card: frosted glass + soft gradient vignette (no green) */
         .card-inner {
-          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,250,255,0.96));
+          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,250,255,0.98));
           border-radius: 14px;
-          padding: 1.75rem;
-          box-shadow: 0 12px 40px rgba(2,6,23,0.08);
+          padding: 2rem;
+          box-shadow: 0 18px 50px rgba(2,6,23,0.09);
           border: 1px solid rgba(12,24,40,0.04);
           position: relative;
           overflow: hidden;
         }
 
-        /* Decorative gradient stripe at top-left for visual identity */
+        /* Decorative accent blobs use only purple -> blue (no green) */
         .card-accent {
           position: absolute;
-          left: -40px;
-          top: -40px;
-          width: 220px;
-          height: 220px;
-          background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.22), rgba(96,165,250,0.12) 40%, transparent 60%);
+          left: -48px;
+          top: -48px;
+          width: 240px;
+          height: 240px;
+          background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.26), rgba(139,92,246,0.12) 40%, transparent 60%);
           transform: rotate(12deg);
           filter: blur(20px);
           pointer-events: none;
         }
 
-        /* Small subtle blob on bottom-right */
         .card-blob {
           position: absolute;
-          right: -60px;
-          bottom: -60px;
-          width: 260px;
-          height: 260px;
-          background: radial-gradient(circle at 70% 70%, rgba(45,212,191,0.12), rgba(96,165,250,0.06) 45%, transparent 60%);
+          right: -68px;
+          bottom: -68px;
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle at 70% 70%, rgba(96,165,250,0.12), rgba(139,92,246,0.06) 45%, transparent 60%);
           filter: blur(30px);
           pointer-events: none;
         }
 
-        /* Title */
+        /* Title styled like provided reference: bold large purple, left-aligned */
         .page-title {
-          font-size: 1.8rem;
-          font-weight: 700;
-          color: #06243b;
-          margin-top: 3.75rem;
-          margin-bottom: 0.5rem;
-          letter-spacing: -0.2px;
+          font-size: 3rem; /* big like the example */
+          font-weight: 800;
+          color: #7c3aed;
+          text-align: left;
+          margin-top: 3.5rem;
+          margin-bottom: 0.75rem;
+          letter-spacing: -0.5px;
         }
 
         /* form grid refinement */
@@ -412,25 +414,25 @@ function CreateEvent() {
           .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: auto; gap: 1rem; }
         }
 
-        /* input focus glow using gradient tint */
+        /* input focus glow using purple/blue tint only */
         .focus-glow:focus {
           outline: none;
-          box-shadow: 0 6px 20px rgba(96,165,250,0.12), 0 0 0 4px rgba(124,58,237,0.06);
-          border-color: rgba(96,165,250,0.3);
+          box-shadow: 0 8px 28px rgba(124,58,237,0.08), 0 0 0 5px rgba(96,165,250,0.06);
+          border-color: rgba(124,58,237,0.18);
         }
 
-        /* Upgraded CTA: slightly larger, stronger gradient and rounded-pill */
+        /* Upgraded CTA: purple -> blue gradient (no green) */
         .btn-cta {
-          background-image: linear-gradient(90deg, #7c3aed 0%, #60a5fa 55%, #2dd4bf 100%);
+          background-image: linear-gradient(90deg, #7c3aed 0%, #8b5cf6 40%, #60a5fa 100%);
           color: white;
           border: none;
-          padding: 0.9rem 1.25rem;
-          font-weight: 600;
+          padding: 0.95rem 1.25rem;
+          font-weight: 700;
           border-radius: 12px;
-          box-shadow: 0 10px 30px rgba(124,58,237,0.08);
+          box-shadow: 0 14px 44px rgba(124,58,237,0.08);
           transition: transform 0.14s ease, box-shadow 0.14s ease;
         }
-        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.12); }
+        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(124,58,237,0.12); }
 
         /* secondary neutral button (clean) */
         .btn-secondary {
@@ -442,38 +444,35 @@ function CreateEvent() {
         }
         .btn-secondary:hover { transform: translateY(-1px); background: #fbfdff; }
 
-        /* upload area elevated style */
+        /* upload area refined */
         .upload-area {
-          background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,249,255,0.92));
+          background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,249,255,0.94));
           border: 1px dashed rgba(12,24,40,0.06);
         }
 
         /* pill reminders */
         .pill {
-          background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(96,165,250,0.04));
+          background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(139,92,246,0.04));
           color: #06243b;
         }
 
-        /* focus for inputs in Field wrapper */
-        .field-input:focus { box-shadow: none; }
+        /* make sure card doesn't become thinner: keep max width large */
+        .card-shell { max-width: 72rem; }
 
-        /* responsive: hide large background images on small screens so card remains readable */
-        @media (max-width: 900px) {
-          .pointer-events-none.select-none.absolute.left-0,
-          .pointer-events-none.select-none.absolute.right-0 {
-            display: none;
-          }
-          .page-title { margin-top: 1.5rem; }
+        /* keep background images visible on small screens but not overwhelming */
+        @media (max-width: 640px) {
+          .card-inner { padding: 1.25rem; }
+          .page-title { font-size: 2.25rem; margin-top: 1.75rem; }
         }
       `}</style>
 
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
       <div className="mx-auto max-w-5xl px-4 pb-20 relative z-10">
-        {/* Plain title as requested */}
-        <h1 className="text-center page-title">Create Event</h1>
+        {/* Title styled like the reference (big purple, left-aligned) */}
+        <h1 className="page-title">Create Event</h1>
 
-        <div className="card-shell mx-auto max-w-3xl">
+        <div className="card-shell mx-auto">
           <div className="card-inner">
             <div className="card-accent" aria-hidden="true" />
             <div className="card-blob" aria-hidden="true" />
@@ -489,7 +488,7 @@ function CreateEvent() {
                     value={eventData.title}
                     onChange={handleChange}
                     placeholder="Event name"
-                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                     required
                   />
                 </Field>
@@ -503,7 +502,7 @@ function CreateEvent() {
                     onChange={handleChange}
                     placeholder="Add a short description"
                     rows={3}
-                    className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                     required
                   />
                 </Field>
@@ -526,7 +525,7 @@ function CreateEvent() {
                           value={eventData.date}
                           min={today}
                           onChange={handleChange}
-                          className="w-full bg-transparent text-primary-900 focus:outline-none focus-glow field-input"
+                          className="w-full bg-transparent text-primary-900 focus:outline-none focus-glow"
                           required
                         />
                       </div>
@@ -556,7 +555,7 @@ function CreateEvent() {
                       value={eventData.capacity}
                       onChange={handleChange}
                       placeholder="50"
-                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                     />
                   </Field>
                 </div>
@@ -570,7 +569,7 @@ function CreateEvent() {
                       value={eventData.typeOfEvent}
                       onChange={handleChange}
                       placeholder="e.g., Conference, Workshop, Seminar"
-                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                     />
                   </Field>
                 </div>
@@ -584,7 +583,7 @@ function CreateEvent() {
                       value={eventData.venue}
                       onChange={handleChange}
                       placeholder="Venue"
-                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                       required
                     />
                   </Field>
@@ -658,7 +657,7 @@ function CreateEvent() {
                         }
                       }}
                       placeholder="Add reminder"
-                      className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                      className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                     />
                   </Field>
                   <button
