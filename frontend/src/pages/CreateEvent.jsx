@@ -373,7 +373,7 @@ function CreateEvent() {
           overflow: hidden;
         }
 
-        /* Decorative accent blobs use only purple -> blue (no green) */
+        /* 
         .card-accent {
           position: absolute;
           left: -48px;
