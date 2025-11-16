@@ -353,60 +353,109 @@ function CreateEvent() {
       />
 
       <style>{`
-        /* keep page background untouched by user request */
+        /* card shell: keep page background untouched */
+        .card-shell {
+          position: relative;
+          border-radius: 16px;
+          overflow: visible;
+        }
 
-        /* card interior styling only (no orange border) */
+        /* Main interior card: frosted glass + soft gradient vignette */
         .card-inner {
-          background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-          border-radius: 1rem;
-          padding: 1.5rem;
-          box-shadow: 0 8px 30px rgba(2,6,23,0.06);
-          border: 1px solid rgba(12,24,40,0.06);
+          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,250,255,0.96));
+          border-radius: 14px;
+          padding: 1.75rem;
+          box-shadow: 0 12px 40px rgba(2,6,23,0.08);
+          border: 1px solid rgba(12,24,40,0.04);
+          position: relative;
+          overflow: hidden;
         }
 
-        /* subtle inner section header */
+        /* Decorative gradient stripe at top-left for visual identity */
+        .card-accent {
+          position: absolute;
+          left: -40px;
+          top: -40px;
+          width: 220px;
+          height: 220px;
+          background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.22), rgba(96,165,250,0.12) 40%, transparent 60%);
+          transform: rotate(12deg);
+          filter: blur(20px);
+          pointer-events: none;
+        }
+
+        /* Small subtle blob on bottom-right */
+        .card-blob {
+          position: absolute;
+          right: -60px;
+          bottom: -60px;
+          width: 260px;
+          height: 260px;
+          background: radial-gradient(circle at 70% 70%, rgba(45,212,191,0.12), rgba(96,165,250,0.06) 45%, transparent 60%);
+          filter: blur(30px);
+          pointer-events: none;
+        }
+
+        /* Title */
         .page-title {
-          font-size: 1.75rem;
+          font-size: 1.8rem;
           font-weight: 700;
-          color: #06243b; /* dark navy */
-          margin-top: 3.5rem;
-          margin-bottom: 1.25rem;
+          color: #06243b;
+          margin-top: 3.75rem;
+          margin-bottom: 0.5rem;
+          letter-spacing: -0.2px;
         }
 
-        /* primary gradient buttons (applied only to actionable buttons) */
-        .btn-gradient {
-          background-image: linear-gradient(90deg, #7c3aed 0%, #60a5fa 60%, #2dd4bf 100%);
+        /* form grid refinement */
+        .form-grid { gap: 1rem; }
+        @media (min-width: 768px) {
+          .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: auto; gap: 1rem; }
+        }
+
+        /* input focus glow using gradient tint */
+        .focus-glow:focus {
+          outline: none;
+          box-shadow: 0 6px 20px rgba(96,165,250,0.12), 0 0 0 4px rgba(124,58,237,0.06);
+          border-color: rgba(96,165,250,0.3);
+        }
+
+        /* Upgraded CTA: slightly larger, stronger gradient and rounded-pill */
+        .btn-cta {
+          background-image: linear-gradient(90deg, #7c3aed 0%, #60a5fa 55%, #2dd4bf 100%);
           color: white;
           border: none;
-          transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s;
+          padding: 0.9rem 1.25rem;
+          font-weight: 600;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(124,58,237,0.08);
+          transition: transform 0.14s ease, box-shadow 0.14s ease;
         }
-        .btn-gradient:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 22px rgba(96,165,250,0.12);
-        }
+        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.12); }
 
-        /* secondary neutral button (keeps white background) */
-        .btn-neutral {
+        /* secondary neutral button (clean) */
+        .btn-secondary {
           background: white;
           border: 1px solid rgba(12,24,40,0.06);
           color: #0b3550;
+          padding: 0.75rem 1rem;
+          border-radius: 10px;
         }
-        .btn-neutral:hover {
-          background: #fbfdff;
-          transform: translateY(-1px);
+        .btn-secondary:hover { transform: translateY(-1px); background: #fbfdff; }
+
+        /* upload area elevated style */
+        .upload-area {
+          background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,249,255,0.92));
+          border: 1px dashed rgba(12,24,40,0.06);
         }
 
-        /* pill style for reminders */
+        /* pill reminders */
         .pill {
           background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(96,165,250,0.04));
           color: #06243b;
         }
 
-        /* make upload area slightly elevated but consistent */
-        .upload-area {
-          background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,252,0.9));
-          border: 1px solid rgba(12,24,40,0.06);
-        }
+        /* focus for inputs in Field wrapper */
+        .field-input:focus { box-shadow: none; }
 
         /* responsive: hide large background images on small screens so card remains readable */
         @media (max-width: 900px) {
@@ -424,239 +473,244 @@ function CreateEvent() {
         {/* Plain title as requested */}
         <h1 className="text-center page-title">Create Event</h1>
 
-        <div className="rounded-2xl card-inner">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Title + Description */}
-            <div className="space-y-3">
-              <Label htmlFor="title">Title *</Label>
-              <Field>
-                <input
-                  id="title"
-                  name="title"
-                  value={eventData.title}
-                  onChange={handleChange}
-                  placeholder="Event name"
-                  className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
-                  required
-                />
-              </Field>
+        <div className="card-shell mx-auto max-w-3xl">
+          <div className="card-inner">
+            <div className="card-accent" aria-hidden="true" />
+            <div className="card-blob" aria-hidden="true" />
 
-              <Label htmlFor="description">Description *</Label>
-              <Field>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={eventData.description}
-                  onChange={handleChange}
-                  placeholder="Add a short description"
-                  rows={3}
-                  className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none"
-                  required
-                />
-              </Field>
-            </div>
-
-            {/* Date / Time / Capacity / Type */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="md:col-span-2">
-                <Label htmlFor="date">Day *</Label>
-                <div className="relative">
-                  <Field>
-                    <div className="flex items-center gap-3">
-                      <span className="text-primary-700">
-                        <CalendarIcon />
-                      </span>
-                      <input
-                        type="date"
-                        id="date"
-                        name="date"
-                        value={eventData.date}
-                        min={today}
-                        onChange={handleChange}
-                        className="w-full bg-transparent text-primary-900 focus:outline-none"
-                        required
-                      />
-                    </div>
-                  </Field>
-                </div>
-              </div>
-
-              <div>
-                <Label>Time</Label>
-                <TimePicker
-                  value={eventData.time}
-                  selectedDate={eventData.date}
-                  onChange={(val) =>
-                    setEventData((p) => ({ ...p, time: val || "" }))
-                  }
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="capacity">Capacity</Label>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Title + Description */}
+              <div className="space-y-3">
+                <Label htmlFor="title">Title *</Label>
                 <Field>
                   <input
-                    type="number"
-                    id="capacity"
-                    name="capacity"
-                    min={1}
-                    value={eventData.capacity}
+                    id="title"
+                    name="title"
+                    value={eventData.title}
                     onChange={handleChange}
-                    placeholder="50"
-                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
+                    placeholder="Event name"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    required
                   />
                 </Field>
-              </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="typeOfEvent">Type of event</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Field>
-                  <input
-                    id="typeOfEvent"
-                    name="typeOfEvent"
-                    value={eventData.typeOfEvent}
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={eventData.description}
                     onChange={handleChange}
-                    placeholder="e.g., Conference, Workshop, Seminar"
-                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
-                  />
-                </Field>
-              </div>
-
-              <div className="md:col-span-2">
-                <Label htmlFor="venue">Location *</Label>
-                <Field>
-                  <input
-                    id="venue"
-                    name="venue"
-                    value={eventData.venue}
-                    onChange={handleChange}
-                    placeholder="Venue"
-                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
+                    placeholder="Add a short description"
+                    rows={3}
+                    className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
                     required
                   />
                 </Field>
               </div>
-            </div>
 
-            {/* Upload section */}
-            <div className="space-y-3">
-              <Label>Upload attachments</Label>
-
-              <div className="flex items-center justify-between rounded-xl upload-area p-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
-                    <UploadIcon />
-                  </div>
-                  <div className="text-sm text-primary-700 flex items-center gap-2">
-                    <span>{imageFile ? imageFile.name : "No file selected"}</span>
-                    {imageFile && (
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
-                      >
-                        ✕
-                      </button>
-                    )}
+              {/* Date / Time / Capacity / Type */}
+              <div className="form-grid">
+                <div className="md:col-span-2">
+                  <Label htmlFor="date">Day *</Label>
+                  <div className="relative">
+                    <Field>
+                      <div className="flex items-center gap-3">
+                        <span className="text-primary-700">
+                          <CalendarIcon />
+                        </span>
+                        <input
+                          type="date"
+                          id="date"
+                          name="date"
+                          value={eventData.date}
+                          min={today}
+                          onChange={handleChange}
+                          className="w-full bg-transparent text-primary-900 focus:outline-none focus-glow field-input"
+                          required
+                        />
+                      </div>
+                    </Field>
                   </div>
                 </div>
 
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg btn-gradient px-3 py-2 text-sm font-medium">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
+                <div>
+                  <Label>Time</Label>
+                  <TimePicker
+                    value={eventData.time}
+                    selectedDate={eventData.date}
+                    onChange={(val) =>
+                      setEventData((p) => ({ ...p, time: val || "" }))
+                    }
                   />
-                  + Add files
-                </label>
+                </div>
+
+                <div>
+                  <Label htmlFor="capacity">Capacity</Label>
+                  <Field>
+                    <input
+                      type="number"
+                      id="capacity"
+                      name="capacity"
+                      min={1}
+                      value={eventData.capacity}
+                      onChange={handleChange}
+                      placeholder="50"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="typeOfEvent">Type of event</Label>
+                  <Field>
+                    <input
+                      id="typeOfEvent"
+                      name="typeOfEvent"
+                      value={eventData.typeOfEvent}
+                      onChange={handleChange}
+                      placeholder="e.g., Conference, Workshop, Seminar"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="venue">Location *</Label>
+                  <Field>
+                    <input
+                      id="venue"
+                      name="venue"
+                      value={eventData.venue}
+                      onChange={handleChange}
+                      placeholder="Venue"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                      required
+                    />
+                  </Field>
+                </div>
               </div>
 
-              {imagePreview && (
-                <div className="relative overflow-hidden rounded-xl border border-primary-200">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="h-48 w-full object-cover"
-                  />
+              {/* Upload section */}
+              <div className="space-y-3">
+                <Label>Upload attachments</Label>
+
+                <div className="flex items-center justify-between rounded-xl upload-area p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
+                      <UploadIcon />
+                    </div>
+                    <div className="text-sm text-primary-700 flex items-center gap-2">
+                      <span>{imageFile ? imageFile.name : "No file selected"}</span>
+                      {imageFile && (
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg btn-cta px-3 py-2 text-sm font-medium">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    + Add files
+                  </label>
+                </div>
+
+                {imagePreview && (
+                  <div className="relative overflow-hidden rounded-xl border border-primary-200">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-48 w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Reminders */}
+              <div className="space-y-3">
+                <Label>Reminders</Label>
+                <div className="flex gap-2">
+                  <Field>
+                    <input
+                      value={reminderInput}
+                      onChange={(e) => setReminderInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addReminder();
+                        }
+                      }}
+                      placeholder="Add reminder"
+                      className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow field-input"
+                    />
+                  </Field>
                   <button
                     type="button"
-                    onClick={removeImage}
-                    className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700"
+                    onClick={addReminder}
+                    className="rounded-xl btn-cta px-4 py-3 text-sm font-medium"
                   >
-                    ✕
+                    Add
                   </button>
                 </div>
-              )}
-            </div>
 
-            {/* Reminders */}
-            <div className="space-y-3">
-              <Label>Reminders</Label>
-              <div className="flex gap-2">
-                <Field>
-                  <input
-                    value={reminderInput}
-                    onChange={(e) => setReminderInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addReminder();
-                      }
-                    }}
-                    placeholder="Add reminder"
-                    className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none"
-                  />
-                </Field>
-                <button
-                  type="button"
-                  onClick={addReminder}
-                  className="rounded-xl btn-gradient px-4 py-3 text-sm font-medium"
-                >
-                  Add
-                </button>
+                {!!eventData.reminders.length && (
+                  <ul className="flex flex-wrap gap-2">
+                    {eventData.reminders.map((r, i) => (
+                      <li
+                        key={i}
+                        className="group inline-flex items-center gap-2 rounded-full pill px-3 py-1.5 text-sm text-primary-700"
+                      >
+                        {r}
+                        <button
+                          type="button"
+                          onClick={() => removeReminder(i)}
+                          className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200"
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {!!eventData.reminders.length && (
-                <ul className="flex flex-wrap gap-2">
-                  {eventData.reminders.map((r, i) => (
-                    <li
-                      key={i}
-                      className="group inline-flex items-center gap-2 rounded-full pill px-3 py-1.5 text-sm text-primary-700"
-                    >
-                      {r}
-                      <button
-                        type="button"
-                        onClick={() => removeReminder(i)}
-                        className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200"
-                      >
-                        ✕
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+              {/* Submit */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="rounded-xl btn-secondary px-5 py-3 text-sm font-medium"
+                >
+                  Cancel
+                </button>
 
-            {/* Submit */}
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="rounded-xl btn-neutral px-5 py-3 text-sm font-medium"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-xl btn-gradient px-6 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
-              >
-                {loading ? "Creating..." : "Create Event"}
-              </button>
-            </div>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-xl btn-cta px-6 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+                >
+                  {loading ? "Creating..." : "Create Event"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
