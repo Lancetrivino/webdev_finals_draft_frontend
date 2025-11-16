@@ -164,7 +164,7 @@ function TimePicker({ value, onChange, selectedDate }) {
             </div>
 
             <div className="flex flex-col rounded ring-1 ring-primary-200">
-              {["am", "pm"].map((p) => (
+              {['am', 'pm'].map((p) => (
                 <button
                   key={p}
                   onClick={() => {
@@ -339,25 +339,23 @@ function CreateEvent() {
   };
 
   return (
-    <div
-  className="relative min-h-screen bg-white overflow-hidden"
->
-  {/* Left Side Image */}
-<img
-  src="/assets/gradient-urp.jpg"
-  className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
-  alt=""
-/>
+    <div className="relative min-h-screen bg-white overflow-hidden theme">
+      {/* Gradient backgrounds (left + right) - keep existing images but styled */}
+      <img
+        src="/assets/gradient-urp.jpg"
+        className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
+        alt=""
+      />
 
-{/* Right Side Image */}
-<img
-  src="/assets/gradient-urp.jpg"
-  className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
-  alt=""
-/>
+      <img
+        src="/assets/gradient-urp.jpg"
+        className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
+        alt=""
+      />
 
+      {/* Inline theme + gradient CSS — keeps module self-contained */}
       <style>{`
-        :root { --c900:#002d54; --c700:#004887; --c500:#0078c1; --c200:#a8daf9; --c100:#cde2ee; }
+        :root { --c900:#06243b; --c700:#0b4ea6; --c500:#1563d6; --c200:#bfe7ff; --c100:#eef7ff; }
         .theme { background: var(--c100); }
         .theme .bg-primary { background-color: var(--c500) !important; }
         .theme .bg-primary-dark { background-color: var(--c700) !important; }
@@ -366,21 +364,85 @@ function CreateEvent() {
         .theme .text-primary-700 { color: var(--c700) !important; }
         .theme .border-primary-200 { border-color: var(--c200) !important; }
         .theme .bg-muted { background-color: var(--c100) !important; }
-        .theme .focus\:ring-primary:focus { box-shadow: 0 0 0 4px rgba(0,120,193,0.18); outline: none; }
+        .theme .focus\:ring-primary:focus { box-shadow: 0 0 0 4px rgba(21,99,214,0.18); outline: none; }
+
+        /* Gradient utilities to enhance look without touching logic */
+        .bg-gradient-primary {
+          background-image: linear-gradient(90deg, #7c3aed 0%, #8b5cf6 35%, #60a5fa 70%, #4fd1c5 100%);
+          color: white;
+        }
+
+        .btn-gradient {
+          background-image: linear-gradient(90deg, #7c3aed, #60a5fa);
+          border: none;
+          color: #fff;
+          transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .btn-gradient:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(96,165,250,0.12); }
+
+        /* Card gradient border and subtle glass look */
+        .card-hero {
+          background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.85));
+          border-radius: 1rem;
+          border: 1px solid rgba(255,255,255,0.6);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .card-hero:before {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          padding: 2px;
+          background: linear-gradient(90deg, #a78bfa, #60a5fa, #4fd1c5);
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        /* Header hero with gradient text and subtle wave */
+        .hero-banner {
+          display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+          background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(96,165,250,0.08));
+          padding: 28px 20px;
+          border-radius: 0.75rem;
+        }
+
+        .hero-title { font-size: 1.875rem; font-weight:700; color: #06243b; }
+        .hero-sub { color:#0b4ea6; font-size:0.95rem; }
+
+        /* Make input placeholders slightly darker on gradient backgrounds */
+        .placeholder-primary::placeholder { color: rgba(6,36,59,0.45); }
+
+        /* Reminder pills */
+        .pill-gradient { background: linear-gradient(90deg, rgba(124,58,237,0.08), rgba(96,165,250,0.06)); color:#06243b; }
+
+        /* Strong focus ring matching gradient */
+        .focus-ring:focus { box-shadow: 0 0 0 6px rgba(96,165,250,0.12); }
+
+        /* Ensure images don't cover essential content on small screens */
+        @media (max-width: 900px) {
+          .pointer-events-none.select-none.absolute.left-0, .pointer-events-none.select-none.absolute.right-0 { display:none; }
+        }
       `}</style>
 
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
       <div className="mx-auto max-w-5xl px-4 pb-20 mt-10 relative z-10">
-        <h1 className="text-center mt-16 mb-10 text-3xl font-bold tracking-tight text-primary-900">
-          Create event
-        </h1>
+        <div className="hero-banner mb-6">
+          <h1 className="hero-title text-center">Create event</h1>
+          <div className="hero-sub text-center">Plan & publish events — invite attendees, manage capacity and reminders.</div>
+        </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm border-2"
-     style={{
-       borderImage: "linear-gradient(90deg, #ffaa9a, #fed9b7, #ffb6c1, #ff8ba0) 1",
-     }}
->
+        <div
+          className="card-hero rounded-2xl p-6 shadow-sm border-2"
+          style={{
+            borderImage: "linear-gradient(90deg, #ffaa9a, #fed9b7, #ffb6c1, #ff8ba0) 1",
+          }}
+        >
 
           <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -394,7 +456,7 @@ function CreateEvent() {
                   value={eventData.title}
                   onChange={handleChange}
                   placeholder="Event name"
-                  className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none"
+                  className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none placeholder-primary"
                   required
                 />
               </Field>
@@ -569,7 +631,7 @@ function CreateEvent() {
                 <button
                   type="button"
                   onClick={addReminder}
-                  className="rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white hover:bg-primary-dark"
+                  className="rounded-xl btn-gradient px-4 py-3 text-sm font-medium"
                 >
                   Add
                 </button>
@@ -580,7 +642,7 @@ function CreateEvent() {
                   {eventData.reminders.map((r, i) => (
                     <li
                       key={i}
-                      className="group inline-flex items-center gap-2 rounded-full bg-primary-100 px-3 py-1.5 text-sm text-primary-700"
+                      className="group inline-flex items-center gap-2 rounded-full pill-gradient px-3 py-1.5 text-sm text-primary-700"
                     >
                       {r}
                       <button
@@ -609,7 +671,7 @@ function CreateEvent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark disabled:opacity-60"
+                className="rounded-xl btn-gradient px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark disabled:opacity-60"
               >
                 {loading ? "Creating..." : "Create Event"}
               </button>
