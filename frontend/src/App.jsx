@@ -211,9 +211,7 @@ const AppContent = () => (
   </>
 );
 
-// =========================
 // Main App
-// =========================
 
 const App = () => (
   <AuthProvider>

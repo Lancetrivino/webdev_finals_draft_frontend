@@ -29,7 +29,6 @@ const NavBar = () => {
       .join("");
   }, [currentUser]);
 
-  // ⭐ ADDED MOVEMENT + THICKER FONT ON HOVER/PRESS
   const navLinkStyle = ({ isActive }) =>
     `relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200
      text-white/90 hover:text-white hover:-translate-y-1 hover:brightness-125
@@ -69,7 +68,7 @@ const NavBar = () => {
                 <circle cx="12" cy="12" r="10" fill="url(#ev-grad)" />
               </svg>
 
-              {/* ⭐ ADDED HOVER + PRESS EFFECT TO EVENTURE LOGO TEXT */}
+              {/* Extra Effects */}
               <span
                 className="
                   text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2]
