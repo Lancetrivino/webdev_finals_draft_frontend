@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 import { API_BASE_URL } from "../App";
 
-/* ---------- Icons ---------- */
+/* Icons  */
 const ClockIcon = (props) => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" {...props}>
     <path
@@ -33,7 +33,7 @@ const UploadIcon = (props) => (
   </svg>
 );
 
-/* ---------- Time Picker (Updated) ---------- */
+/* Time Picker */
 function TimePicker({ value, onChange, selectedDate }) {
   const [open, setOpen] = useState(false);
   const [hour, setHour] = useState(12);
@@ -188,7 +188,7 @@ function TimePicker({ value, onChange, selectedDate }) {
   );
 }
 
-/* ---------- Small UI helpers ---------- */
+/* Small UI helpers */
 const Label = ({ children, htmlFor }) => (
   <label
     htmlFor={htmlFor}
@@ -204,7 +204,7 @@ const Field = ({ children }) => (
   </div>
 );
 
-/* ---------- Main CreateEvent ---------- */
+/* Main CreateEvent  */
 function CreateEvent() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
