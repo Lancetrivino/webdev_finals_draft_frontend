@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_BASE_URL } from "../App";
 
-/* ---------- Small, tidy UI helpers ---------- */
-
 function Star({ filled }) {
   return (
     <svg
@@ -41,15 +39,24 @@ function RatingBar({ stars, count, total }) {
 }
 
 function ReviewCard({ review }) {
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+
   return (
     <article className="rounded-2xl border p-4 hover:shadow-sm transition">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600">
+          <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow">
             {review.user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div>
-            <p className="font-medium">{review.user?.name || "Anonymous"}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-medium">{review.user?.name || "Anonymous"}</p>
+              {review.verified && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                  ✓ Verified
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500">
               {new Date(review.createdAt).toLocaleDateString()}
             </p>
@@ -57,13 +64,60 @@ function ReviewCard({ review }) {
         </div>
         <Stars value={review.rating} />
       </div>
+
       {review.title && <h3 className="mt-3 font-semibold">{review.title}</h3>}
       {review.comment && <p className="mt-2 text-gray-700">{review.comment}</p>}
+
+      {/* ✅ Display Photos */}
+      {review.photos && review.photos.length > 0 && (
+        <div className="mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {review.photos.map((photoUrl, index) => (
+              <div
+                key={index}
+                className="relative group cursor-pointer"
+                onClick={() => setLightboxPhoto(photoUrl)}
+              >
+                <img
+                  src={photoUrl}
+                  alt={`Review photo ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition rounded-lg flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 text-2xl">
+                    🔍
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Lightbox Modal */}
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <button
+            onClick={() => setLightboxPhoto(null)}
+            className="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"
+          >
+            ✕
+          </button>
+          <img
+            src={lightboxPhoto}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </article>
   );
 }
-
-/* ---------- Page ---------- */
 
 export default function EventFeedbackPage() {
   const { eventId } = useParams();
@@ -71,7 +125,6 @@ export default function EventFeedbackPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Adjust these endpoints to match your API.
   const EVENT_URL = `${API_BASE_URL}/api/events/${eventId}`;
   const REVIEWS_URL = `${API_BASE_URL}/api/feedback/${eventId}`;
 
@@ -91,7 +144,9 @@ export default function EventFeedbackPage() {
         const rev = await revRes.json();
         if (isMounted) {
           setEvent(ev);
-          setReviews(Array.isArray(rev) ? rev : rev?.items ?? []);
+          // Handle both array and object with feedbacks property
+          const feedbacksArray = Array.isArray(rev) ? rev : (rev?.feedbacks || rev?.items || []);
+          setReviews(feedbacksArray);
         }
       } catch (e) {
         console.error(e);
@@ -116,18 +171,23 @@ export default function EventFeedbackPage() {
   }, [reviews]);
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto p-6 text-gray-600">Loading feedback…</div>;
+    return (
+      <div className="max-w-6xl mx-auto p-6 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading feedback…</p>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{event?.name || "Customers Feedback"}</h1>
-          {event?.date && <p className="text-sm text-gray-500">{new Date(event.date).toLocaleString()}</p>}
+          <h1 className="text-2xl font-bold">{event?.title || "Event Feedback"}</h1>
+          {event?.date && <p className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</p>}
         </div>
         <Link
-          to={`/feedback/${eventId}/new`}
+          to={`/feedback/${eventId}`}
           className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
         >
           Write a Review
@@ -136,7 +196,7 @@ export default function EventFeedbackPage() {
 
       <div className="grid gap-6 md:grid-cols-[320px,1fr]">
         {/* Left: ratings summary */}
-        <section className="rounded-2xl border p-5">
+        <section className="rounded-2xl border p-5 bg-white">
           <h2 className="text-lg font-semibold">Ratings & Reviews</h2>
 
           <div className="mt-4 flex items-center gap-4">
@@ -148,7 +208,7 @@ export default function EventFeedbackPage() {
           </div>
 
           <div className="mt-6 space-y-2">
-            {[5, 4, 3, 2, 1].map((s, i) => (
+            {[5, 4, 3, 2, 1].map((s) => (
               <RatingBar
                 key={s}
                 stars={s}
@@ -159,7 +219,7 @@ export default function EventFeedbackPage() {
           </div>
 
           <Link
-            to={`/feedback/${eventId}/new`}
+            to={`/feedback/${eventId}`}
             className="mt-6 inline-block w-full rounded-xl bg-gray-900 px-4 py-2 text-center text-white hover:bg-black"
           >
             Leave Feedback
@@ -169,7 +229,10 @@ export default function EventFeedbackPage() {
         {/* Right: reviews list */}
         <section className="space-y-4">
           {reviews.length === 0 ? (
-            <div className="rounded-2xl border p-6 text-gray-600">No reviews yet. Be the first!</div>
+            <div className="rounded-2xl border p-6 text-gray-600 bg-white text-center">
+              <div className="text-4xl mb-2">📝</div>
+              <p>No reviews yet. Be the first!</p>
+            </div>
           ) : (
             reviews.map((r) => <ReviewCard key={r._id || r.id} review={r} />)
           )}
