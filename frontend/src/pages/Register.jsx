@@ -13,8 +13,6 @@ function Register() {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -24,10 +22,8 @@ function Register() {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.name.trim()) newErrors.name = "Full name is required.";
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) newErrors.email = "Email is required.";
     else if (!emailRegex.test(formData.email))
@@ -67,153 +63,137 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#EDE9E6]">
-      <div className="flex w-[950px] max-w-full bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* Left Section (Image) */}
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        background:
+          "linear-gradient(135deg, #7B4CF6 0%, #5E6FE8 30%, #35B8D8 100%)",
+      }}
+    >
+      <div
+        className="w-[760px] max-w-full mx-4 rounded-2xl shadow-2xl"
+        style={{
+          borderRadius: "18px",
+          boxShadow: "0 20px 50px rgba(16,24,40,0.25)",
+        }}
+      >
         <div
-          className="w-1/2 bg-cover bg-center"
+          className="bg-white rounded-2xl p-10 md:p-12"
           style={{
-            backgroundImage: "url('/assets/bg.jpg')",
+            borderRadius: "16px",
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,250,255,0.98))",
+            boxShadow:
+              "0 10px 30px rgba(16,24,40,0.08), inset 0 1px 0 rgba(255,255,255,0.6)",
           }}
-        ></div>
+        >
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-extrabold text-[#111827]">Create account</h1>
+            <p className="text-sm text-gray-500 mt-2">Enter your details to continue</p>
+          </div>
 
-        {/* Right Section (Form) */}
-        <div className="w-1/2 p-12 flex flex-col justify-center">
-          <h1 className="text-3xl font-semibold text-[#2C2C2C] mb-2">
-            Create your account
-          </h1>
-          <p className="text-sm text-gray-500 mb-8">
-            Join us and start planning your events today
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* General Error */}
+          <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto">
             {errors.general && (
-              <p className="text-red-500 text-sm mb-2">{errors.general}</p>
+              <p className="text-red-500 text-sm text-center">{errors.general}</p>
             )}
 
             {/* Full Name */}
             <div>
-              <label className="text-sm text-gray-600">Full Name</label>
+              <label className="block text-sm text-gray-600 mb-2">Full Name</label>
               <input
                 type="text"
                 name="name"
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.name ? "focus:ring-red-400" : "focus:ring-[#C9BEB3]"
-                }`}
+                className={`w-full rounded-full px-6 py-3 bg-[#eef6fb] border ${
+                  errors.name ? "border-red-400" : "border-[#c6d7e8]"
+                } placeholder-gray-500 outline-none focus:ring-0 focus:shadow-[0_0_0_4px_rgba(78,161,255,0.06)]`}
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                <p className="text-red-500 text-sm mt-2">{errors.name}</p>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <label className="text-sm text-gray-600">Email</label>
+              <label className="block text-sm text-gray-600 mb-2">Email</label>
               <input
-                type="text"
+                type="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.email ? "focus:ring-red-400" : "focus:ring-[#C9BEB3]"
-                }`}
+                className={`w-full rounded-full px-6 py-3 bg-[#eef6fb] border ${
+                  errors.email ? "border-red-400" : "border-[#c6d7e8]"
+                } placeholder-gray-500 outline-none focus:ring-0 focus:shadow-[0_0_0_4px_rgba(78,161,255,0.06)]`}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                <p className="text-red-500 text-sm mt-2">{errors.email}</p>
               )}
             </div>
 
             {/* Password */}
-            <div className="relative">
-              <label className="text-sm text-gray-600">Password</label>
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">Password</label>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 name="password"
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.password ? "focus:ring-red-400" : "focus:ring-[#C9BEB3]"
-                } pr-10`}
+                className={`w-full rounded-full px-6 py-3 bg-[#eef6fb] border ${
+                  errors.password ? "border-red-400" : "border-[#c6d7e8]"
+                } placeholder-gray-500 outline-none focus:ring-0 focus:shadow-[0_0_0_4px_rgba(78,161,255,0.06)]`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-500 hover:text-[#7A6C5D]"
-              >
-                {showPassword ? "🙈" : "👁️"}
-              </button>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-2">{errors.password}</p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div className="relative">
-              <label className="text-sm text-gray-600">Verify Password</label>
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">Verify Password</label>
               <input
-                type={showConfirmPassword ? "text" : "password"}
+                type="password"
                 name="confirmPassword"
                 placeholder="Re-enter your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full p-3 mt-1 border ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.confirmPassword
-                    ? "focus:ring-red-400"
-                    : "focus:ring-[#C9BEB3]"
-                } pr-10`}
+                className={`w-full rounded-full px-6 py-3 bg-[#eef6fb] border ${
+                  errors.confirmPassword ? "border-red-400" : "border-[#c6d7e8]"
+                } placeholder-gray-500 outline-none focus:ring-0 focus:shadow-[0_0_0_4px_rgba(78,161,255,0.06)]`}
               />
-              <button
-                type="button"
-                onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
-                }
-                className="absolute right-3 top-9 text-gray-500 hover:text-[#7A6C5D]"
-              >
-                {showConfirmPassword ? "🙈" : "👁️"}
-              </button>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.confirmPassword}
-                </p>
+                <p className="text-red-500 text-sm mt-2">{errors.confirmPassword}</p>
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 rounded-lg font-semibold transition ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#7A6C5D] hover:bg-[#5F5245] text-white"
-              }`}
-            >
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
+            {/* Register Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full rounded-full py-3 font-extrabold text-lg transition ${
+                  loading
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-[#111827] hover:shadow-lg text-[#4EA1FF]"
+                }`}
+              >
+                {loading ? "Registering..." : "Register"}
+              </button>
+            </div>
 
-          <p className="text-center text-gray-600 mt-6 text-sm">
-            Already have an account?{" "}
-            <a
-              href="/login"
-              className="text-[#7A6C5D] font-medium hover:underline"
-            >
-              Login
-            </a>
-          </p>
+            {/* Footer */}
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <a href="/login" className="text-[#4EA1FF] font-semibold hover:underline">
+                  Login
+                </a>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>

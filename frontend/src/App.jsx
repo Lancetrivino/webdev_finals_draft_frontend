@@ -37,7 +37,14 @@ export const API_BASE_URL = API_BASE;
 // Global styles
 const GlobalStyles = () => (
   <style>{`
-    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
     .Toastify__toast-container { top: 3em; right: 1em; }
     .Toastify__toast {
       border-radius: 0.75rem;
@@ -47,6 +54,7 @@ const GlobalStyles = () => (
     }
     .Toastify__toast--success { background-color: #10B981; color: white; }
     .Toastify__toast--error   { background-color: #EF4444; color: white; }
+    .Toastify__toast--info    { background-color: #3B82F6; color: white; }
   `}</style>
 );
 
@@ -57,11 +65,13 @@ const GlobalStyles = () => (
 const PrivateRoute = ({ children }) => {
   const { currentUser, initializing } = useAuth();
 
-  // Wait for AuthProvider to finish initializing (restoring user from localStorage)
   if (initializing) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Loading...
+      <div className="flex h-screen items-center justify-center text-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -72,18 +82,19 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { currentUser, initializing } = useAuth();
 
-  // Wait for initialization before making decisions
   if (initializing) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-600">
-        Loading...
+      <div className="flex h-screen items-center justify-center text-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!currentUser) return <Navigate to="/login" replace />;
 
-  // Role check (case-insensitive)
   const role = (currentUser.role || "").toString().toLowerCase();
   if (!role.includes("admin")) return <Navigate to="/" replace />;
 
@@ -100,8 +111,8 @@ const AppContent = () => (
     <ToastContainer position="top-center" />
     <Navbar />
 
-    <div className="min-h-screen bg-slate-50">
-      <main className="pt-4 pb-12">
+    <div className="min-h-screen">
+      <main>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />

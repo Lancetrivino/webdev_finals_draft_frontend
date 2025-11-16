@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 
 import { API_BASE_URL } from "../App";
+
 /* ---------- Icons ---------- */
 const ClockIcon = (props) => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" {...props}>
@@ -32,13 +33,29 @@ const UploadIcon = (props) => (
   </svg>
 );
 
-/* ---------- Time Picker ---------- */
-function TimePicker({ value, onChange }) {
+/* ---------- Time Picker (Updated) ---------- */
+function TimePicker({ value, onChange, selectedDate }) {
   const [open, setOpen] = useState(false);
   const [hour, setHour] = useState(12);
   const [minute, setMinute] = useState(0);
   const [period, setPeriod] = useState("am");
   const wrapperRef = useRef(null);
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const isToday = selectedDate === todayStr;
+
+  const currentHour24 = today.getHours();
+  const currentMinute = today.getMinutes();
+
+  const disablePast = (h12, m, p) => {
+    if (!isToday) return false;
+
+    let convert = p === "pm" ? (h12 % 12) + 12 : h12 % 12;
+    if (convert < currentHour24) return true;
+    if (convert === currentHour24 && m < currentMinute) return true;
+    return false;
+  };
 
   useEffect(() => {
     if (!value) return;
@@ -60,11 +77,13 @@ function TimePicker({ value, onChange }) {
 
   const to24h = (h12, p) =>
     p === "am" ? (h12 === 12 ? 0 : h12) : h12 === 12 ? 12 : h12 + 12;
+
   const commitChange = (h = hour, m = minute, p = period) => {
-    if (h == null || m == null || !p) {
-      onChange(null);
+    if (disablePast(h, m, p)) {
+      toast.error("You cannot select a past time.");
       return;
     }
+
     onChange(
       `${String(to24h(h, p)).padStart(2, "0")}:${String(m).padStart(2, "0")}`
     );
@@ -95,41 +114,55 @@ function TimePicker({ value, onChange }) {
         <div className="absolute z-20 mt-2 w-64 rounded-xl border border-primary-200 bg-white p-3 shadow-xl">
           <div className="grid grid-cols-3 gap-2">
             <div className="max-h-60 overflow-y-auto rounded ring-1 ring-primary-200">
-              {hours.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => {
-                    setHour(h);
-                    commitChange(h, minute, period);
-                  }}
-                  className={`block w-full px-3 py-2 text-sm ${
-                    h === hour
-                      ? "bg-primary text-white"
-                      : "hover:bg-slate-50"
-                  }`}
-                >
-                  {String(h).padStart(2, "0")}
-                </button>
-              ))}
+              {hours.map((h) => {
+                const disabled = disablePast(h, minute, period);
+                return (
+                  <button
+                    key={h}
+                    disabled={disabled}
+                    onClick={() => {
+                      setHour(h);
+                      commitChange(h, minute, period);
+                    }}
+                    className={`block w-full px-3 py-2 text-sm ${
+                      disabled
+                        ? "opacity-40 cursor-not-allowed"
+                        : h === hour
+                        ? "bg-primary text-white"
+                        : "hover:bg-slate-50"
+                    }`}
+                  >
+                    {String(h).padStart(2, "0")}
+                  </button>
+                );
+              })}
             </div>
+
             <div className="max-h-60 overflow-y-auto rounded ring-1 ring-primary-200">
-              {minutes.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => {
-                    setMinute(m);
-                    commitChange(hour, m, period);
-                  }}
-                  className={`block w-full px-3 py-2 text-sm ${
-                    m === minute
-                      ? "bg-primary text-white"
-                      : "hover:bg-slate-50"
-                  }`}
-                >
-                  {String(m).padStart(2, "0")}
-                </button>
-              ))}
+              {minutes.map((m) => {
+                const disabled = disablePast(hour, m, period);
+                return (
+                  <button
+                    key={m}
+                    disabled={disabled}
+                    onClick={() => {
+                      setMinute(m);
+                      commitChange(hour, m, period);
+                    }}
+                    className={`block w-full px-3 py-2 text-sm ${
+                      disabled
+                        ? "opacity-40 cursor-not-allowed"
+                        : m === minute
+                        ? "bg-primary text-white"
+                        : "hover:bg-slate-50"
+                    }`}
+                  >
+                    {String(m).padStart(2, "0")}
+                  </button>
+                );
+              })}
             </div>
+
             <div className="flex flex-col rounded ring-1 ring-primary-200">
               {["am", "pm"].map((p) => (
                 <button
@@ -176,6 +209,9 @@ function CreateEvent() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const today = new Date().toISOString().split("T")[0];
+
   const [eventData, setEventData] = useState({
     title: "",
     description: "",
@@ -186,6 +222,7 @@ function CreateEvent() {
     reminders: [],
     capacity: 50,
   });
+
   const [imagePreview, setImagePreview] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [reminderInput, setReminderInput] = useState("");
@@ -205,8 +242,10 @@ function CreateEvent() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith("image/"))
       return toast.error("Select a valid image file.");
+
     if (file.size > 5 * 1024 * 1024)
       return toast.error("Max image size is 5MB.");
 
@@ -216,7 +255,6 @@ function CreateEvent() {
     reader.readAsDataURL(file);
   };
 
-  // NEW: remove attached image/file
   const removeImage = () => {
     setImageFile(null);
     setImagePreview("");
@@ -239,16 +277,13 @@ function CreateEvent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Frontend validation
     if (
-      !eventData.title?.trim() ||
-      !eventData.description?.trim() ||
+      !eventData.title.trim() ||
+      !eventData.description.trim() ||
       !eventData.date ||
-      !eventData.venue?.trim()
+      !eventData.venue.trim()
     ) {
-      toast.error(
-        "Please fill all required fields (title, description, date, venue)."
-      );
+      toast.error("Please fill all required fields.");
       return;
     }
 
@@ -261,79 +296,66 @@ function CreateEvent() {
 
     try {
       const token = currentUser?.token;
-
       if (!token) {
         toast.error("Please log in first.");
         navigate("/login");
         return;
       }
 
-      // ✅ Build FormData correctly
       const formData = new FormData();
-
       formData.append("title", eventData.title.trim());
       formData.append("description", eventData.description.trim());
-      formData.append("date", eventData.date); // YYYY-MM-DD
+      formData.append("date", eventData.date);
       formData.append("venue", eventData.venue.trim());
       formData.append("capacity", Number(eventData.capacity));
       formData.append("reminders", JSON.stringify(eventData.reminders));
 
-      // ✅ Only append optional fields if they have values
-      if (eventData.time) {
-        formData.append("time", eventData.time);
-      }
-      if (eventData.typeOfEvent?.trim()) {
+      if (eventData.time) formData.append("time", eventData.time);
+      if (eventData.typeOfEvent.trim())
         formData.append("typeOfEvent", eventData.typeOfEvent.trim());
-      }
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
+      if (imageFile) formData.append("image", imageFile);
 
       const res = await fetch(`${API_BASE_URL}/api/events`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        const errorMessage =
-          data.message || data.details || "Error creating event.";
-        toast.error(errorMessage);
+        toast.error(data.message || "Error creating event.");
         return;
       }
 
-      // ✅ Validate response structure
-      if (!data?.event?._id) {
-        toast.error("Server returned invalid response");
-        return;
-      }
-
-      // ✅ Success! Show approval message
       toast.success("🎉 Event submitted for admin approval!");
 
-      // ✅ Navigate to dashboard (not event details since it's pending)
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 1000);
+      setTimeout(() => navigate("/dashboard", { replace: true }), 1000);
     } catch (err) {
-      console.error("❌ Create Event Error:", err);
-
-      if (err.name === "TypeError" && err.message.includes("fetch")) {
-        toast.error("Network error. Please check your connection.");
-      } else {
-        toast.error(err.message || "Server error.");
-      }
+      toast.error("Server error.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="theme min-h-screen">
+    <div
+  className="relative min-h-screen bg-white overflow-hidden"
+>
+  {/* Left Side Image */}
+<img
+  src="/assets/gradient-urp.jpg"
+  className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
+  alt=""
+/>
+
+{/* Right Side Image */}
+<img
+  src="/assets/gradient-urp.jpg"
+  className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
+  alt=""
+/>
+
       <style>{`
         :root { --c900:#002d54; --c700:#004887; --c500:#0078c1; --c200:#a8daf9; --c100:#cde2ee; }
         .theme { background: var(--c100); }
@@ -343,23 +365,25 @@ function CreateEvent() {
         .theme .text-primary-900 { color: var(--c900) !important; }
         .theme .text-primary-700 { color: var(--c700) !important; }
         .theme .border-primary-200 { border-color: var(--c200) !important; }
-        .theme .border-primary-100 { border-color: var(--c100) !important; }
         .theme .bg-muted { background-color: var(--c100) !important; }
-        .theme .placeholder-primary { color: rgba(0,45,84,0.45) !important; }
         .theme .focus\:ring-primary:focus { box-shadow: 0 0 0 4px rgba(0,120,193,0.18); outline: none; }
-        .theme .hover\:bg-primary-dark:hover { background-color: var(--c700) !important; }
       `}</style>
 
-      {/* Top bar strip for subtle depth */}
       <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
-      <div className="mx-auto max-w-5xl px-4 pb-20">
-        <h1 className="mt-8 mb-6 text-3xl font-bold tracking-tight text-primary-900">
+      <div className="mx-auto max-w-5xl px-4 pb-20 mt-10 relative z-10">
+        <h1 className="text-center mt-16 mb-10 text-3xl font-bold tracking-tight text-primary-900">
           Create event
         </h1>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 border-primary-200">
+        <div className="rounded-2xl bg-white p-6 shadow-sm border-2"
+     style={{
+       borderImage: "linear-gradient(90deg, #ffaa9a, #fed9b7, #ffb6c1, #ff8ba0) 1",
+     }}
+>
+
           <form onSubmit={handleSubmit} className="space-y-8">
+
             {/* Title + Description */}
             <div className="space-y-3">
               <Label htmlFor="title">Title *</Label>
@@ -405,6 +429,7 @@ function CreateEvent() {
                         id="date"
                         name="date"
                         value={eventData.date}
+                        min={today}
                         onChange={handleChange}
                         className="w-full bg-transparent text-primary-900 focus:outline-none"
                         required
@@ -418,6 +443,7 @@ function CreateEvent() {
                 <Label>Time</Label>
                 <TimePicker
                   value={eventData.time}
+                  selectedDate={eventData.date}
                   onChange={(val) =>
                     setEventData((p) => ({ ...p, time: val || "" }))
                   }
@@ -486,13 +512,13 @@ function CreateEvent() {
                         type="button"
                         onClick={removeImage}
                         className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
-                        aria-label="Remove attachment"
                       >
                         ✕
                       </button>
                     )}
                   </div>
                 </div>
+
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-dark">
                   <input
                     type="file"
@@ -502,10 +528,6 @@ function CreateEvent() {
                   />
                   + Add files
                 </label>
-              </div>
-
-              <div className="rounded-xl border-2 border-dashed border-primary-200 bg-muted px-4 py-10 text-center text-sm text-primary-700">
-                You can also drop your files here
               </div>
 
               {imagePreview && (
@@ -518,8 +540,7 @@ function CreateEvent() {
                   <button
                     type="button"
                     onClick={removeImage}
-                    aria-label="Remove preview"
-                    className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700 hover:bg-white"
+                    className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700"
                   >
                     ✕
                   </button>
@@ -565,8 +586,7 @@ function CreateEvent() {
                       <button
                         type="button"
                         onClick={() => removeReminder(i)}
-                        className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200 hover:text-primary-900"
-                        aria-label="Remove reminder"
+                        className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200"
                       >
                         ✕
                       </button>
@@ -585,6 +605,7 @@ function CreateEvent() {
               >
                 Cancel
               </button>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -593,6 +614,7 @@ function CreateEvent() {
                 {loading ? "Creating..." : "Create Event"}
               </button>
             </div>
+
           </form>
         </div>
       </div>

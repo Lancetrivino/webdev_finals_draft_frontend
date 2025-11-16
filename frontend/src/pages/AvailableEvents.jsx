@@ -8,7 +8,7 @@ export default function AvailableEvents() {
   const [loading, setLoading] = useState(true);
   const [joinedEventIds, setJoinedEventIds] = useState([]);
   const [sortOption, setSortOption] = useState("date");
-  const [processingEvent, setProcessingEvent] = useState(null); // ✅ NEW: Track which event is being processed
+  const [processingEvent, setProcessingEvent] = useState(null);
 
   const navigate = useNavigate();
 
@@ -25,7 +25,6 @@ export default function AvailableEvents() {
         const { token, _id: userId } = JSON.parse(storedUser);
         const API_BASE = import.meta.env.VITE_API_URL;
 
-        // Use the new /available endpoint that returns all approved events
         const res = await fetch(`${API_BASE}/api/events/available`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -33,19 +32,15 @@ export default function AvailableEvents() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch events");
 
-        // The endpoint already returns only approved events, no need to filter
         setEvents(data);
 
-        // Mark events the user already joined
         const joined = data
           .filter((e) => e.participants?.includes(userId))
           .map((e) => e._id);
         setJoinedEventIds(joined);
       } catch (error) {
         console.error(error);
-        toast.error(
-          "Failed to load events. Check your connection or permissions."
-        );
+        toast.error("Failed to load events.");
       } finally {
         setLoading(false);
       }
@@ -54,7 +49,6 @@ export default function AvailableEvents() {
     fetchEvents();
   }, []);
 
-  // 🔎 Search + Sort
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     let filteredEvents = term
@@ -79,7 +73,6 @@ export default function AvailableEvents() {
     return filteredEvents;
   }, [q, events, sortOption]);
 
-  // ✅ Enhanced Handle Join Event with Loading State
   const handleBook = async (eventId) => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) {
@@ -91,7 +84,7 @@ export default function AvailableEvents() {
     const { token, _id: userId } = storedUser;
     const API_BASE = import.meta.env.VITE_API_URL;
 
-    setProcessingEvent(eventId); // ✅ Show loading state
+    setProcessingEvent(eventId);
 
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/join`, {
@@ -105,52 +98,39 @@ export default function AvailableEvents() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join event");
 
-      // ✅ Get event name for better success message
       const eventName = events.find((e) => e._id === eventId)?.title || "event";
-      toast.success(`🎉 You've successfully joined "${eventName}"!`, {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      toast.success(`🎉 You've successfully joined "${eventName}"!`);
 
-      // Update joined events list
       setJoinedEventIds((prev) => [...prev, eventId]);
 
-      // Update events state
       setEvents((prev) =>
         prev.map((e) =>
-          e._id === eventId
-            ? {
-                ...e,
-                participants: [...(e.participants || []), userId],
-              }
+          e._1d === eventId
+            ? { ...e, participants: [...(e.participants || []), userId] }
             : e
         )
       );
     } catch (error) {
-      console.error(error);
-      toast.error(error.message || "Error joining event.", {
-        position: "top-center",
-      });
+      toast.error(error.message || "Error joining event.");
     } finally {
-      setProcessingEvent(null); // ✅ Clear loading state
+      setProcessingEvent(null);
     }
   };
 
-  // ✅ Enhanced Handle Leave Event with Loading State
   const handleLeave = async (eventId) => {
     const eventName =
       events.find((e) => e._id === eventId)?.title || "this event";
 
-    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`)) {
-      return; // User cancelled
-    }
+    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`))
+      return;
+
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) return toast.info("Please login first.");
-    const { token, _id: userId } = storedUser;
 
+    const { token, _id: userId } = storedUser;
     const API_BASE = import.meta.env.VITE_API_URL;
 
-    setProcessingEvent(eventId); // ✅ Show loading state
+    setProcessingEvent(eventId);
 
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/leave`, {
@@ -164,17 +144,10 @@ export default function AvailableEvents() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave event");
 
-      // ✅ Get event name for better success message
-      const eventName = events.find((e) => e._id === eventId)?.title || "event";
-      toast.success(`You've left "${eventName}"`, {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      toast.success(`You've left "${eventName}"`);
 
-      // Update joined events list
       setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
 
-      // Update events state
       setEvents((prev) =>
         prev.map((e) =>
           e._id === eventId
@@ -188,62 +161,66 @@ export default function AvailableEvents() {
         )
       );
     } catch (error) {
-      console.error(error);
-      toast.error(error.message || "Error leaving event.", {
-        position: "top-center",
-      });
+      toast.error(error.message || "Error leaving event.");
     } finally {
-      setProcessingEvent(null); // ✅ Clear loading state
+      setProcessingEvent(null);
     }
   };
 
-  // 🌀 Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg font-medium">
-            Loading events...
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading events...</p>
       </div>
     );
   }
 
-  // 🔭 No results
   if (filtered.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <h2 className="text-2xl font-semibold text-gray-700">
-          No events found.
-        </h2>
-        <p className="text-gray-500 mt-2">
-          Try adjusting your search or check back later!
-        </p>
+      <div
+        className="min-h-screen flex flex-col items-center justify-center"
+        style={{
+          background:
+            "linear-gradient(135deg,#f3e8ff,#e6cfff,#cca3ff,#a66bff,#8040ff)",
+        }}
+      >
+        <h2 className="text-2xl font-semibold text-gray-700">No events found.</h2>
       </div>
     );
   }
 
-  // 🎟️ Events display
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
+    <div
+      className="min-h-screen px-6 pb-12"
+      style={{
+        // ensure page content starts *below* typical fixed navbars.
+        // default fallback is 6rem (pt-24). If your navbar height differs,
+        // set --nav-height on :root somewhere globally and it'll be used here.
+        paddingTop: "var(--nav-height, 6rem)",
+        background:
+          "linear-gradient(135deg, #f3e8ff 0%, #e6cfff 25%, #cca3ff 50%, #a66bff 75%, #8040ff 100%)",
+      }}
+    >
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl font-bold text-slate-800">
-            Available Events
-          </h1>
+        {/* Toolbar — keep it visually above background and nav */}
+        <div
+          className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          style={{ zIndex: 40, position: "relative" }}
+        >
+          <h1 className="text-3xl font-bold text-slate-800">Available Events</h1>
+
           <div className="flex gap-2 items-center w-full sm:w-auto">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search events or venue…"
-              className="w-full sm:w-64 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 pl-11 text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40"
+              className="w-full sm:w-64 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-slate-700"
             />
+
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40"
+              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-700"
             >
               <option value="date">Sort by Date</option>
               <option value="slots">Sort by Availability</option>
@@ -253,21 +230,22 @@ export default function AvailableEvents() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((e) => {
-            const remaining = (e.capacity || 0) - (e.participants?.length || 0);
+            const remaining =
+              (e.capacity || 0) - (e.participants?.length || 0);
             const isFull = remaining <= 0;
             const joined = joinedEventIds.includes(e._id);
-            const isProcessing = processingEvent === e._id; // ✅ Check if this event is being processed
+            const isProcessing = processingEvent === e._id;
 
             return (
               <article
                 key={e._id}
-                className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_25px_-10px_rgba(0,0,0,0.2)] transition-all hover:shadow-[0_18px_35px_-12px_rgba(0,0,0,0.25)]"
+                className="group overflow-hidden rounded-2xl bg-white shadow-lg transition-all"
               >
                 <div className="h-40 w-full overflow-hidden">
                   <img
                     src={e.image || e.imageData || "/placeholder.png"}
                     alt={e.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                   />
                 </div>
 
@@ -275,24 +253,8 @@ export default function AvailableEvents() {
                   <h3 className="text-lg font-semibold text-slate-800">
                     {e.title}
                   </h3>
-                  <p className="text-sm text-slate-500">{e.venue}</p>
-                  <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                    {e.description}
-                  </p>
 
-                  {/* ✅ Rating Display */}
-                  {e.averageRating > 0 && e.totalReviews > 0 && (
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="text-yellow-400 text-lg">★</span>
-                      <span className="font-semibold text-slate-800">
-                        {e.averageRating.toFixed(1)}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        ({e.totalReviews}{" "}
-                        {e.totalReviews === 1 ? "review" : "reviews"})
-                      </span>
-                    </div>
-                  )}
+                  <p className="text-sm text-slate-500">{e.venue}</p>
 
                   <div className="mt-4 flex items-center justify-between">
                     <span
@@ -307,75 +269,21 @@ export default function AvailableEvents() {
                       <button
                         onClick={() => handleLeave(e._id)}
                         disabled={isProcessing}
-                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-md transition hover:bg-red-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white"
                       >
-                        {isProcessing ? (
-                          <span className="flex items-center gap-2">
-                            <svg
-                              className="animate-spin h-4 w-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Leaving...
-                          </span>
-                        ) : (
-                          "Leave"
-                        )}
+                        {isProcessing ? "Leaving..." : "Leave"}
                       </button>
                     ) : (
                       <button
                         onClick={() => handleBook(e._id)}
                         disabled={isFull || isProcessing}
-                        className={`rounded-full px-4 py-2 text-sm font-medium text-white shadow-md transition active:scale-95 ${
-                          isFull || isProcessing
-                            ? "bg-gray-400 cursor-not-allowed"
+                        className={`rounded-full px-4 py-2 text-sm font-medium text-white ${
+                          isFull
+                            ? "bg-gray-400"
                             : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
                       >
-                        {isProcessing ? (
-                          <span className="flex items-center gap-2">
-                            <svg
-                              className="animate-spin h-4 w-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Joining...
-                          </span>
-                        ) : isFull ? (
-                          "Full"
-                        ) : (
-                          "Join Event"
-                        )}
+                        {isProcessing ? "Joining..." : isFull ? "Full" : "Join"}
                       </button>
                     )}
                   </div>

@@ -24,7 +24,6 @@ export const AuthProvider = ({ children }) => {
         setInitializing(false);
       }
     };
-    // call immediately (don't block UI with an artificial timeout)
     loadUser();
   }, []);
 
@@ -95,16 +94,19 @@ export const AuthProvider = ({ children }) => {
     authLoading,
   };
 
-  // ALWAYS provide the context so consumers won't encounter a "missing context" race.
-  // While initializing, render a loading screen inside the provider.
+  
   return (
     <AuthContext.Provider value={value}>
-      {initializing ? (
-        <div className="flex h-screen items-center justify-center bg-[#EDE9E6] text-[#7A6C5D]">
-          Loading...
+      {/* Render children always so hook order stays constant */}
+      {children}
+
+      {/* A loader overlay while the auth initializes */}
+      {initializing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg shadow">
+            Loading...
+          </div>
         </div>
-      ) : (
-        children
       )}
     </AuthContext.Provider>
   );
