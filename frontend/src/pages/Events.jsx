@@ -50,10 +50,60 @@ function Events() {
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-  const handleDelete = async (eventId) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  // Replaces the native confirm dialog with an inline toast confirmation.
+  // Styled to be subtle and aligned with site colors (light violet/purple).
+  const confirmDelete = (eventId) => {
+    let toastId = null;
+
+    const handleConfirm = async () => {
+      toast.dismiss(toastId);
+      await doDelete(eventId);
+    };
+
+    toastId = toast(
+      ({ closeToast }) => (
+        <div className="max-w-xs">
+          <div className="mb-3 text-gray-900 font-semibold">Delete event</div>
+          <div className="text-sm text-gray-700 mb-4">Are you sure you want to delete this event?</div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                handleConfirm();
+              }}
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold text-sm shadow-sm"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => toast.dismiss(toastId)}
+              className="px-3 py-2 rounded-lg bg-white border border-violet-100 text-gray-700 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        autoClose: false,
+        closeOnClick: false,
+        closeButton: false,
+        draggable: false,
+        pauseOnHover: true,
+        style: {
+          borderRadius: 12,
+          background: "#faf7ff", // very light purple background to match theme but keep it soft
+          boxShadow: "0 10px 30px rgba(99, 102, 241, 0.08)",
+          padding: 12,
+        },
+      }
+    );
+  };
+
+  // Actual delete action (kept separate so it can be invoked from the toast)
+  const doDelete = async (eventId) => {
     try {
       const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (!storedUser) throw new Error("Not authenticated");
       const { token } = storedUser;
       const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -65,10 +115,20 @@ function Events() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to delete event");
 
-      toast.success("Event deleted successfully.");
       setEvents((prev) => prev.filter((event) => event._id !== eventId));
-    } catch {
-      toast.error("Failed to delete event.");
+      toast.success("Event deleted successfully", {
+        style: {
+          background: "#f6f0ff",
+          color: "#2b2b35",
+        },
+      });
+    } catch (err) {
+      toast.error(err.message || "Failed to delete event", {
+        style: {
+          background: "#fff7f7",
+          color: "#2b2b35",
+        },
+      });
     }
   };
 
@@ -236,18 +296,18 @@ function Events() {
               return (
                 <article
                   key={event._id}
-                  className="group overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 border border-violet-100"
+                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-violet-200"
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-52 overflow-hidden">
                     {event.image || event.imageData ? (
                       <img
                         src={event.image || event.imageData}
                         alt={event.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-100 via-purple-100 to-indigo-100">
-                        <svg className="w-12 h-12 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg className="w-20 h-20 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
@@ -255,20 +315,20 @@ function Events() {
 
                     <div className="absolute top-4 right-4">
                       <span
-                        className={`px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm border ${statusStyles[event.status] || "bg-gray-100 text-gray-700 border-gray-300"}`}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xl backdrop-blur-sm border-2 ${statusStyles[event.status] || "bg-gray-100 text-gray-700 border-gray-300"}`}
                       >
                         {event.status || "Unknown"}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-5">
+                  <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-violet-600 transition-colors">
                       {event.title}
                     </h3>
 
                     {event.averageRating > 0 && (
-                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-violet-50">
+                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-violet-100">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <svg
@@ -288,7 +348,7 @@ function Events() {
 
                     <div className="space-y-3 mb-5 text-sm text-gray-700">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                           <svg className="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <rect x="3" y="4" width="18" height="14" rx="2" strokeWidth="1.5" />
                             <path d="M8 2v4M16 2v4" strokeWidth="1.5" strokeLinecap="round" />
@@ -298,7 +358,7 @@ function Events() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                           <svg className="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M21 10v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8" strokeWidth="1.5" strokeLinecap="round" />
                             <path d="M12 3v7" strokeWidth="1.5" strokeLinecap="round" />
@@ -308,7 +368,7 @@ function Events() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                           <svg className="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2" strokeWidth="1.5" strokeLinecap="round" />
                             <circle cx="12" cy="7" r="3" strokeWidth="1.5" />
@@ -323,7 +383,7 @@ function Events() {
                     <div className="flex flex-col gap-3">
                       <Link
                         to={`/events/${event._id}`}
-                        className="w-full text-center px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg hover:from-violet-700 hover:to-purple-700 shadow transition transform hover:-translate-y-0.5"
+                        className="w-full text-center px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                       >
                         View Details
                       </Link>
@@ -331,13 +391,13 @@ function Events() {
                       <div className="flex gap-2">
                         <Link
                           to={`/events/edit/${event._id}`}
-                          className="flex-1 text-center px-4 py-2.5 bg-violet-50 text-violet-700 font-semibold rounded-lg hover:bg-violet-100 transition-colors border border-violet-100"
+                          className="flex-1 text-center px-4 py-2.5 bg-violet-100 text-violet-700 font-semibold rounded-xl hover:bg-violet-200 transition-colors border-2 border-violet-200"
                         >
                           Edit
                         </Link>
                         <button
-                          onClick={() => handleDelete(event._id)}
-                          className="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors shadow"
+                          onClick={() => confirmDelete(event._id)}
+                          className="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors shadow-md"
                         >
                           Delete
                         </button>
