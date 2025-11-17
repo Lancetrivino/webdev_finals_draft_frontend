@@ -56,65 +56,61 @@ export default function Login() {
   }, [currentUser, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-100 via-purple-100 to-indigo-100 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4">
       <main className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-violet-200">
-          {/* Gradient Header */}
-          <div className="h-2 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
-          
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-violet-100">
+          <div className="h-3 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
           <div className="p-8">
-            {/* Logo/Icon */}
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-violet-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
-                <span className="text-4xl">🎉</span>
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-md" style={{ background: "linear-gradient(135deg,#7b4df7,#b85bf2)" }}>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <rect x="3" y="3" width="18" height="18" rx="6" fill="white" opacity="0.06" />
+                  <path d="M7 12a5 5 0 0110 0" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+                  <circle cx="12" cy="9" r="1.6" fill="#fff" opacity="0.95" />
+                </svg>
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold text-center mb-2 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-2 text-gray-900">
               Welcome Back
             </h1>
-            <p className="text-center text-gray-600 mb-8">
+            <p className="text-center text-sm text-gray-600 mb-6">
               Sign in to continue to Eventure
             </p>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
-              {/* Email */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <input
                   type="text"
                   name="email"
                   placeholder="your@email.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full rounded-xl border-2 border-violet-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-violet-200 focus:border-violet-500 transition-all duration-200"
+                  className="w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-300 transition"
                 />
               </div>
 
-              {/* Password */}
               <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full rounded-xl border-2 border-violet-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-violet-200 focus:border-violet-500 transition-all duration-200 pr-12"
+                  className="w-full rounded-xl border border-violet-100 bg-white px-4 py-3 pr-12 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-300 transition"
                   required
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-[42px] text-gray-500 hover:text-violet-600 transition-colors"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-10 text-gray-500 hover:text-violet-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242" />
                     </svg>
                   ) : (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,14 +121,13 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Remember & Forgot */}
               <div className="flex items-center justify-between text-sm">
                 <label className="inline-flex items-center gap-2 text-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={() => setRemember((r) => !r)}
-                    className="w-4 h-4 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                   />
                   <span className="font-medium">Remember me</span>
                 </label>
@@ -140,27 +135,26 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
-                  className="text-violet-600 hover:text-violet-700 font-medium hover:underline"
+                  className="text-violet-600 hover:text-violet-700 font-medium"
                 >
                   Forgot password?
                 </button>
               </div>
 
-              {/* Login button */}
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full rounded-xl py-3 text-lg font-bold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                className={`w-full rounded-xl py-3 text-lg font-semibold transition-all duration-200 transform shadow-md ${
                   loading
-                    ? "bg-gray-400 cursor-not-allowed text-white"
-                    : "bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white"
+                    ? "bg-gray-300 cursor-not-allowed text-gray-700"
+                    : "bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700"
                 }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" fill="none" />
+                      <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
                     </svg>
                     Signing in...
                   </span>
@@ -169,28 +163,26 @@ export default function Login() {
                 )}
               </button>
 
-              {/* Register Link */}
-              <div className="text-center pt-4 border-t border-violet-200">
-                <p className="text-gray-600">
+              <div className="text-center pt-4 border-t border-gray-100">
+                <p className="text-sm text-gray-600">
                   Don't have an account?{" "}
-                  <a
-                    href="/register"
-                    className="text-violet-600 font-bold hover:text-violet-700 hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => (window.location.href = "/register")}
+                    className="text-violet-600 font-semibold hover:underline"
                   >
                     Create Account
-                  </a>
+                  </button>
                 </p>
               </div>
             </form>
           </div>
         </div>
 
-        {/* Footer Text */}
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           By signing in, you agree to our{" "}
-          <a href="#" className="text-violet-600 hover:underline">Terms of Service</a>
-          {" "}and{" "}
-          <a href="#" className="text-violet-600 hover:underline">Privacy Policy</a>
+          <a href="#" className="text-violet-600 hover:underline">Terms</a> and{" "}
+          <a href="#" className="text-violet-600 hover:underline">Privacy Policy</a>.
         </p>
       </main>
 
