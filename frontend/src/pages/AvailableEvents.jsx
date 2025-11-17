@@ -55,7 +55,7 @@ export default function AvailableEvents() {
       ? events.filter(
           (e) =>
             e.title.toLowerCase().includes(term) ||
-            e.venue.toLowerCase().includes(term)
+            (e.venue || "").toLowerCase().includes(term)
         )
       : [...events];
 
@@ -64,8 +64,7 @@ export default function AvailableEvents() {
     } else if (sortOption === "slots") {
       filteredEvents.sort(
         (a, b) =>
-          b.capacity -
-          (b.participants?.length || 0) -
+          b.capacity - (b.participants?.length || 0) -
           (a.capacity - (a.participants?.length || 0))
       );
     }
@@ -167,9 +166,10 @@ export default function AvailableEvents() {
     }
   };
 
+  // Loading view (adjusted to sit below a fixed nav)
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+      <div className="min-h-screen pt-28 flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-violet-600 mb-4"></div>
           <p className="text-lg font-semibold text-gray-700">Loading events...</p>
@@ -178,9 +178,10 @@ export default function AvailableEvents() {
     );
   }
 
+  // No results view (also adjusted)
   if (filtered.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 px-4">
+      <div className="min-h-screen pt-28 flex flex-col items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 px-4">
         <div className="text-center max-w-md bg-white rounded-3xl shadow-2xl p-12 border-2 border-violet-200">
           <div className="text-6xl mb-6">🔍</div>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">No events found</h2>
@@ -197,11 +198,11 @@ export default function AvailableEvents() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-12 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+    // NOTE: Added pt-28 so content is pushed below a fixed/tall nav. Adjust value if your nav is a different height.
+    <div className="min-h-screen pt-28 px-6 py-12 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
       <div className="mx-auto max-w-7xl">
-        
-        {/* Header */}
-        <div className="mb-12 bg-white rounded-3xl shadow-2xl p-8 border-2 border-violet-200">
+        {/* Header - elevated z-index so it doesn't visually get hidden under nav */}
+        <div className="mb-12 bg-white rounded-3xl shadow-2xl p-8 border-2 border-violet-200 relative z-20">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <h1 className="text-5xl font-black mb-3 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
@@ -284,9 +285,7 @@ export default function AvailableEvents() {
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className={`w-4 h-4 ${
-                              i < Math.round(e.averageRating) ? "text-yellow-400" : "text-gray-200"
-                            }`}
+                            className={`w-4 h-4 ${i < Math.round(e.averageRating) ? "text-yellow-400" : "text-gray-200"}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
