@@ -16,6 +16,11 @@ const EventDetails = () => {
   const [eventHasPassed, setEventHasPassed] = useState(false);
   const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false);
 
+  // Reviews toast panel state
+  const [showReviews, setShowReviews] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
   // Fetch event details
   useEffect(() => {
     const fetchEvent = async () => {
@@ -44,7 +49,6 @@ const EventDetails = () => {
           const userId = currentUser._id || currentUser.id;
           const isJoined = participantIds.includes(userId);
           setJoined(isJoined);
-          console.log("Join status:", { isJoined, userId, participantIds });
         }
       } catch (err) {
         console.error("❌ Error fetching event details:", err);
@@ -57,26 +61,26 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, navigate, currentUser]);
 
-  // Check feedback eligibility
+  // Check feedback eligibility & if user already submitted
   useEffect(() => {
     if (!event || !currentUser) return;
-    
+
     const eventDate = new Date(event.date);
     const now = new Date();
     setEventHasPassed(now > eventDate);
-    
+
     const checkFeedback = async () => {
       try {
         const token = currentUser?.token || localStorage.getItem("token");
         const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           const userId = currentUser._id || currentUser.id;
           const userFeedback = data.feedbacks?.find(
-            f => (f.user?._id === userId || f.user === userId)
+            (f) => (f.user?._id === userId || f.user === userId)
           );
           setAlreadySubmittedFeedback(!!userFeedback);
         }
@@ -84,9 +88,31 @@ const EventDetails = () => {
         console.error("Error checking feedback:", error);
       }
     };
-    
+
     checkFeedback();
   }, [event, currentUser, id]);
+
+  // Fetch reviews when opening the toast panel
+  const fetchReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const token = currentUser?.token || localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch reviews");
+      // Accept either feedbacks array or full response
+      const feedbacks = data.feedbacks ?? data ?? [];
+      setReviews(Array.isArray(feedbacks) ? feedbacks : []);
+      setShowReviews(true);
+    } catch (err) {
+      toast.error(err.message || "Failed to load reviews.");
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
   // Handle Join
   const handleJoin = async () => {
@@ -97,14 +123,14 @@ const EventDetails = () => {
     }
 
     setProcessing(true);
-    
+
     try {
       const token = currentUser?.token || localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/events/${id}/join`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -113,8 +139,8 @@ const EventDetails = () => {
 
       toast.success("🎉 " + (data.message || "Successfully joined the event!"));
       setJoined(true);
-      
-      // Update participants count
+
+      // Update participants count locally
       setEvent((prev) => ({
         ...prev,
         participants: [...(prev.participants || []), currentUser._id || currentUser.id],
@@ -145,9 +171,9 @@ const EventDetails = () => {
       const token = currentUser?.token || localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/events/${id}/leave`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -156,8 +182,8 @@ const EventDetails = () => {
 
       toast.success(data.message || "Successfully left the event!");
       setJoined(false);
-      
-      // Update participants count
+
+      // Update participants count locally
       const userId = currentUser._id || currentUser.id;
       setEvent((prev) => ({
         ...prev,
@@ -171,9 +197,13 @@ const EventDetails = () => {
     }
   };
 
+  // ---- Loading & not-found states (apply top padding to avoid nav overlap) ----
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50"
+        style={{ paddingTop: "var(--nav-height, 72px)" }}
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-violet-600 mx-auto mb-4"></div>
           <p className="text-lg text-gray-600 font-medium">Loading event details...</p>
@@ -183,7 +213,10 @@ const EventDetails = () => {
 
   if (!event)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+      <div
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50"
+        style={{ paddingTop: "var(--nav-height, 72px)" }}
+      >
         <div className="text-center bg-white rounded-2xl p-12 shadow-2xl border-2 border-violet-200">
           <div className="text-6xl mb-4">😞</div>
           <p className="text-xl text-gray-600 font-semibold">Event not found.</p>
@@ -211,12 +244,15 @@ const EventDetails = () => {
   const isFull = remainingSlots !== null && remainingSlots <= 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4">
+    <div
+      className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4"
+      style={{ paddingTop: "var(--nav-height, 72px)" }} // nav overlap fix (uses CSS variable with fallback)
+    >
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-violet-200">
           {/* Gradient Header Bar */}
           <div className="h-2 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
-          
+
           {/* Header */}
           <div className="p-8">
             <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
@@ -227,6 +263,7 @@ const EventDetails = () => {
                   <span className="text-lg font-medium">{venue || "—"}</span>
                 </div>
               </div>
+
               {status && (
                 <span
                   className={`px-5 py-2 text-sm rounded-full font-bold shadow-lg ${
@@ -245,11 +282,7 @@ const EventDetails = () => {
             {/* Image */}
             {imageData && (
               <div className="rounded-2xl overflow-hidden mb-8 shadow-xl border-2 border-violet-200">
-                <img
-                  src={imageData}
-                  alt={title}
-                  className="w-full max-h-96 object-cover"
-                />
+                <img src={imageData} alt={title} className="w-full max-h-96 object-cover" />
               </div>
             )}
 
@@ -264,12 +297,14 @@ const EventDetails = () => {
                     <div>
                       <p className="text-xs text-gray-600 font-medium">Date</p>
                       <p className="text-gray-900 font-semibold">
-                        {date ? new Date(date).toLocaleDateString('en-US', { 
-                          weekday: 'long',
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        }) : "—"}
+                        {date
+                          ? new Date(date).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "—"}
                       </p>
                     </div>
                   </div>
@@ -315,7 +350,7 @@ const EventDetails = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {averageRating > 0 && totalReviews > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
@@ -325,18 +360,15 @@ const EventDetails = () => {
                         <p className="text-xs text-gray-600 font-medium">Rating</p>
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-bold text-violet-600">{averageRating.toFixed(1)}</span>
-                          <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+                          <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? "review" : "reviews"})</span>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Join Status Indicator */}
                   {currentUser && joined && (
                     <div className="flex items-center gap-3 p-3 bg-green-100 rounded-lg border-2 border-green-300">
-                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">
-                        ✓
-                      </div>
+                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">✓</div>
                       <div>
                         <p className="text-xs text-green-600 font-medium">Status</p>
                         <p className="font-bold text-green-700">You've joined this event</p>
@@ -347,7 +379,6 @@ const EventDetails = () => {
               </div>
             </div>
 
-            {/* Description */}
             <div className="mb-8">
               <h2 className="text-xl font-bold text-gray-900 mb-3">About This Event</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line bg-violet-50 p-6 rounded-xl border-2 border-violet-200">
@@ -355,7 +386,7 @@ const EventDetails = () => {
               </p>
             </div>
 
-            {/* Reminders */}
+         
             {reminders && reminders.length > 0 && (
               <div className="mb-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2>
@@ -369,75 +400,162 @@ const EventDetails = () => {
                 </ul>
               </div>
             )}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex gap-3 flex-1">
+                {currentUser && !isFull && !joined && (
+                  <button
+                    onClick={handleJoin}
+                    disabled={processing}
+                    className={`px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 ${
+                      processing ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {processing ? "Joining..." : "✓ Join Event"}
+                  </button>
+                )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4">
-              {/* Leave Review Button */}
-              {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
-                <button
-                  onClick={() => navigate(`/feedback/${id}`)}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                >
-                  ⭐ Leave Review
-                </button>
-              )}
+                {currentUser && joined && (
+                  <button
+                    onClick={handleLeave}
+                    disabled={processing}
+                    className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 ${
+                      processing ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {processing ? "Leaving..." : "✕ Leave Event"}
+                  </button>
+                )}
 
-              {/* View Reviews Button */}
-              {totalReviews > 0 && (
-                <button
-                  onClick={() => navigate(`/feedback/${id}/list`)}
-                  className="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                >
-                  📝 View Reviews ({totalReviews})
-                </button>
-              )}
+                {!currentUser && (
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  >
+                    Login to Join
+                  </button>
+                )}
 
-              {/* Join Event Button */}
-              {currentUser && !isFull && !joined && (
-                <button
-                  onClick={handleJoin}
-                  disabled={processing}
-                  className={`px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
-                    processing ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  {processing ? "Joining..." : "✓ Join Event"}
-                </button>
-              )}
+                {isFull && !joined && (
+                  <div className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold flex items-center">
+                    Event is Full
+                  </div>
+                )}
+              </div>
 
-              {/* Leave Event Button */}
-              {currentUser && joined && (
-                <button
-                  onClick={handleLeave}
-                  disabled={processing}
-                  className={`px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
-                    processing ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  {processing ? "Leaving..." : "✕ Leave Event"}
-                </button>
-              )}
+              {/* Right group: reviews buttons (aligned to right on desktop) */}
+              <div className="flex gap-3 items-center">
+                {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
+                  <button
+                    onClick={() => navigate(`/feedback/${id}`)}
+                    className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                     Leave Review
+                  </button>
+                )}
 
-              {/* Show if event is full */}
-              {isFull && !joined && (
-                <div className="w-full px-8 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold text-center">
-                  🚫 Event is Full
-                </div>
-              )}
-
-              {/* Show if not logged in */}
-              {!currentUser && (
-                <button
-                  onClick={() => navigate("/login")}
-                  className="px-8 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                >
-                  Login to Join
-                </button>
-              )}
+                {totalReviews > 0 && (
+                  <button
+                    onClick={fetchReviews}
+                    className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    title={`View ${totalReviews} reviews`}
+                  >
+                     View Reviews ({totalReviews})
+                  </button>
+                )}
+              </div>
             </div>
+            {/* ------------------ end actions ------------------ */}
           </div>
         </div>
       </div>
+
+      {/* ------------------ Reviews Toast Panel (floating) ------------------ */}
+      {showReviews && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none">
+          {/* backdrop (small darkening) */}
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setShowReviews(false)}
+          />
+
+          <div className="relative pointer-events-auto mb-8 w-[min(920px,95%)] max-h-[70vh] overflow-hidden rounded-2xl bg-white shadow-2xl border-2 border-violet-200">
+            <div className="flex items-center justify-between p-4 border-b border-violet-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold shadow">
+                  
+                </div>
+                <div>
+                  <div className="font-bold text-gray-900">Reviews</div>
+                  <div className="text-xs text-gray-500">{reviews.length} {reviews.length === 1 ? "review" : "reviews"}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowReviews(false)}
+                  className="px-3 py-1.5 text-sm bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 overflow-auto space-y-3">
+              {loadingReviews && (
+                <div className="text-center py-6 text-gray-500">Loading reviews...</div>
+              )}
+
+              {!loadingReviews && reviews.length === 0 && (
+                <div className="text-center py-6 text-gray-500">No reviews yet.</div>
+              )}
+
+              {!loadingReviews && reviews.map((r, idx) => {
+                // Normalize user and date fields
+                const reviewerName = r.user?.name || r.user?.username || r.name || "Anonymous";
+                const text = r.comment || r.text || r.message || "";
+                const stars = Number(r.rating ?? r.stars ?? 0);
+                const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : (r.date ? new Date(r.date).toLocaleDateString() : "");
+
+                return (
+                  <div key={idx} className="flex gap-4 p-4 rounded-xl border-2 border-violet-100 bg-violet-50/40 shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-violet-200">
+                      {/* avatar placeholder or user avatar */}
+                      {r.user?.avatar ? (
+                        <img src={r.user.avatar} alt={reviewerName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="text-violet-600 font-bold">{(reviewerName || "A").charAt(0)}</div>
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="font-semibold text-gray-900">{reviewerName}</div>
+                          <div className="text-xs text-gray-500"> {dateStr}</div>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {/* star visuals */}
+                          {[1,2,3,4,5].map((i) => (
+                            <svg key={i} className={`w-4 h-4 ${i <= stars ? "text-yellow-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-2 text-gray-700 leading-relaxed">
+                        {text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
