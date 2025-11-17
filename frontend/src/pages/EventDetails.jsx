@@ -109,7 +109,7 @@ const EventDetails = () => {
       const feedbacks = data.feedbacks ?? data ?? [];
       setReviews(Array.isArray(feedbacks) ? feedbacks : []);
       setShowReviews(true);
-      setShowWriteForm(false); // hide write form initially
+      setShowWriteForm(false); 
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
       toast.error(err.message || "Failed to load reviews.");
@@ -119,7 +119,32 @@ const EventDetails = () => {
     }
   };
 
-  // submit inline review
+  const handleOpenWrite = () => {
+    if (!currentUser) {
+      toast.info("Please log in to write a review.");
+      navigate("/login");
+      return;
+    }
+
+   
+    if (!joined) {
+      toast.info("You need to join this event before writing a review.");
+      return;
+    }
+
+   
+    if (!eventHasPassed) {
+      toast.info("You can leave a review after the event has ended.");
+      return;
+    }
+
+    if (alreadySubmittedFeedback) {
+      toast.info("You've already submitted feedback for this event.");
+      return;
+    }
+    setShowWriteForm((s) => !s);
+  };
+
   const submitReview = async (e) => {
     e?.preventDefault();
     if (!currentUser) {
@@ -152,7 +177,6 @@ const EventDetails = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to submit review");
 
-      // add new review to list (normalize shape)
       const newReview = {
         comment: reviewComment,
         rating: reviewRating,
@@ -174,7 +198,6 @@ const EventDetails = () => {
     }
   };
 
-  // Join / Leave handlers (unchanged)
   const handleJoin = async () => {
     if (!currentUser) {
       toast.info("Please login first.");
@@ -229,7 +252,6 @@ const EventDetails = () => {
     }
   };
 
-  // Loading / not found (keep nav overlap fix)
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50" style={{ paddingTop: "calc(var(--nav-height,72px) + 24px)" }}>
@@ -326,7 +348,7 @@ const EventDetails = () => {
 
             {reminders && reminders.length > 0 && (<div className="mb-8"><h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2><ul className="space-y-2">{reminders.map((r, i) => <li key={i} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200"><span className="text-violet-600 font-bold">•</span><span className="text-gray-700">{r}</span></li>)}</ul></div>)}
 
-            {/* Actions */}
+           
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="flex gap-3 flex-1">
                 {currentUser && !isFull && !joined && <button onClick={handleJoin} disabled={processing} className={`px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold shadow-lg ${processing ? "opacity-50 cursor-not-allowed" : ""}`}>{processing ? "Joining..." : "✓ Join Event"}</button>}
@@ -338,7 +360,6 @@ const EventDetails = () => {
               <div className="flex gap-3 items-center">
                 {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && <button onClick={() => navigate(`/feedback/${id}`)} className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold shadow-lg">⭐ Leave Review</button>}
 
-                {/* always render view reviews */}
                 <button onClick={fetchReviews} className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-semibold shadow-lg" title={`View ${totalReviews || 0} reviews`}>
                   📝 View Reviews ({totalReviews || 0})
                 </button>
@@ -366,15 +387,13 @@ const EventDetails = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Write review button visible only if user is eligible (joined, event passed, not already submitted) */}
-                {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
-                  <button
-                    onClick={() => setShowWriteForm((s) => !s)}
-                    className="px-3 py-1.5 bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition"
-                  >
-                    {showWriteForm ? "Cancel" : "Write a Review"}
-                  </button>
-                )}
+                {/* WRITE button always visible — uses handler to check eligibility */}
+                <button
+                  onClick={handleOpenWrite}
+                  className="px-3 py-1.5 bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition"
+                >
+                  {showWriteForm ? "Cancel" : "Write a Review"}
+                </button>
 
                 <button onClick={() => setShowReviews(false)} className="px-3 py-1.5 text-sm bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition">Close</button>
               </div>
