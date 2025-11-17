@@ -191,18 +191,14 @@ function Events() {
 
                   <ul
                     role="listbox"
-                    className={`absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl border border-violet-100 overflow-hidden transition-all transform origin-top-right ${
-                      sortOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"
-                    }`}
+                    className={`absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl border border-violet-100 overflow-hidden transition-all transform origin-top-right ${sortOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}`}
                   >
                     {sortOptions.map((opt) => (
                       <li
                         key={opt.value}
                         role="option"
                         onClick={() => { setFilterStatus(opt.value); setSortOpen(false); }}
-                        className={`px-4 py-3 cursor-pointer text-gray-700 hover:bg-violet-50 transition-colors active:scale-95 ${
-                          filterStatus === opt.value ? "bg-violet-50 font-semibold" : ""
-                        }`}
+                        className={`px-4 py-3 cursor-pointer text-gray-700 hover:bg-violet-50 transition-colors active:scale-95 ${filterStatus === opt.value ? "bg-violet-50 font-semibold" : ""}`}
                       >
                         {opt.label}
                       </li>
