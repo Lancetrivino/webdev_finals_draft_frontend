@@ -126,27 +126,25 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-2xl p-6 shadow-lg transition-transform duration-200 border border-violet-100"
-              role="status"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">{stat.label}</p>
-                  <p className={`text-3xl md:text-4xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                </div>
-                <div className="w-14 h-14 rounded-lg flex items-center justify-center bg-violet-50 border border-violet-100">
-                  <svg className="w-6 h-6 text-violet-600" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path d="M12 4v16M4 12h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  {stats.map((stat, idx) => (
+    <div
+      key={idx}
+      className="bg-white rounded-2xl p-6 shadow-lg transition-transform duration-200 border border-violet-100"
+      role="status"
+    >
+      <div>
+        <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+          {stat.label}
+        </p>
+        <p className={`text-4xl font-extrabold ${stat.color}`}>
+          {stat.value}
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
+
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
