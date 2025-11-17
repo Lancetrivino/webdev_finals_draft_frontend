@@ -60,9 +60,10 @@ function Events() {
     }
   };
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "all" || event.status?.toLowerCase() === filterStatus.toLowerCase();
+    const matchesFilter =
+      filterStatus === "all" || event.status?.toLowerCase() === filterStatus.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
@@ -119,12 +120,14 @@ function Events() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+    // NOTE: added top padding (pt-28) so content sits below a fixed/tall nav
+    <div className="min-h-screen pt-28 py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
         <div className="mb-12">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-violet-200">
+          {/* Give header a higher z-index so it visually sits above any overlapping nav background */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-violet-200 relative z-20">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <h1 className="text-5xl font-black text-gray-900 mb-3 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
@@ -215,9 +218,7 @@ function Events() {
                     {/* Status Badge */}
                     <div className="absolute top-4 right-4">
                       <span
-                        className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xl backdrop-blur-sm border-2 ${
-                          statusStyles[event.status] || "bg-gray-100 text-gray-700 border-gray-300"
-                        }`}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xl backdrop-blur-sm border-2 ${statusStyles[event.status] || "bg-gray-100 text-gray-700 border-gray-300"}`}
                       >
                         {event.status || "Unknown"}
                       </span>
@@ -237,11 +238,7 @@ function Events() {
                           {[...Array(5)].map((_, i) => (
                             <svg
                               key={i}
-                              className={`w-4 h-4 ${
-                                i < Math.round(event.averageRating)
-                                  ? "text-yellow-400"
-                                  : "text-gray-200"
-                              }`}
+                              className={`w-4 h-4 ${i < Math.round(event.averageRating) ? "text-yellow-400" : "text-gray-200"}`}
                               fill="currentColor"
                               viewBox="0 0 20 20"
                             >
@@ -249,12 +246,8 @@ function Events() {
                             </svg>
                           ))}
                         </div>
-                        <span className="text-sm font-bold text-gray-900">
-                          {event.averageRating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          ({event.totalReviews})
-                        </span>
+                        <span className="text-sm font-bold text-gray-900">{event.averageRating.toFixed(1)}</span>
+                        <span className="text-xs text-gray-500">({event.totalReviews})</span>
                       </div>
                     )}
 
@@ -264,11 +257,7 @@ function Events() {
                         <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
                           <span className="text-violet-600">📅</span>
                         </div>
-                        <span className="font-medium">{new Date(event.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}</span>
+                        <span className="font-medium">{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-gray-700">
                         <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
@@ -284,9 +273,7 @@ function Events() {
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed">
-                      {event.description}
-                    </p>
+                    <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed">{event.description}</p>
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
