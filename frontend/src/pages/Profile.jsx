@@ -123,12 +123,27 @@ function Profile() {
           <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 h-36 flex items-center px-8">
             <div className="w-full max-w-3xl mx-auto grid grid-cols-12 gap-4 items-center">
               <div className="col-span-3">
-                <div className="w-28 h-28 rounded-md overflow-hidden border-4 border-white bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-2xl font-extrabold text-white">{getInitials()}</span>
-                  )}
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-md overflow-hidden border-4 border-white bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-extrabold text-white">{getInitials()}</span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openFilePicker}
+                    className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-md border border-violet-100 shadow-md flex items-center justify-center text-violet-700 hover:scale-105 transition-transform"
+                    aria-label="Change avatar"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M12 4v16M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </button>
+
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                 </div>
               </div>
 
@@ -142,21 +157,7 @@ function Profile() {
 
           <div className="px-8 pb-8 pt-6">
             <div className="flex flex-col md:flex-row items-start gap-6">
-              <div className="flex-shrink-0">
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={openFilePicker}
-                    className="absolute -bottom-3 -right-3 w-10 h-10 bg-white rounded-md border border-violet-100 shadow-md flex items-center justify-center text-violet-700 hover:scale-105 transition-transform"
-                    aria-label="Change avatar"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path d="M12 4v16M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-                </div>
-              </div>
+              <div className="flex-shrink-0" />
 
               <div className="flex-1 w-full">
                 <form onSubmit={handleUpdate} className="space-y-6">
