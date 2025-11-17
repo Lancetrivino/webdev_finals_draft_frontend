@@ -110,22 +110,22 @@ export default function FeedbackEnhanced() {
     e.preventDefault();
 
     if (!hasJoined) {
-      toast.error("You must join this event before giving feedback.");
+      toast.error("⚠️ You must join this event before giving feedback.");
       return;
     }
 
     if (!eventHasPassed) {
-      toast.error("You can submit feedback after the event ends.");
+      toast.error("⚠️ You can submit feedback after the event ends.");
       return;
     }
 
     if (alreadySubmitted) {
-      toast.error(" You have already submitted feedback for this event.");
+      toast.error("⚠️ You have already submitted feedback for this event.");
       return;
     }
 
     if (!comment.trim()) {
-      toast.error("Please enter your feedback before submitting.");
+      toast.error("⚠️ Please enter your feedback before submitting.");
       return;
     }
 
@@ -160,7 +160,7 @@ export default function FeedbackEnhanced() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
-      toast.success("Thank you for your feedback!");
+      toast.success("✅ Thank you for your feedback!");
       setTimeout(() => navigate(`/available-events`), 1500);
     } catch (err) {
       toast.error(err.message || "Error submitting feedback.");
@@ -174,7 +174,7 @@ export default function FeedbackEnhanced() {
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-violet-200">
           <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl"></span>
+            <span className="text-4xl">🔒</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Join Event First</h2>
           <p className="text-gray-600 mb-6">You must join this event before you can leave feedback.</p>
@@ -194,7 +194,7 @@ export default function FeedbackEnhanced() {
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-violet-200">
           <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl"></span>
+            <span className="text-4xl">⏳</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Not Yet Complete</h2>
           <p className="text-gray-600 mb-2">You can submit feedback after the event date:</p>
@@ -217,7 +217,7 @@ export default function FeedbackEnhanced() {
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-violet-200">
           <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl"></span>
+            <span className="text-4xl">✅</span>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Feedback Already Submitted</h2>
           <p className="text-gray-600 mb-6">You have already submitted feedback for this event. Thank you!</p>
