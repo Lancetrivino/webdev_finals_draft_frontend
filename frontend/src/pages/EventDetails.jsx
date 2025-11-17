@@ -102,14 +102,16 @@ const EventDetails = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to fetch reviews");
+      // Accept either feedbacks array or full response
       const feedbacks = data.feedbacks ?? data ?? [];
       setReviews(Array.isArray(feedbacks) ? feedbacks : []);
-      // ensure the panel opens so user sees result or "no reviews"
+      // ensure panel always opens so user sees result or "no reviews"
       setShowReviews(true);
     } catch (err) {
+      console.error("Failed to fetch reviews:", err);
       toast.error(err.message || "Failed to load reviews.");
-      // still open panel so the user sees error/backdrop? — we keep it closed on error.
+      // We still open the panel in order to show an error or "no reviews" message:
+      setShowReviews(true);
     } finally {
       setLoadingReviews(false);
     }
@@ -250,11 +252,12 @@ const EventDetails = () => {
       style={{ paddingTop: "calc(var(--nav-height, 72px) + 24px)" }} // nav overlap fix (uses CSS variable with fallback + extra gap)
     >
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-violet-200">
+        {/* Make container overflow-visible so buttons aren't clipped */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-visible border-2 border-violet-200">
           {/* Gradient Header Bar */}
           <div className="h-2 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
 
-          {/* Header */}
+          {/* Header + body */}
           <div className="p-8">
             <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
               <div>
@@ -447,7 +450,8 @@ const EventDetails = () => {
                 )}
               </div>
 
-              {/* Right group: reviews buttons (aligned to right on desktop) */}
+              {/* Right group: reviews buttons (aligned to right on desktop).
+                  IMPORTANT: always render the View Reviews button so it's visible */}
               <div className="flex gap-3 items-center">
                 {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && (
                   <button
@@ -458,15 +462,14 @@ const EventDetails = () => {
                   </button>
                 )}
 
-                {totalReviews > 0 && (
-                  <button
-                    onClick={fetchReviews}
-                    className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                    title={`View ${totalReviews} reviews`}
-                  >
-                    📝 View Reviews ({totalReviews})
-                  </button>
-                )}
+                {/* ALWAYS render View Reviews so user can open the panel */}
+                <button
+                  onClick={fetchReviews}
+                  className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  title={`View ${totalReviews || 0} reviews`}
+                >
+                  📝 View Reviews ({totalReviews || 0})
+                </button>
               </div>
             </div>
             {/* ------------------ end actions ------------------ */}
