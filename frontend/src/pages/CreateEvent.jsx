@@ -328,7 +328,7 @@ function CreateEvent() {
         return;
       }
 
-      toast.success("Event submitted for admin approval!");
+      toast.success("🎉 Event submitted for admin approval!");
 
       setTimeout(() => navigate("/dashboard", { replace: true }), 1000);
     } catch (err) {
@@ -340,371 +340,374 @@ function CreateEvent() {
 
   return (
     <div className="relative min-h-screen bg-white overflow-hidden">
-      {/* decorative background panels (purely visual - do not alter logic) */}
-      <style>{`
-        :root{
-          --primary-50: #f8f7ff;
-          --primary-100: #f3efff;
-          --primary-200: #e9e0ff;
-          --primary-300: #ddd2ff;
-          --accent-start: #7c3aed;
-          --accent-mid: #8b5cf6;
-          --accent-end: #60a5fa;
-          --muted-text: #374151;
-        }
+      {/* Left Side Image */}
+      <img
+        src="/assets/gradient-urp.jpg"
+        className="pointer-events-none select-none absolute left-0 top-0 h-full w-auto object-cover opacity-70"
+        alt=""
+      />
 
-        /* subtle angled panels that add life but remain soft & consistent with site */
-        .bg-panel-left, .bg-panel-right {
-          position: absolute;
-          top: -8%;
-          height: 116%;
-          width: 40%;
-          pointer-events: none;
-          opacity: 0.12;
-          filter: blur(46px);
-          transform: rotate(-6deg);
-          background: linear-gradient(180deg, rgba(124,58,237,0.12), rgba(96,165,250,0.06));
-          z-index: 0;
-        }
-        .bg-panel-left { left: -10%; }
-        .bg-panel-right { right: -12%; transform: rotate(8deg); }
+      {/* Right Side Image */}
+      <img
+        src="/assets/gradient-urp.jpg"
+        className="pointer-events-none select-none absolute right-0 top-0 h-full w-auto object-cover opacity-70"
+        alt=""
+      />
 
-        /* slightly darker page background that sits behind everything */
-        .page-bg {
-          background: linear-gradient(180deg, rgba(249,246,255,1), rgba(245,250,255,1));
-          min-height: 100vh;
-        }
-
-        /* subtle top stripe to mimic nav glow */
-        .top-stripe {
-          height: 56px;
-          background: linear-gradient(90deg, rgba(124,58,237,0.14), rgba(96,165,250,0.12));
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: 0;
-          z-index: 1;
-        }
-
-        /* refinements for the card (purely aesthetic) */
-        .card-shell { position: relative; z-index: 10; }
-        .card-inner {
+      <style>{` 
+        /* card shell */
+        .card-shell {
+          position: relative;
           border-radius: 16px;
-          padding: 28px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,249,255,0.98));
-          border: 1px solid rgba(124,58,237,0.06);
-          box-shadow: 0 18px 60px rgba(12,24,40,0.06);
+          overflow: visible;
         }
 
-        /* accent ribbon at the top of card */
-        .card-ribbon {
+        /* Main interior card: frosted glass + soft gradient vignette (no green) */
+        .card-inner {
+          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,250,255,0.98));
+          border-radius: 14px;
+          padding: 2rem;
+          box-shadow: 0 18px 50px rgba(2,6,23,0.09);
+          border: 1px solid rgba(12,24,40,0.04);
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* 
+        .card-accent {
           position: absolute;
-          left: 24px;
-          right: 24px;
-          top: -18px;
-          height: 12px;
-          border-radius: 12px;
-          background: linear-gradient(90deg, rgba(124,58,237,0.95), rgba(139,92,246,0.9));
-          box-shadow: 0 10px 30px rgba(124,58,237,0.06);
-          z-index: 12;
+          left: -48px;
+          top: -48px;
+          width: 240px;
+          height: 240px;
+          background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.26), rgba(139,92,246,0.12) 40%, transparent 60%);
+          transform: rotate(12deg);
+          filter: blur(20px);
+          pointer-events: none;
         }
 
-        /* page title */
+        .card-blob {
+          position: absolute;
+          right: -68px;
+          bottom: -68px;
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle at 70% 70%, rgba(96,165,250,0.12), rgba(139,92,246,0.06) 45%, transparent 60%);
+          filter: blur(30px);
+          pointer-events: none;
+        }
+
+        /* Title styled like provided reference: bold large purple, left-aligned */
         .page-title {
-          font-size: 2.6rem;
+          font-size: 3rem; /* big like the example */
           font-weight: 800;
-          color: var(--accent-start);
-          margin: 36px 0 18px 0;
+          color: #7c3aed;
+          text-align: left;
+          margin-top: 3.5rem;
+          margin-bottom: 0.75rem;
+          letter-spacing: -0.5px;
         }
 
-        /* improved pill style for reminders */
+        /* form grid refinement */
+        .form-grid { gap: 1rem; }
+        @media (min-width: 768px) {
+          .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: auto; gap: 1rem; }
+        }
+
+        /* input focus glow using purple/blue tint only */
+        .focus-glow:focus {
+          outline: none;
+          box-shadow: 0 8px 28px rgba(124,58,237,0.08), 0 0 0 5px rgba(96,165,250,0.06);
+          border-color: rgba(124,58,237,0.18);
+        }
+
+        /* Upgraded CTA: purple -> blue gradient (no green) */
+        .btn-cta {
+          background-image: linear-gradient(90deg, #7c3aed 0%, #8b5cf6 40%, #60a5fa 100%);
+          color: white;
+          border: none;
+          padding: 0.95rem 1.25rem;
+          font-weight: 700;
+          border-radius: 12px;
+          box-shadow: 0 14px 44px rgba(124,58,237,0.08);
+          transition: transform 0.14s ease, box-shadow 0.14s ease;
+        }
+        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(124,58,237,0.12); }
+
+        /* secondary neutral button (clean) */
+        .btn-secondary {
+          background: white;
+          border: 1px solid rgba(12,24,40,0.06);
+          color: #0b3550;
+          padding: 0.75rem 1rem;
+          border-radius: 10px;
+        }
+        .btn-secondary:hover { transform: translateY(-1px); background: #fbfdff; }
+
+        /* upload area refined */
+        .upload-area {
+          background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,249,255,0.94));
+          border: 1px dashed rgba(12,24,40,0.06);
+        }
+
+        /* pill reminders */
         .pill {
           background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(139,92,246,0.04));
-          color: var(--muted-text);
-          border: 1px solid rgba(124,58,237,0.06);
+          color: #06243b;
         }
 
-        /* primary color helper classes (used by components above) */
-        .bg-primary-100 { background: var(--primary-100); }
-        .text-primary-700 { color: var(--accent-mid); }
-        .border-primary-200 { border-color: var(--primary-200); }
-        .btn-cta { background-image: linear-gradient(90deg, var(--accent-start), var(--accent-mid) 55%, var(--accent-end)); }
+        /* make sure card doesn't become thinner: keep max width large */
+        .card-shell { max-width: 72rem; }
 
-        /* smaller screens refinement */
+        /* keep background images visible on small screens but not overwhelming */
         @media (max-width: 640px) {
-          .page-title { font-size: 1.8rem; margin-top: 18px; }
-          .card-inner { padding: 18px; }
+          .card-inner { padding: 1.25rem; }
+          .page-title { font-size: 2.25rem; margin-top: 1.75rem; }
         }
       `}</style>
 
-      {/* soft decorative panels */}
-      <div className="bg-panel-left" aria-hidden />
-      <div className="bg-panel-right" aria-hidden />
-      <div className="top-stripe" aria-hidden />
+      <div className="h-14 bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
 
-      <div className="page-bg pt-20 pb-28">
-        <div className="mx-auto max-w-5xl px-4 pb-20 relative z-20">
-          {/* Title styled like the reference (big purple, left-aligned) */}
-          <h1 className="page-title">Create Event</h1>
+      <div className="mx-auto max-w-5xl px-4 pb-20 relative z-10">
+        {/* Title styled like the reference (big purple, left-aligned) */}
+        <h1 className="page-title">Create Event</h1>
 
-          <div className="card-shell mx-auto">
-            {/* subtle ribbon accent that visually ties to header */}
-            <div className="card-ribbon" aria-hidden />
+        <div className="card-shell mx-auto">
+          <div className="card-inner">
+            <div className="card-accent" aria-hidden="true" />
+            <div className="card-blob" aria-hidden="true" />
 
-            <div className="card-inner">
-              {/* small visual header row inside the card to add "life" while not touching logic */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
-                    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
-                      <path d="M3 12h18M12 3v18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-primary-700">New event</div>
-                    <div className="text-xs text-gray-500">Fill details below and submit for approval</div>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Title + Description */}
+              <div className="space-y-3">
+                <Label htmlFor="title">Title *</Label>
+                <Field>
+                  <input
+                    id="title"
+                    name="title"
+                    value={eventData.title}
+                    onChange={handleChange}
+                    placeholder="Event name"
+                    className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
+                    required
+                  />
+                </Field>
+
+                <Label htmlFor="description">Description *</Label>
+                <Field>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={eventData.description}
+                    onChange={handleChange}
+                    placeholder="Add a short description"
+                    rows={3}
+                    className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
+                    required
+                  />
+                </Field>
+              </div>
+
+              {/* Date / Time / Capacity / Type */}
+              <div className="form-grid">
+                <div className="md:col-span-2">
+                  <Label htmlFor="date">Day *</Label>
+                  <div className="relative">
+                    <Field>
+                      <div className="flex items-center gap-3">
+                        <span className="text-primary-700">
+                          <CalendarIcon />
+                        </span>
+                        <input
+                          type="date"
+                          id="date"
+                          name="date"
+                          value={eventData.date}
+                          min={today}
+                          onChange={handleChange}
+                          className="w-full bg-transparent text-primary-900 focus:outline-none focus-glow"
+                          required
+                        />
+                      </div>
+                    </Field>
                   </div>
                 </div>
 
-                <div className="text-sm text-gray-500">All fields marked * are required</div>
-              </div>
+                <div>
+                  <Label>Time</Label>
+                  <TimePicker
+                    value={eventData.time}
+                    selectedDate={eventData.date}
+                    onChange={(val) =>
+                      setEventData((p) => ({ ...p, time: val || "" }))
+                    }
+                  />
+                </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Title + Description */}
-                <div className="space-y-3">
-                  <Label htmlFor="title">Title *</Label>
+                <div>
+                  <Label htmlFor="capacity">Capacity</Label>
                   <Field>
                     <input
-                      id="title"
-                      name="title"
-                      value={eventData.title}
+                      type="number"
+                      id="capacity"
+                      name="capacity"
+                      min={1}
+                      value={eventData.capacity}
                       onChange={handleChange}
-                      placeholder="Event name"
+                      placeholder="50"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="typeOfEvent">Type of event</Label>
+                  <Field>
+                    <input
+                      id="typeOfEvent"
+                      name="typeOfEvent"
+                      value={eventData.typeOfEvent}
+                      onChange={handleChange}
+                      placeholder="e.g., Conference, Workshop, Seminar"
+                      className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="venue">Location *</Label>
+                  <Field>
+                    <input
+                      id="venue"
+                      name="venue"
+                      value={eventData.venue}
+                      onChange={handleChange}
+                      placeholder="Venue"
                       className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
                       required
                     />
                   </Field>
+                </div>
+              </div>
 
-                  <Label htmlFor="description">Description *</Label>
-                  <Field>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={eventData.description}
-                      onChange={handleChange}
-                      placeholder="Add a short description"
-                      rows={3}
-                      className="w-full resize-none bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
-                      required
+              <div className="space-y-3">
+                <Label>Upload attachments</Label>
+
+                <div className="flex items-center justify-between rounded-xl upload-area p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
+                      <UploadIcon />
+                    </div>
+                    <div className="text-sm text-primary-700 flex items-center gap-2">
+                      <span>{imageFile ? imageFile.name : "No file selected"}</span>
+                      {imageFile && (
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg btn-cta px-3 py-2 text-sm font-medium">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
                     />
-                  </Field>
+                    + Add files
+                  </label>
                 </div>
 
-                {/* Date / Time / Capacity / Type */}
-                <div className="form-grid">
-                  <div className="md:col-span-2">
-                    <Label htmlFor="date">Day *</Label>
-                    <div className="relative">
-                      <Field>
-                        <div className="flex items-center gap-3">
-                          <span className="text-primary-700">
-                            <CalendarIcon />
-                          </span>
-                          <input
-                            type="date"
-                            id="date"
-                            name="date"
-                            value={eventData.date}
-                            min={today}
-                            onChange={handleChange}
-                            className="w-full bg-transparent text-primary-900 focus:outline-none focus-glow"
-                            required
-                          />
-                        </div>
-                      </Field>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Time</Label>
-                    <TimePicker
-                      value={eventData.time}
-                      selectedDate={eventData.date}
-                      onChange={(val) =>
-                        setEventData((p) => ({ ...p, time: val || "" }))
-                      }
+                {imagePreview && (
+                  <div className="relative overflow-hidden rounded-xl border border-primary-200">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-48 w-full object-cover"
                     />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="capacity">Capacity</Label>
-                    <Field>
-                      <input
-                        type="number"
-                        id="capacity"
-                        name="capacity"
-                        min={1}
-                        value={eventData.capacity}
-                        onChange={handleChange}
-                        placeholder="50"
-                        className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
-                      />
-                    </Field>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="typeOfEvent">Type of event</Label>
-                    <Field>
-                      <input
-                        id="typeOfEvent"
-                        name="typeOfEvent"
-                        value={eventData.typeOfEvent}
-                        onChange={handleChange}
-                        placeholder="e.g., Conference, Workshop, Seminar"
-                        className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
-                      />
-                    </Field>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="venue">Location *</Label>
-                    <Field>
-                      <input
-                        id="venue"
-                        name="venue"
-                        value={eventData.venue}
-                        onChange={handleChange}
-                        placeholder="Venue"
-                        className="w-full bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
-                        required
-                      />
-                    </Field>
-                  </div>
-                </div>
-
-                {/* Upload section */}
-                <div className="space-y-3">
-                  <Label>Upload attachments</Label>
-
-                  <div className="flex items-center justify-between rounded-xl upload-area p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary-100 p-2 text-primary-700">
-                        <UploadIcon />
-                      </div>
-                      <div className="text-sm text-primary-700 flex items-center gap-2">
-                        <span>{imageFile ? imageFile.name : "No file selected"}</span>
-                        {imageFile && (
-                          <button
-                            type="button"
-                            onClick={removeImage}
-                            aria-label="Remove file"
-                            className="ml-2 rounded-full bg-primary-100 p-1 text-primary-700 hover:bg-primary-200"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg btn-cta px-3 py-2 text-sm font-medium">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-                      + Add files
-                    </label>
-                  </div>
-
-                  {imagePreview && (
-                    <div className="relative overflow-hidden rounded-xl border border-primary-200">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="h-48 w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        aria-label="Remove preview"
-                        className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Reminders */}
-                <div className="space-y-3">
-                  <Label>Reminders</Label>
-                  <div className="flex gap-2">
-                    <Field>
-                      <input
-                        value={reminderInput}
-                        onChange={(e) => setReminderInput(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            addReminder();
-                          }
-                        }}
-                        placeholder="Add reminder"
-                        className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
-                      />
-                    </Field>
                     <button
                       type="button"
-                      onClick={addReminder}
-                      className="rounded-xl btn-cta px-4 py-3 text-sm font-medium"
+                      onClick={removeImage}
+                      className="absolute right-3 top-3 rounded-full bg-white/80 p-1 text-primary-700"
                     >
-                      Add
+                      ✕
                     </button>
                   </div>
+                )}
+              </div>
 
-                  {!!eventData.reminders.length && (
-                    <ul className="flex flex-wrap gap-2">
-                      {eventData.reminders.map((r, i) => (
-                        <li
-                          key={i}
-                          className="group inline-flex items-center gap-2 rounded-full pill px-3 py-1.5 text-sm text-primary-700"
-                        >
-                          {r}
-                          <button
-                            type="button"
-                            onClick={() => removeReminder(i)}
-                            aria-label={`Remove reminder ${r}`}
-                            className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200"
-                          >
-                            ×
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Submit */}
-                <div className="flex items-center justify-end gap-3 pt-2">
+              {/* Reminders */}
+              <div className="space-y-3">
+                <Label>Reminders</Label>
+                <div className="flex gap-2">
+                  <Field>
+                    <input
+                      value={reminderInput}
+                      onChange={(e) => setReminderInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addReminder();
+                        }
+                      }}
+                      placeholder="Add reminder"
+                      className="w-72 bg-transparent text-primary-900 placeholder-primary focus:outline-none focus-glow"
+                    />
+                  </Field>
                   <button
                     type="button"
-                    onClick={() => navigate(-1)}
-                    className="rounded-xl btn-secondary px-5 py-3 text-sm font-medium"
+                    onClick={addReminder}
+                    className="rounded-xl btn-cta px-4 py-3 text-sm font-medium"
                   >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="rounded-xl btn-cta px-6 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
-                  >
-                    {loading ? "Creating..." : "Create Event"}
+                    Add
                   </button>
                 </div>
-              </form>
-            </div>
+
+                {!!eventData.reminders.length && (
+                  <ul className="flex flex-wrap gap-2">
+                    {eventData.reminders.map((r, i) => (
+                      <li
+                        key={i}
+                        className="group inline-flex items-center gap-2 rounded-full pill px-3 py-1.5 text-sm text-primary-700"
+                      >
+                        {r}
+                        <button
+                          type="button"
+                          onClick={() => removeReminder(i)}
+                          className="rounded-full p-0.5 text-primary-700 hover:bg-primary-200"
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Submit */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="rounded-xl btn-secondary px-5 py-3 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-xl btn-cta px-6 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-60"
+                >
+                  {loading ? "Creating..." : "Create Event"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
