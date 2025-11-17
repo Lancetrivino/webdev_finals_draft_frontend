@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -7,9 +7,6 @@ const NavBar = () => {
   const { currentUser, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [joinedOpen, setJoinedOpen] = useState(false);
-  const [joinedEvents, setJoinedEvents] = useState([]);
-  const [loadingJoined, setLoadingJoined] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,58 +14,6 @@ const NavBar = () => {
     location.pathname === "/login" ||
     location.pathname === "/register" ||
     location.pathname === "/";
-
-  useEffect(() => {
-    // fetch joined events for dropdown
-    const fetchJoined = async () => {
-      if (!currentUser) {
-        setJoinedEvents([]);
-        return;
-      }
-
-      setLoadingJoined(true);
-      try {
-        // 1) Preferred: backend endpoint returning only user's joined events
-        // Implement on backend: GET /api/events/joined  -> returns array of events
-        const API_BASE = import.meta.env.VITE_API_URL || "";
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${API_BASE}/api/events/joined`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          // data may be an object { events: [...] } or array directly
-          const events = data.events ?? data ?? [];
-          setJoinedEvents(Array.isArray(events) ? events : []);
-        } else {
-          // FALLBACK: If your backend does not have /api/events/joined,
-          // attempt to GET all events and filter client-side.
-          // This is less efficient but works without backend changes.
-          const fallbackRes = await fetch(`${API_BASE}/api/events`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          if (!fallbackRes.ok) throw new Error("Failed to fetch events (fallback)");
-          const allEvents = await fallbackRes.json();
-          // normalize array
-          const arr = Array.isArray(allEvents) ? allEvents : allEvents.events ?? [];
-          const userId = currentUser._id || currentUser.id;
-          const filtered = arr.filter((ev) => (ev.participants || []).includes(userId));
-          setJoinedEvents(filtered);
-        }
-      } catch (err) {
-        // Keep dropdown empty on error (don't break navbar)
-        console.error("Failed to load joined events:", err);
-        setJoinedEvents([]);
-      } finally {
-        setLoadingJoined(false);
-      }
-    };
-
-    fetchJoined();
-    // re-fetch when user changes or navbar visibility toggles; you can add more deps if needed
-  }, [currentUser]);
 
   const handleLogout = () => {
     logout();
@@ -121,70 +66,6 @@ const NavBar = () => {
             <NavLink to="/available-events" className={navLinkStyle}>Available Events</NavLink>
             <NavLink to="/create-event" className={navLinkStyle}>Create Event</NavLink>
 
-            {/* JOINED DROPDOWN (replaces Feedback) */}
-            <div className="relative">
-              <button
-                onClick={() => setJoinedOpen((v) => !v)}
-                className="relative px-4 py-2 inline-block text-center tracking-wide transition-all duration-200 text-white/90 hover:text-white hover:-translate-y-1 hover:brightness-125 rounded"
-                aria-expanded={joinedOpen}
-                aria-haspopup="menu"
-                title="Events you've joined"
-              >
-                Joined
-                <span className="ml-2 inline-block text-xs bg-white/20 px-2 py-0.5 rounded-full">{loadingJoined ? "..." : joinedEvents.length}</span>
-              </button>
-
-              {/* dropdown */}
-              {joinedOpen && (
-                <div
-                  className="absolute right-0 mt-3 w-80 bg-white rounded-2xl py-2 shadow-xl z-[60] border-2 border-violet-100"
-                  onMouseLeave={() => setJoinedOpen(false)}
-                >
-                  <div className="px-4 py-2 text-xs text-gray-500 font-medium">Your Joined Events</div>
-
-                  <div className="max-h-64 overflow-auto space-y-1 px-2 pb-2">
-                    {loadingJoined && <div className="px-4 py-3 text-sm text-gray-500">Loading...</div>}
-
-                    {!loadingJoined && joinedEvents.length === 0 && (
-                      <div className="px-4 py-3 text-sm text-gray-600">You haven't joined any events yet.</div>
-                    )}
-
-                    {!loadingJoined && joinedEvents.map((ev) => (
-                      <button
-                        key={ev._id}
-                        onClick={() => {
-                          setJoinedOpen(false);
-                          navigate(`/events/${ev._id}`);
-                        }}
-                        className="w-full flex items-start gap-3 px-3 py-2 rounded-lg hover:bg-violet-50 transition text-left"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 font-semibold border-2 border-violet-100">
-                          {/* optional thumbnail if event.image exists */}
-                          {ev.image ? (
-                            <img src={ev.image} alt={ev.title} className="w-full h-full object-cover rounded-lg" />
-                          ) : (
-                            ev.title?.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900 line-clamp-1">{ev.title}</div>
-                          <div className="text-xs text-gray-500">
-                            {ev.date ? new Date(ev.date).toLocaleDateString() : "—"}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-violet-100 mt-2 pt-2 px-3">
-                    <NavLink to="/my-joined-events" className="block text-sm text-violet-600 font-semibold px-2 py-2 rounded hover:bg-violet-50" onClick={() => setJoinedOpen(false)}>
-                      View all joined events
-                    </NavLink>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {currentUser?.role === "Admin" && <NavLink to="/admin" className={navLinkStyle}>Admin</NavLink>}
 
             <div className="relative ml-2">
@@ -227,9 +108,6 @@ const NavBar = () => {
               <NavLink to="/events" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Events</NavLink>
               <NavLink to="/available-events" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Available Events</NavLink>
               <NavLink to="/create-event" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Create Event</NavLink>
-
-              {/* mobile link for joined events */}
-              <NavLink to="/my-joined-events" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>My Joined Events</NavLink>
 
               {currentUser?.role === "Admin" && <NavLink to="/admin" className="px-4 py-2 text-white hover:bg-white/10 rounded-lg font-medium transition" onClick={() => setMenuOpen(false)}>Admin</NavLink>}
 
