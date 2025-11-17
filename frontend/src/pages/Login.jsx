@@ -61,16 +61,6 @@ export default function Login() {
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-violet-100">
           <div className="h-3 bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-500" />
           <div className="p-8">
-            <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-md" style={{ background: "linear-gradient(135deg,#7b4df7,#b85bf2)" }}>
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <rect x="3" y="3" width="18" height="18" rx="6" fill="white" opacity="0.06" />
-                  <path d="M7 12a5 5 0 0110 0" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
-                  <circle cx="12" cy="9" r="1.6" fill="#fff" opacity="0.95" />
-                </svg>
-              </div>
-            </div>
-
             <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-2 text-gray-900">
               Welcome Back
             </h1>
