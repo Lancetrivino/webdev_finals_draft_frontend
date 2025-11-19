@@ -85,7 +85,7 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Navbar */}
+      {/* Navbars */}
       <nav className="sticky top-0 bg-white/80 backdrop-blur-lg z-50 border-b-2 border-violet-200 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
