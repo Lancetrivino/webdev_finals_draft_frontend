@@ -1,113 +1,165 @@
-// contexts/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import { API_BASE_URL } from "../App";
 
 const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
-  const [authLoading, setAuthLoading] = useState(false);
 
+  // Initialize auth state from localStorage
   useEffect(() => {
-    const loadUser = () => {
+    const initAuth = () => {
       try {
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          setCurrentUser(JSON.parse(storedUser));
+        const storedToken = localStorage.getItem("token");
+
+        console.log("🔐 Initializing auth...");
+        console.log("  Stored user:", storedUser ? "✅ Found" : "❌ Not found");
+        console.log("  Stored token:", storedToken ? "✅ Found" : "❌ Not found");
+
+        if (storedUser && storedToken) {
+          const user = JSON.parse(storedUser);
+          
+          // ✅ CRITICAL: Make sure token is included in user object
+          user.token = storedToken;
+          
+          console.log("✅ User loaded:", user.email, "Role:", user.role);
+          setCurrentUser(user);
+        } else {
+          console.log("⚠️ No stored credentials found");
         }
-      } catch (err) {
-        console.error("Failed to parse user from storage:", err);
+      } catch (error) {
+        console.error("❌ Error initializing auth:", error);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
       } finally {
         setInitializing(false);
       }
     };
-    loadUser();
+
+    initAuth();
   }, []);
 
-  const login = async ({ email, password }) => {
-    setAuthLoading(true);
+  // Login function
+  const login = async (credentials) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials");
+      console.log("📝 Login attempt:", credentials.email);
 
-      const userWithToken = { ...data.user, token: data.token };
-      localStorage.setItem("user", JSON.stringify(userWithToken));
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      const data = await response.json();
+      console.log("📥 Login response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      if (!data.token) {
+        throw new Error("No token received from server");
+      }
+
+      // ✅ Store token and user separately
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // ✅ CRITICAL: Include token in user object for immediate use
+      const userWithToken = {
+        ...data.user,
+        token: data.token,
+      };
+
+      console.log("✅ Login successful:", userWithToken.email);
+      console.log("  Role:", userWithToken.role);
+      console.log("  Token:", data.token.substring(0, 20) + "...");
+
       setCurrentUser(userWithToken);
       return userWithToken;
-    } catch (err) {
-      toast.error(err.message || "Login failed");
-      throw err;
-    } finally {
-      setAuthLoading(false);
+    } catch (error) {
+      console.error("❌ Login error:", error);
+      throw error;
     }
   };
 
-  const register = async ({ name, email, password }) => {
-    setAuthLoading(true);
+  // Register function
+  const register = async (userData) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
+      console.log("📝 Register attempt:", userData.email);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-      toast.success("Account created! Please log in.");
-      return true;
-    } catch (err) {
-      toast.error(err.message || "Registration failed");
-      throw err;
-    } finally {
-      setAuthLoading(false);
+
+      const data = await response.json();
+      console.log("📥 Register response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      console.log("✅ Registration successful:", data.user?.email);
+      
+      // Don't auto-login after registration
+      // Let user go to login page
+      return data;
+    } catch (error) {
+      console.error("❌ Register error:", error);
+      throw error;
     }
   };
 
+  // Logout function
   const logout = () => {
+    console.log("👋 Logging out...");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setCurrentUser(null);
-    toast.success("Logged out successfully.");
+    console.log("✅ Logout complete");
   };
 
+  // Update current user (for profile updates)
   const updateCurrentUser = (updatedUser) => {
-    setCurrentUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
+    console.log("🔄 Updating current user...");
+    
+    // ✅ Keep the token when updating user
+    const token = currentUser?.token || localStorage.getItem("token");
+    
+    const userWithToken = {
+      ...updatedUser,
+      token: token,
+    };
 
-  const isAuthenticated = () => !!currentUser?.token;
+    setCurrentUser(userWithToken);
+    localStorage.setItem("user", JSON.stringify(userWithToken));
+    console.log("✅ User updated");
+  };
 
   const value = {
     currentUser,
+    initializing,
     login,
     register,
     logout,
     updateCurrentUser,
-    isAuthenticated,
-    initializing,
-    authLoading,
   };
 
-  
-  return (
-    <AuthContext.Provider value={value}>
-      {/* Render children always so hook order stays constant */}
-      {children}
-
-      {/* A loader overlay while the auth initializes */}
-      {initializing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white p-6 rounded-lg shadow">
-            Loading...
-          </div>
-        </div>
-      )}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

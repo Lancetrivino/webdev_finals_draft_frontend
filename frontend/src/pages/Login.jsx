@@ -22,35 +22,68 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
-    setLoading(true);
+
+    console.log("🚀 Login form submitted");
+    console.log("  Email:", formData.email);
 
     if (!validateEmail(formData.email)) {
       toast.error("Please enter a valid email address.", { autoClose: 2000 });
-      setLoading(false);
       return;
     }
 
+    if (!formData.password || formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters.", { autoClose: 2000 });
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await login(formData);
+      const user = await login(formData);
+      
+      console.log("✅ Login successful, user:", user);
+      console.log("  Role:", user.role);
+      console.log("  Token exists:", !!user.token);
+
       toast.success("Welcome back!", {
         autoClose: 1500,
         toastId: "login-success",
       });
+
+      // Wait a moment for the toast to show
+      setTimeout(() => {
+        const role = (user.role || "").toLowerCase();
+        if (role.includes("admin")) {
+          console.log("🔀 Redirecting to /admin");
+          navigate("/admin", { replace: true });
+        } else {
+          console.log("🔀 Redirecting to /dashboard");
+          navigate("/dashboard", { replace: true });
+        }
+      }, 500);
+
     } catch (err) {
-      console.error(err);
+      console.error("❌ Login failed:", err);
       toast.error(err.message || "Login failed. Please check your credentials.", {
-        autoClose: 2000,
+        autoClose: 3000,
       });
     } finally {
       setLoading(false);
     }
   };
 
+  // Auto-redirect if already logged in
   useEffect(() => {
     if (!currentUser) return;
-    if ((currentUser.role || "").toLowerCase().includes("admin")) {
+    
+    console.log("👤 Already logged in:", currentUser.email);
+    const role = (currentUser.role || "").toLowerCase();
+    
+    if (role.includes("admin")) {
+      console.log("🔀 Auto-redirecting to /admin");
       navigate("/admin", { replace: true });
     } else {
+      console.log("🔀 Auto-redirecting to /dashboard");
       navigate("/dashboard", { replace: true });
     }
   }, [currentUser, navigate]);
@@ -78,6 +111,7 @@ export default function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-violet-100 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-100 focus:border-violet-300 transition"
+                  required
                 />
               </div>
 
@@ -158,7 +192,7 @@ export default function Login() {
                   Don't have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => (window.location.href = "/register")}
+                    onClick={() => navigate("/register")}
                     className="text-violet-600 font-semibold hover:underline"
                   >
                     Create Account
