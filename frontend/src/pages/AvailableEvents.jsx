@@ -29,24 +29,16 @@ export default function AvailableEvents() {
         const userId = user._id || user.id;
         const API_BASE = import.meta.env.VITE_API_URL;
 
-        console.log("🔍 Fetching available events...");
-        console.log("  Token exists:", !!storedToken);
-        console.log("  User ID:", userId);
-
         const res = await fetch(`${API_BASE}/api/events/available`, {
           headers: { Authorization: `Bearer ${storedToken}` },
         });
 
-        console.log("📥 Response status:", res.status);
-
         const data = await res.json();
         
         if (!res.ok) {
-          console.error("❌ Error response:", data);
           throw new Error(data.message || "Failed to fetch events");
         }
 
-        console.log("✅ Events loaded:", data.length);
         setEvents(data);
 
         // Find events user has joined
@@ -54,10 +46,9 @@ export default function AvailableEvents() {
           .filter((e) => e.participants?.includes(userId))
           .map((e) => e._id);
         
-        console.log("✅ User has joined:", joined.length, "events");
         setJoinedEventIds(joined);
       } catch (error) {
-        console.error("❌ Fetch error:", error);
+        console.error("Fetch error:", error);
         toast.error(error.message || "Failed to load events.");
       } finally {
         setLoading(false);
@@ -116,10 +107,6 @@ export default function AvailableEvents() {
 
     setProcessingEvent(eventId);
 
-    console.log("🎟️ Joining event:", eventId);
-    console.log("  Token exists:", !!storedToken);
-    console.log("  User ID:", userId);
-
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/join`, {
         method: "POST",
@@ -129,20 +116,16 @@ export default function AvailableEvents() {
         },
       });
 
-      console.log("📥 Join response status:", res.status);
-
       const data = await res.json();
       
       if (!res.ok) {
-        console.error("❌ Join error:", data);
         throw new Error(data.message || "Failed to join event");
       }
 
       const eventName = events.find((e) => e._id === eventId)?.title || "event";
       
-      // Update state FIRST, then show toast
+      // Update state FIRST
       setJoinedEventIds((prev) => [...prev, eventId]);
-
       setEvents((prev) =>
         prev.map((e) =>
           e._id === eventId
@@ -151,20 +134,13 @@ export default function AvailableEvents() {
         )
       );
 
-      console.log("✅ Successfully joined event");
-      
-      // Show success toast with longer duration and higher position
-      toast.success(`🎉 You've successfully joined "${eventName}"!`, {
+      // Show success toast
+      toast.success(`🎉 Successfully joined "${eventName}"!`, {
         position: "top-center",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
       });
 
     } catch (error) {
-      console.error("❌ Join error:", error);
       toast.error(error.message || "Error joining event.", {
         position: "top-center",
         autoClose: 3000,
@@ -175,11 +151,6 @@ export default function AvailableEvents() {
   };
 
   const handleLeave = async (eventId) => {
-    const eventName = events.find((e) => e._id === eventId)?.title || "this event";
-
-    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`))
-      return;
-
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
     
@@ -192,12 +163,9 @@ export default function AvailableEvents() {
     const user = JSON.parse(storedUser);
     const userId = user._id || user.id;
     const API_BASE = import.meta.env.VITE_API_URL;
+    const eventName = events.find((e) => e._id === eventId)?.title || "this event";
 
     setProcessingEvent(eventId);
-
-    console.log("🚪 Leaving event:", eventId);
-    console.log("  Token exists:", !!storedToken);
-    console.log("  User ID:", userId);
 
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/leave`, {
@@ -208,39 +176,88 @@ export default function AvailableEvents() {
         },
       });
 
-      console.log("📥 Leave response status:", res.status);
-
       const data = await res.json();
       
       if (!res.ok) {
-        console.error("❌ Leave error:", data);
         throw new Error(data.message || "Failed to leave event");
       }
 
-      toast.success(`You've left "${eventName}"`);
-
+      // Update state
       setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
-
       setEvents((prev) =>
         prev.map((e) =>
           e._id === eventId
             ? {
                 ...e,
-                participants: (e.participants || []).filter(
-                  (id) => id !== userId
-                ),
+                participants: (e.participants || []).filter((id) => id !== userId),
               }
             : e
         )
       );
 
-      console.log("✅ Successfully left event");
+      // Show toast confirmation
+      toast.info(
+        <div>
+          <div className="font-semibold mb-1">Left "{eventName}"</div>
+          <div className="text-sm">You can rejoin anytime</div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 3000,
+          icon: "👋",
+        }
+      );
+
     } catch (error) {
-      console.error("❌ Leave error:", error);
       toast.error(error.message || "Error leaving event.");
     } finally {
       setProcessingEvent(null);
     }
+  };
+
+  const confirmLeave = (eventId) => {
+    const eventName = events.find((e) => e._id === eventId)?.title || "this event";
+    
+    // Create custom toast with confirmation buttons
+    const toastId = toast(
+      ({ closeToast }) => (
+        <div>
+          <div className="font-semibold mb-2">Leave Event?</div>
+          <div className="text-sm text-gray-600 mb-4">
+            Are you sure you want to leave "{eventName}"?
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => {
+                closeToast();
+                handleLeave(eventId);
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition"
+            >
+              Leave
+            </button>
+            <button
+              onClick={closeToast}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeButton: false,
+        closeOnClick: false,
+        draggable: false,
+        style: {
+          borderRadius: "12px",
+          padding: "16px",
+          minWidth: "320px",
+        },
+      }
+    );
   };
 
   if (loading) {
@@ -367,8 +384,18 @@ export default function AvailableEvents() {
                       </svg>
                     </div>
                   )}
-                  <div className="absolute top-3 right-3">
-                    <span className={`px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm border ${isFull ? "bg-red-50 text-red-700 border-red-100" : "bg-green-50 text-green-700 border-green-100"}`}>
+                  
+                  {/* Status badges in top corners */}
+                  <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                    {joined && (
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-500 text-white border-2 border-white shadow-lg flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Joined
+                      </span>
+                    )}
+                    <span className={`ml-auto px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm border ${isFull ? "bg-red-50 text-red-700 border-red-100" : "bg-green-50 text-green-700 border-green-100"}`}>
                       {isFull ? "Full" : `${remaining} spots`}
                     </span>
                   </div>
@@ -429,7 +456,7 @@ export default function AvailableEvents() {
                     </button>
                     {joined ? (
                       <button
-                        onClick={() => handleLeave(e._id)}
+                        onClick={() => confirmLeave(e._id)}
                         disabled={isProcessing}
                         className="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >

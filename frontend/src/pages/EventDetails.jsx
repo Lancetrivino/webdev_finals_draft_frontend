@@ -13,7 +13,6 @@ const EventDetails = () => {
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [eventHasPassed, setEventHasPassed] = useState(false);
   const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false);
 
   // Reviews toast panel state
@@ -48,7 +47,7 @@ const EventDetails = () => {
           setJoined(participantIds.includes(userId));
         }
       } catch (err) {
-        console.error("❌ Error fetching event details:", err);
+        console.error("Error fetching event details:", err);
         toast.error(err.message || "Failed to load event details.");
       } finally {
         setLoading(false);
@@ -61,10 +60,6 @@ const EventDetails = () => {
   // feedback eligibility
   useEffect(() => {
     if (!event || !currentUser) return;
-
-    const eventDate = new Date(event.date);
-    const now = new Date();
-    setEventHasPassed(now > eventDate);
 
     const checkFeedback = async () => {
       try {
@@ -125,9 +120,23 @@ const EventDetails = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join event");
-      toast.success("🎉 " + (data.message || "Joined!"));
+      
       setJoined(true);
-      setEvent((prev) => ({ ...prev, participants: [...(prev.participants || []), currentUser._id || currentUser.id] }));
+      setEvent((prev) => ({ 
+        ...prev, 
+        participants: [...(prev.participants || []), currentUser._id || currentUser.id] 
+      }));
+      
+      toast.success(
+        <div>
+          <div className="font-semibold mb-1">🎉 Successfully Joined!</div>
+          <div className="text-sm">You're now registered for this event</div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Error joining.");
@@ -142,7 +151,7 @@ const EventDetails = () => {
       navigate("/login");
       return;
     }
-    if (!window.confirm("Are you sure you want to leave this event?")) return;
+    
     setProcessing(true);
     try {
       const token = currentUser?.token || localStorage.getItem("token");
@@ -152,16 +161,72 @@ const EventDetails = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to leave event");
-      toast.success(data.message || "Left event");
+      
       setJoined(false);
       const userId = currentUser._id || currentUser.id;
-      setEvent((prev) => ({ ...prev, participants: (prev.participants || []).filter((u) => u !== userId) }));
+      setEvent((prev) => ({ 
+        ...prev, 
+        participants: (prev.participants || []).filter((u) => u !== userId) 
+      }));
+      
+      toast.info(
+        <div>
+          <div className="font-semibold mb-1">👋 Left Event</div>
+          <div className="text-sm">You can rejoin anytime</div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Error leaving.");
     } finally {
       setProcessing(false);
     }
+  };
+
+  const confirmLeave = () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <div className="font-semibold mb-2">Leave Event?</div>
+          <div className="text-sm text-gray-600 mb-4">
+            Are you sure you want to leave this event?
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => {
+                closeToast();
+                handleLeave();
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition"
+            >
+              Leave
+            </button>
+            <button
+              onClick={closeToast}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeButton: false,
+        closeOnClick: false,
+        draggable: false,
+        style: {
+          borderRadius: "12px",
+          padding: "16px",
+          minWidth: "320px",
+        },
+      }
+    );
   };
 
   if (loading)
@@ -220,11 +285,23 @@ const EventDetails = () => {
                 </div>
               </div>
 
-              {status && (
-                <span className={`px-5 py-2 text-sm rounded-full font-bold shadow-lg ${status.toLowerCase() === "approved" ? "bg-green-100 text-green-700 border-green-300" : status.toLowerCase() === "pending" ? "bg-amber-100 text-amber-700 border-amber-300" : "bg-red-100 text-red-700 border-red-300"}`}>
-                  {status}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {status && (
+                  <span className={`px-5 py-2 text-sm rounded-full font-bold shadow-lg ${status.toLowerCase() === "approved" ? "bg-green-100 text-green-700 border-green-300" : status.toLowerCase() === "pending" ? "bg-amber-100 text-amber-700 border-amber-300" : "bg-red-100 text-red-700 border-red-300"}`}>
+                    {status}
+                  </span>
+                )}
+                
+                {/* Joined status indicator */}
+                {currentUser && joined && (
+                  <span className="px-4 py-2 text-sm rounded-full font-bold bg-green-500 text-white shadow-lg flex items-center gap-2">
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Joined
+                  </span>
+                )}
+              </div>
             </div>
 
             {(imageData || image) && <div className="rounded-2xl overflow-hidden mb-8 shadow-xl border-2 border-violet-200"><img src={imageData || image} alt={title} className="w-full max-h-96 object-cover" /></div>}
@@ -249,7 +326,6 @@ const EventDetails = () => {
                 <div className="space-y-4">
                   {remainingSlots !== null && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">👥</div><div><p className="text-xs text-gray-600 font-medium">Availability</p><p className={`font-bold text-lg ${isFull ? "text-red-600" : "text-green-600"}`}>{isFull ? "Event is Full" : `${remainingSlots} slots remaining`}</p></div></div>}
                   {averageRating > 0 && totalReviews > 0 && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">⭐</div><div><p className="text-xs text-gray-600 font-medium">Rating</p><div className="flex items-center gap-2"><span className="text-2xl font-bold text-violet-600">{averageRating.toFixed(1)}</span><span className="text-gray-600">({totalReviews} {totalReviews === 1 ? "review" : "reviews"})</span></div></div></div>}
-                  {currentUser && joined && <div className="flex items-center gap-3 p-3 bg-green-100 rounded-lg border-2 border-green-300"><div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">✓</div><div><p className="text-xs text-green-600 font-medium">Status</p><p className="font-bold text-green-700">You've joined this event</p></div></div>}
                 </div>
               </div>
             </div>
@@ -261,7 +337,7 @@ const EventDetails = () => {
 
             {reminders && reminders.length > 0 && (<div className="mb-8"><h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2><ul className="space-y-2">{reminders.map((r, i) => <li key={i} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200"><span className="text-violet-600 font-bold">•</span><span className="text-gray-700">{r}</span></li>)}</ul></div>)}
 
-            {/* ✅ IMPROVED ACTION BUTTONS */}
+            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="flex gap-3 flex-1 flex-wrap">
                 {/* Not logged in */}
@@ -292,25 +368,20 @@ const EventDetails = () => {
                   </button>
                 )}
 
-                {/* Already joined - show status badge AND leave button */}
+                {/* Already joined - show leave button */}
                 {currentUser && joined && (
-                  <>
-                    <div className="px-6 py-3 bg-green-100 border-2 border-green-300 text-green-700 rounded-xl font-semibold flex items-center gap-2">
-                      ✓ You're Attending
-                    </div>
-                    <button 
-                      onClick={handleLeave} 
-                      disabled={processing} 
-                      className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-red-700 hover:to-red-800"}`}
-                    >
-                      {processing ? "Leaving..." : "✕ Leave Event"}
-                    </button>
-                  </>
+                  <button 
+                    onClick={confirmLeave} 
+                    disabled={processing} 
+                    className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-red-700 hover:to-red-800"}`}
+                  >
+                    {processing ? "Leaving..." : "✕ Leave Event"}
+                  </button>
                 )}
               </div>
 
               <div className="flex gap-3 items-center flex-wrap">
-                {/* Write Review button - ✅ NO RESTRICTIONS */}
+                {/* Write Review button */}
                 {currentUser && !alreadySubmittedFeedback && (
                   <button 
                     onClick={() => navigate(`/feedback/${id}`)} 
@@ -334,7 +405,7 @@ const EventDetails = () => {
         </div>
       </div>
 
-      {/* ✅ CLEANED UP Reviews Panel - Removed internal "Write Review" button */}
+      {/* Reviews Panel */}
       {showReviews && (
         <div className="fixed inset-0 z-[9999] flex items-end justify-center pointer-events-none">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowReviews(false)} />
@@ -355,7 +426,6 @@ const EventDetails = () => {
 
             {/* body */}
             <div className="p-4 overflow-auto space-y-3 max-h-[62vh]">
-              {/* reviews list (or empty state) */}
               {loadingReviews && <div className="text-center py-6 text-gray-500">Loading reviews...</div>}
 
               {!loadingReviews && reviews.length === 0 && <div className="text-center py-6 text-gray-500">No reviews yet. Be the first to review!</div>}
