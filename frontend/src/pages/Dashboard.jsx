@@ -242,18 +242,19 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Changed to 2 columns so two stats are larger and centered */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {stats.map((stat, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl p-6 shadow-lg transition-transform duration-200 border border-violet-100"
+              className="bg-white rounded-2xl p-8 shadow-lg transition-transform duration-200 border border-violet-100 flex flex-col justify-center items-start"
               role="status"
             >
               <div>
                 <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
                   {stat.label}
                 </p>
-                <p className={`text-4xl font-extrabold ${stat.color}`}>
+                <p className={`text-5xl font-extrabold ${stat.color}`}>
                   {stat.value}
                 </p>
               </div>
