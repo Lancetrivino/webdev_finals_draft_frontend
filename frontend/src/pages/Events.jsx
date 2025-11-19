@@ -60,23 +60,25 @@ function Events() {
       await doDelete(eventId);
     };
 
+    const handleCancel = () => {
+      toast.dismiss(toastId);
+    };
+
     toastId = toast(
-      ({ closeToast }) => (
+      () => (
         <div className="max-w-xs">
           <div className="mb-3 text-gray-900 font-semibold">Delete event</div>
           <div className="text-sm text-gray-700 mb-4">Are you sure you want to delete this event?</div>
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => {
-                handleConfirm();
-              }}
-              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold text-sm shadow-sm"
+              onClick={handleConfirm}
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold text-sm shadow-sm hover:from-violet-500 hover:to-purple-500 transition-all"
             >
               Delete
             </button>
             <button
-              onClick={() => toast.dismiss(toastId)}
-              className="px-3 py-2 rounded-lg bg-white border border-violet-100 text-gray-700 text-sm"
+              onClick={handleCancel}
+              className="px-3 py-2 rounded-lg bg-white border border-violet-100 text-gray-700 text-sm hover:bg-gray-50 transition-all"
             >
               Cancel
             </button>
