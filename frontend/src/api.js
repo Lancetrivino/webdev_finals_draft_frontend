@@ -6,7 +6,7 @@
 
 
   export const registerUser = async (userData) => {
-    const res = await fetch(`${API_BASE}/api/users/register`, {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
@@ -17,7 +17,7 @@
   };
 
   export const loginUser = async (userData) => {
-    const res = await fetch(`${API_BASE}/api/users/login`, {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
