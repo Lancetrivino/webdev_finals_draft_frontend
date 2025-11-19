@@ -19,6 +19,12 @@ function Profile() {
   const [avatarPreview, setAvatarPreview] = useState("");
   const fileInputRef = useRef(null);
 
+  // new state to hold events & computed stats
+  const [allEvents, setAllEvents] = useState([]);
+  const [eventsJoinedCount, setEventsJoinedCount] = useState(0);
+  const [eventsCreatedCount, setEventsCreatedCount] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(true);
+
   useEffect(() => {
     if (!currentUser) {
       toast.error("Please log in to view your profile.");
@@ -32,6 +38,94 @@ function Profile() {
       setAvatarPreview(currentUser.avatar || "");
     }
   }, [currentUser, navigate]);
+
+  // Fetch events to compute joined/created counts
+  useEffect(() => {
+    const fetchEventsForStats = async () => {
+      if (!currentUser) return;
+      setLoadingStats(true);
+
+      try {
+        const token = localStorage.getItem("token") || currentUser?.token;
+        const res = await fetch(`${API_BASE_URL}/api/events/available`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (!res.ok) {
+          // If the endpoint is protected and fails, don't crash UI — just keep counts 0
+          console.warn("Failed to fetch events for stats:", res.status);
+          setAllEvents([]);
+          setEventsJoinedCount(0);
+          setEventsCreatedCount(0);
+          return;
+        }
+
+        const data = await res.json();
+        const events = Array.isArray(data) ? data : [];
+        setAllEvents(events);
+
+        // compute counts
+        const userId = currentUser._id || currentUser.id;
+        let joined = 0;
+        let created = 0;
+
+        const checkIsCreator = (event) => {
+          // Accept many shapes for creator
+          const creatorCandidates = [
+            event.creator,
+            event.createdBy,
+            event.owner,
+            event.user,
+            event.host,
+            event.organizer,
+            event.author,
+            event.created_by,
+            event.creatorId,
+            event.userId,
+            event.creator_id,
+          ];
+
+          for (const candidate of creatorCandidates) {
+            if (!candidate) continue;
+            if (typeof candidate === "object") {
+              if (candidate._id === userId || candidate.id === userId || candidate.user === userId) return true;
+              if (candidate.user && (candidate.user._id === userId || candidate.user.id === userId)) return true;
+            } else {
+              if (candidate === userId) return true;
+            }
+          }
+          return false;
+        };
+
+        for (const ev of events) {
+          // participants can be array of strings or objects
+          const participants = ev.participants || [];
+          const hasJoined = participants.some((p) => {
+            if (!p) return false;
+            if (typeof p === "object") {
+              return p._id === userId || p.id === userId || p.user === userId;
+            }
+            return p === userId;
+          });
+          if (hasJoined) joined++;
+
+          if (checkIsCreator(ev)) created++;
+        }
+
+        setEventsJoinedCount(joined);
+        setEventsCreatedCount(created);
+      } catch (err) {
+        console.error("Error fetching events for profile stats:", err);
+        setAllEvents([]);
+        setEventsJoinedCount(0);
+        setEventsCreatedCount(0);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchEventsForStats();
+  }, [currentUser]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -246,11 +340,15 @@ function Profile() {
               <div className="mx-auto max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-100">
                   <div className="text-center">
-                    <p className="text-4xl md:text-5xl font-extrabold text-violet-600">12</p>
+                    <p className="text-4xl md:text-5xl font-extrabold text-violet-600">
+                      {loadingStats ? "—" : eventsJoinedCount}
+                    </p>
                     <p className="text-xs font-semibold text-gray-600 mt-1">Events Joined</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-4xl md:text-5xl font-extrabold text-purple-600">5</p>
+                    <p className="text-4xl md:text-5xl font-extrabold text-purple-600">
+                      {loadingStats ? "—" : eventsCreatedCount}
+                    </p>
                     <p className="text-xs font-semibold text-gray-600 mt-1">Events Created</p>
                   </div>
                 </div>
