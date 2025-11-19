@@ -40,7 +40,7 @@ function Profile() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     console.log("📸 File selected:", file); // Debug
-    
+
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image must be less than 5MB");
@@ -50,7 +50,7 @@ function Profile() {
         toast.error("Please select an image file");
         return;
       }
-      
+
       setAvatar(file);
       const reader = new FileReader();
       reader.onload = () => {
@@ -70,12 +70,12 @@ function Profile() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
+
     console.log("📤 Submitting profile update..."); // Debug
     console.log("  Name:", formData.name);
     console.log("  Address:", formData.address);
     console.log("  Avatar file:", avatar);
-    
+
     setLoading(true);
 
     try {
@@ -115,16 +115,19 @@ function Profile() {
 
       // Update auth context with new user data
       updateCurrentUser(data.user);
-      
+
       // Also update localStorage
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      localStorage.setItem("user", JSON.stringify({
-        ...storedUser,
-        ...data.user
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...storedUser,
+          ...data.user,
+        })
+      );
 
       toast.success("✅ Profile updated successfully!");
-      
+
       // Clear avatar file state
       setAvatar(null);
     } catch (err) {
@@ -157,10 +160,8 @@ function Profile() {
     >
       <main className="w-full max-w-4xl mx-auto relative z-10">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-violet-100">
-
           <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 h-36 flex items-center px-8">
             <div className="w-full max-w-3xl mx-auto grid grid-cols-12 gap-4 items-center">
-
               <div className="col-span-3">
                 <div className="relative w-fit mx-auto md:mx-0">
                   <div className="w-28 h-28 rounded-md overflow-hidden border-4 border-white bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
@@ -182,12 +183,12 @@ function Profile() {
                     </svg>
                   </button>
 
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleAvatarChange} 
-                    className="hidden" 
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
                     aria-label="Upload profile picture"
                   />
                 </div>
@@ -241,18 +242,17 @@ function Profile() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-100">
-                <div className="text-center">
-                  <p className="text-3xl font-extrabold text-violet-600">12</p>
-                  <p className="text-xs font-semibold text-gray-600">Events Joined</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-extrabold text-purple-600">5</p>
-                  <p className="text-xs font-semibold text-gray-600">Events Created</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-extrabold text-indigo-600">8</p>
-                  <p className="text-xs font-semibold text-gray-600">Reviews Given</p>
+              {/* Updated: removed Reviews tile and resized/centered the remaining two */}
+              <div className="mx-auto max-w-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-100">
+                  <div className="text-center">
+                    <p className="text-4xl md:text-5xl font-extrabold text-violet-600">12</p>
+                    <p className="text-xs font-semibold text-gray-600 mt-1">Events Joined</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-4xl md:text-5xl font-extrabold text-purple-600">5</p>
+                    <p className="text-xs font-semibold text-gray-600 mt-1">Events Created</p>
+                  </div>
                 </div>
               </div>
 
