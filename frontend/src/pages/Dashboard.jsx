@@ -11,7 +11,6 @@ function Dashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [allEvents, setAllEvents] = useState([]); // store full event list for stats
-  const [reviewsCount, setReviewsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,49 +64,6 @@ function Dashboard() {
           .slice(0, 3);
 
         setUpcomingEvents(userUpcomingEvents);
-
-        // Try to fetch user reviews from dedicated endpoint. If not available, infer from events.
-        try {
-          const reviewsRes = await fetch(`${API_BASE_URL}/api/reviews/user/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (reviewsRes.ok) {
-            const reviewsData = await reviewsRes.json();
-            // handle common response shapes
-            if (Array.isArray(reviewsData)) {
-              setReviewsCount(reviewsData.length);
-            } else if (reviewsData && typeof reviewsData === "object") {
-              // e.g., { data: [...], total: 5 }
-              if (Array.isArray(reviewsData.data)) setReviewsCount(reviewsData.data.length);
-              else if (typeof reviewsData.total === "number") setReviewsCount(reviewsData.total);
-              else setReviewsCount(0);
-            } else {
-              setReviewsCount(0);
-            }
-          } else {
-            // fallback: infer reviews from event objects
-            const inferred = (Array.isArray(data) ? data : []).reduce((acc, ev) => {
-              const r = (ev.reviews || []).filter((rv) => {
-                if (typeof rv === "object") return rv.user === userId || rv.user?._id === userId;
-                // rv might be a reviewer id or have reviewer prop
-                return rv === userId || rv.reviewer === userId;
-              });
-              return acc + r.length;
-            }, 0);
-            setReviewsCount(inferred);
-          }
-        } catch (err) {
-          console.warn("Couldn't fetch reviews endpoint, inferring from events if possible.", err);
-          const inferred = (Array.isArray(data) ? data : []).reduce((acc, ev) => {
-            const r = (ev.reviews || []).filter((rv) => {
-              if (typeof rv === "object") return rv.user === userId || rv.user?._id === userId;
-              return rv === userId || rv.reviewer === userId;
-            });
-            return acc + r.length;
-          }, 0);
-          setReviewsCount(inferred);
-        }
       } catch (error) {
         console.error("❌ Error fetching upcoming events:", error);
         toast.error("Failed to load upcoming events");
@@ -180,7 +136,7 @@ function Dashboard() {
     },
   ];
 
-  // compute stats from allEvents and reviewsCount
+  // compute stats from allEvents
   const eventsJoinedCount = useMemo(() => {
     if (!currentUser || !Array.isArray(allEvents)) return 0;
     const userId = currentUser._id || currentUser.id;
@@ -197,22 +153,46 @@ function Dashboard() {
   const eventsCreatedCount = useMemo(() => {
     if (!currentUser || !Array.isArray(allEvents)) return 0;
     const userId = currentUser._id || currentUser.id;
-    return allEvents.reduce((count, event) => {
-      const creator = event.creator;
-      if (!creator) return count;
-      if (typeof creator === "object") {
-        if (creator._id === userId || creator.id === userId) return count + 1;
-      } else if (creator === userId) {
-        return count + 1;
+
+    // helper to check many possible creator fields/shapes
+    const isCreatedByUser = (event) => {
+      // common fields that store who created the event
+      const creatorCandidates = [
+        event.creator,
+        event.createdBy,
+        event.owner,
+        event.user,
+        event.host,
+        event.organizer,
+        event.author,
+        event.created_by,
+      ];
+
+      for (const candidate of creatorCandidates) {
+        if (!candidate) continue;
+        if (typeof candidate === "object") {
+          if (candidate._id === userId || candidate.id === userId || candidate.user === userId) return true;
+          // sometimes candidate might be nested: { user: { _id: '...' } }
+          if (candidate.user && (candidate.user._id === userId || candidate.user.id === userId)) return true;
+        } else {
+          if (candidate === userId) return true;
+        }
       }
-      return count;
+
+      // fallback: event may have a string 'creatorId' or 'userId'
+      if (event.creatorId === userId || event.userId === userId || event.creator_id === userId) return true;
+
+      return false;
+    };
+
+    return allEvents.reduce((count, event) => {
+      return count + (isCreatedByUser(event) ? 1 : 0);
     }, 0);
   }, [allEvents, currentUser]);
 
   const stats = [
     { label: "Events Joined", value: eventsJoinedCount.toString(), color: "text-violet-600" },
     { label: "Events Created", value: eventsCreatedCount.toString(), color: "text-purple-600" },
-    { label: "Total Reviews", value: reviewsCount.toString(), color: "text-indigo-600" },
   ];
 
   return (
