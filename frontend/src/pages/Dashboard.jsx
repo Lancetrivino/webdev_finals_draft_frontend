@@ -1,16 +1,91 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://webdevfinals.onrender.com";
 
 function Dashboard() {
   const { currentUser } = useAuth();
   const [now, setNow] = useState(new Date());
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Fetch upcoming events that the user has joined
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      if (!currentUser) return;
+      
+      setLoadingEvents(true);
+      try {
+        const token = localStorage.getItem("token") || currentUser?.token;
+        
+        console.log("🔍 Fetching upcoming events for user:", currentUser._id || currentUser.id);
+        
+        // Fetch all available events
+        const res = await fetch(`${API_BASE_URL}/api/events/available`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch events");
+        
+        const data = await res.json();
+        console.log("📥 All events received:", data.length);
+        
+        // Get user ID - try both _id and id
+        const userId = currentUser._id || currentUser.id;
+        console.log("👤 Current user ID:", userId);
+        
+        // Filter for events the user has joined and are in the future
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const userUpcomingEvents = data
+          .filter(event => {
+            const eventDate = new Date(event.date);
+            
+            // Check if user has joined - handle both string and object IDs
+            const participants = event.participants || [];
+            const hasJoined = participants.some(p => {
+              // Handle if participant is an object with _id or id
+              if (typeof p === 'object') {
+                return p._id === userId || p.id === userId;
+              }
+              // Handle if participant is just a string ID
+              return p === userId;
+            });
+            
+            const isFuture = eventDate >= today;
+            
+            console.log(`📅 Event: ${event.title}`);
+            console.log(`  - Date: ${eventDate.toLocaleDateString()}`);
+            console.log(`  - Participants:`, participants);
+            console.log(`  - Has Joined: ${hasJoined}`);
+            console.log(`  - Is Future: ${isFuture}`);
+            
+            return hasJoined && isFuture;
+          })
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 3); // Get only the first 3 upcoming events
+        
+        console.log("✅ Filtered upcoming events:", userUpcomingEvents.length);
+        setUpcomingEvents(userUpcomingEvents);
+      } catch (error) {
+        console.error("❌ Error fetching upcoming events:", error);
+        toast.error("Failed to load upcoming events");
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchUpcomingEvents();
+  }, [currentUser]);
 
   const initials = useMemo(() => {
     const name = currentUser?.name || currentUser?.email || "User";
@@ -126,25 +201,24 @@ function Dashboard() {
           </div>
         </div>
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  {stats.map((stat, idx) => (
-    <div
-      key={idx}
-      className="bg-white rounded-2xl p-6 shadow-lg transition-transform duration-200 border border-violet-100"
-      role="status"
-    >
-      <div>
-        <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-          {stat.label}
-        </p>
-        <p className={`text-4xl font-extrabold ${stat.color}`}>
-          {stat.value}
-        </p>
-      </div>
-    </div>
-  ))}
-</div>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-2xl p-6 shadow-lg transition-transform duration-200 border border-violet-100"
+              role="status"
+            >
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                  {stat.label}
+                </p>
+                <p className={`text-4xl font-extrabold ${stat.color}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -188,31 +262,60 @@ function Dashboard() {
               <h3 className="text-2xl font-bold text-gray-900">Upcoming Events</h3>
               <div className="text-sm font-medium text-violet-600">Schedule</div>
             </div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((_, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 p-4 bg-violet-50 rounded-xl border border-violet-100 hover:bg-violet-100 transition-colors cursor-pointer"
+            
+            {loadingEvents ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                <p className="mt-2 text-sm text-gray-500">Loading events...</p>
+              </div>
+            ) : upcomingEvents.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">📅</div>
+                <p className="text-gray-600 mb-4">No upcoming events</p>
+                <button
+                  onClick={() => navigate("/available-events")}
+                  className="px-6 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition shadow-lg text-sm"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold shadow">
-                    {idx + 1}
+                  Browse Events
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {upcomingEvents.map((event, idx) => (
+                  <div
+                    key={event._id}
+                    onClick={() => navigate(`/events/${event._id}`)}
+                    className="flex items-center gap-4 p-4 bg-violet-50 rounded-xl border border-violet-100 hover:bg-violet-100 transition-colors cursor-pointer"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold shadow flex-shrink-0">
+                      {new Date(event.date).getDate()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{event.title}</p>
+                      <p className="text-sm text-gray-600 truncate">
+                        {new Date(event.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })} • {event.venue}
+                      </p>
+                    </div>
+                    <svg className="w-5 h-5 text-violet-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Event Title {idx + 1}</p>
-                    <p className="text-sm text-gray-600">Date • Location</p>
-                  </div>
-                  <svg className="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => navigate("/available-events")}
-              className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition shadow-lg"
-            >
-              View All Events
-            </button>
+                ))}
+              </div>
+            )}
+            
+            {upcomingEvents.length > 0 && (
+              <button
+                onClick={() => navigate("/available-events")}
+                className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition shadow-lg"
+              >
+                View All Events
+              </button>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-violet-100">
@@ -234,7 +337,10 @@ function Dashboard() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition shadow-lg">
+            <button 
+              onClick={() => navigate("/available-events")}
+              className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 transition shadow-lg"
+            >
               Learn More
             </button>
           </div>

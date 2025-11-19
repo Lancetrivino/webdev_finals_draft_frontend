@@ -13,26 +13,49 @@ function Events() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const storedToken = localStorage.getItem("token");
+    
+    if (!storedUser || !storedToken) {
       toast.info("Please login to view events");
       navigate("/login");
       return;
     }
 
-    const { token } = JSON.parse(storedUser);
-
     const fetchEvents = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_URL;
+        
+        // Debug logging
+        console.log("🔍 Fetching events...");
+        console.log("API_BASE:", API_BASE);
+        console.log("Token exists:", !!storedToken);
+        console.log("Full URL:", `${API_BASE}/api/events`);
+        
         const res = await fetch(`${API_BASE}/api/events`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${storedToken}` },
         });
 
+        console.log("Response status:", res.status);
+        console.log("Response ok:", res.ok);
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch events");
+        console.log("Response data:", data);
+
+        if (!res.ok) {
+          console.error("❌ Error response:", data);
+          throw new Error(data.message || "Failed to fetch events");
+        }
+        
         setEvents(data);
+        console.log("✅ Events loaded successfully:", data.length);
       } catch (error) {
-        toast.error("Failed to load events. Check your connection or permissions.");
+        console.error("❌ Fetch error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        toast.error(`Failed to load events: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -60,23 +83,25 @@ function Events() {
       await doDelete(eventId);
     };
 
+    const handleCancel = () => {
+      toast.dismiss(toastId);
+    };
+
     toastId = toast(
-      ({ closeToast }) => (
+      () => (
         <div className="max-w-xs">
           <div className="mb-3 text-gray-900 font-semibold">Delete event</div>
           <div className="text-sm text-gray-700 mb-4">Are you sure you want to delete this event?</div>
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => {
-                handleConfirm();
-              }}
-              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold text-sm shadow-sm"
+              onClick={handleConfirm}
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold text-sm shadow-sm hover:from-violet-500 hover:to-purple-500 transition-all"
             >
               Delete
             </button>
             <button
-              onClick={() => toast.dismiss(toastId)}
-              className="px-3 py-2 rounded-lg bg-white border border-violet-100 text-gray-700 text-sm"
+              onClick={handleCancel}
+              className="px-3 py-2 rounded-lg bg-white border border-violet-100 text-gray-700 text-sm hover:bg-gray-50 transition-all"
             >
               Cancel
             </button>
@@ -102,14 +127,14 @@ function Events() {
   // Actual delete action (kept separate so it can be invoked from the toast)
   const doDelete = async (eventId) => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (!storedUser) throw new Error("Not authenticated");
-      const { token } = storedUser;
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) throw new Error("Not authenticated");
+      
       const API_BASE = import.meta.env.VITE_API_URL;
 
       const res = await fetch(`${API_BASE}/api/events/${eventId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${storedToken}` },
       });
 
       const data = await res.json();

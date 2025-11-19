@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { API_BASE_URL } from "../App";
 
-
 const IconCalendar = ({ className = "w-5 h-5" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
     <rect x="3" y="5" width="18" height="16" rx="2" ry="2" />
@@ -120,7 +119,6 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, navigate, currentUser]);
 
-  // feedback eligibility
   useEffect(() => {
     if (!event || !currentUser) return;
 
@@ -612,7 +610,6 @@ const EventDetails = () => {
             </div>
 
             <div className="p-4 overflow-auto space-y-3 max-h-[62vh]">
-
               {showWriteForm && (
                 <form onSubmit={submitReview} className="p-4 rounded-xl border border-gray-100 bg-gray-50 space-y-3">
                   <div className="flex items-center gap-3">
@@ -700,7 +697,7 @@ const EventDetails = () => {
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
