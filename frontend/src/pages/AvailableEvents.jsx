@@ -43,7 +43,15 @@ export default function AvailableEvents() {
 
         // Find events user has joined
         const joined = data
-          .filter((e) => e.participants?.includes(userId))
+          .filter((e) => {
+            const participants = e.participants || [];
+            return participants.some((p) => {
+              if (typeof p === "object") {
+                return p._id === userId || p.id === userId;
+              }
+              return p === userId;
+            });
+          })
           .map((e) => e._id);
         
         setJoinedEventIds(joined);
@@ -189,7 +197,12 @@ export default function AvailableEvents() {
           e._id === eventId
             ? {
                 ...e,
-                participants: (e.participants || []).filter((id) => id !== userId),
+                participants: (e.participants || []).filter((p) => {
+                  if (typeof p === "object") {
+                    return (p._id !== userId && p.id !== userId);
+                  }
+                  return p !== userId;
+                }),
               }
             : e
         )
@@ -219,7 +232,7 @@ export default function AvailableEvents() {
     const eventName = events.find((e) => e._id === eventId)?.title || "this event";
     
     // Create custom toast with confirmation buttons
-    const toastId = toast(
+    toast(
       ({ closeToast }) => (
         <div>
           <div className="font-semibold mb-2">Leave Event?</div>
@@ -258,6 +271,18 @@ export default function AvailableEvents() {
         },
       }
     );
+  };
+
+  const handleViewDetails = (eventId) => {
+    const joined = joinedEventIds.includes(eventId);
+    // Pass the current joined state via navigation state
+    navigate(`/events/${eventId}`, { 
+      state: { 
+        joined,
+        fromAvailableEvents: true,
+        timestamp: Date.now()
+      } 
+    });
   };
 
   if (loading) {
@@ -449,7 +474,7 @@ export default function AvailableEvents() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => navigate(`/events/${e._id}`)}
+                      onClick={() => handleViewDetails(e._id)}
                       className="flex-1 px-4 py-2.5 bg-white border border-violet-100 text-violet-700 font-semibold rounded-lg hover:bg-violet-50 transition"
                     >
                       Details

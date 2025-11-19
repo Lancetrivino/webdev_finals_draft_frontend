@@ -196,17 +196,18 @@ export default function FeedbackEnhanced() {
             <div className="flex flex-col items-center bg-violet-50 rounded-xl p-4 border-2 border-violet-200">
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
-                 <button
-  key={star}
-  type="button"
-  onClick={() => setRating(star)}
-  onMouseEnter={() => setHoverRating(star)}
-  onMouseLeave={() => setHoverRating(0)}
-  className="text-4xl p-2 rounded-lg transition-transform hover:scale-125 hover:bg-violet-100"
-  aria-label={`${star} star`}
->
-  {star <= (hoverRating || rating) ? "⭐" : "☆"}
-</button>
+              <button
+                key={star}
+                 type="button"
+                    onClick={() => setRating(prev => (prev === star ? 0 : star))}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="text-4xl p-2 rounded-lg transition-transform hover:scale-125 hover:bg-violet-100"
+                      aria-label={`${star} star`}
+                    >
+                {star <= (hoverRating || rating) ? "⭐" : "☆"}
+              </button>
+
 
                 ))}
               </div>
