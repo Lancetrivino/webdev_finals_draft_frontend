@@ -91,7 +91,7 @@ export default function Home() {
           <div className="flex justify-between items-center h-20">
             <a href="/" className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-2xl">🎉</span>
+                <span className="text-2xl"></span>
               </div>
               <span className="text-3xl font-black bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
                 Eventure
