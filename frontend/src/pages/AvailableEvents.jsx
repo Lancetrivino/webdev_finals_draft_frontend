@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
 export default function AvailableEvents() {
@@ -18,7 +19,7 @@ export default function AvailableEvents() {
       try {
         const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
-        
+
         if (!storedToken || !storedUser) {
           toast.info("Please login to see available events.");
           setLoading(false);
@@ -29,35 +30,28 @@ export default function AvailableEvents() {
         const userId = user._id || user.id;
         const API_BASE = import.meta.env.VITE_API_URL;
 
-        console.log("🔍 Fetching available events...");
-        console.log("  Token exists:", !!storedToken);
-        console.log("  User ID:", userId);
-
+        console.log("Fetching available events...");
         const res = await fetch(`${API_BASE}/api/events/available`, {
           headers: { Authorization: `Bearer ${storedToken}` },
         });
 
-        console.log("📥 Response status:", res.status);
-
         const data = await res.json();
-        
+
         if (!res.ok) {
-          console.error("❌ Error response:", data);
+          console.error("Error response:", data);
           throw new Error(data.message || "Failed to fetch events");
         }
 
-        console.log("✅ Events loaded:", data.length);
         setEvents(data);
 
         // Find events user has joined
         const joined = data
           .filter((e) => e.participants?.includes(userId))
           .map((e) => e._id);
-        
-        console.log("✅ User has joined:", joined.length, "events");
+
         setJoinedEventIds(joined);
       } catch (error) {
-        console.error("❌ Fetch error:", error);
+        console.error("Fetch error:", error);
         toast.error(error.message || "Failed to load events.");
       } finally {
         setLoading(false);
@@ -103,7 +97,7 @@ export default function AvailableEvents() {
   const handleBook = async (eventId) => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    
+
     if (!storedToken || !storedUser) {
       toast.info("Please login first.");
       navigate("/login");
@@ -115,10 +109,6 @@ export default function AvailableEvents() {
     const API_BASE = import.meta.env.VITE_API_URL;
 
     setProcessingEvent(eventId);
-
-    console.log("🎟️ Joining event:", eventId);
-    console.log("  Token exists:", !!storedToken);
-    console.log("  User ID:", userId);
 
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/join`, {
@@ -129,18 +119,16 @@ export default function AvailableEvents() {
         },
       });
 
-      console.log("📥 Join response status:", res.status);
-
       const data = await res.json();
-      
+
       if (!res.ok) {
-        console.error("❌ Join error:", data);
+        console.error("Join error:", data);
         throw new Error(data.message || "Failed to join event");
       }
 
       const eventName = events.find((e) => e._id === eventId)?.title || "event";
-      
-      // Update state FIRST, then show toast
+
+      // Update state first, then show toast
       setJoinedEventIds((prev) => [...prev, eventId]);
 
       setEvents((prev) =>
@@ -151,10 +139,7 @@ export default function AvailableEvents() {
         )
       );
 
-      console.log("✅ Successfully joined event");
-      
-      // Show success toast with longer duration and higher position
-      toast.success(`🎉 You've successfully joined "${eventName}"!`, {
+      toast.success(`You've successfully joined "${eventName}".`, {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: false,
@@ -162,9 +147,8 @@ export default function AvailableEvents() {
         pauseOnHover: true,
         draggable: true,
       });
-
     } catch (error) {
-      console.error("❌ Join error:", error);
+      console.error("Join error:", error);
       toast.error(error.message || "Error joining event.", {
         position: "top-center",
         autoClose: 3000,
@@ -174,15 +158,59 @@ export default function AvailableEvents() {
     }
   };
 
-  const handleLeave = async (eventId) => {
+  // ---------- Toast-based confirmation (replaces window.confirm) ----------
+  // showLeaveConfirm: opens a non-auto-closing toast with Cancel / Leave buttons
+  const showLeaveConfirm = (eventId) => {
     const eventName = events.find((e) => e._id === eventId)?.title || "this event";
+    const toastId = toast.info(
+      ({ closeToast }) => (
+        <div className="w-full max-w-xl">
+          <div className="p-4">
+            <div className="text-sm text-gray-800 font-medium mb-1">
+              Are you sure you want to leave
+              <span className="font-semibold ml-1">"{eventName}"</span>?
+            </div>
+            <div className="text-xs text-gray-500 mb-4">
+              Leaving will release your spot for others.
+            </div>
 
-    if (!window.confirm(`Are you sure you want to leave "${eventName}"?`))
-      return;
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => toast.dismiss(toastId)}
+                className="px-3 py-2 bg-white border border-violet-100 rounded-lg text-sm font-medium hover:bg-violet-50 transition"
+              >
+                Cancel
+              </button>
 
+              <button
+                onClick={() => {
+                  toast.dismiss(toastId);
+                  executeLeave(eventId);
+                }}
+                className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        position: "top-center",
+        toastClassName: "rounded-lg border shadow-md",
+        bodyClassName: "p-0",
+      }
+    );
+  };
+
+  // executeLeave: performs the API call to leave and updates state
+  const executeLeave = async (eventId) => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    
+
     if (!storedToken || !storedUser) {
       toast.info("Please login first.");
       navigate("/login");
@@ -195,10 +223,6 @@ export default function AvailableEvents() {
 
     setProcessingEvent(eventId);
 
-    console.log("🚪 Leaving event:", eventId);
-    console.log("  Token exists:", !!storedToken);
-    console.log("  User ID:", userId);
-
     try {
       const res = await fetch(`${API_BASE}/api/events/${eventId}/leave`, {
         method: "POST",
@@ -208,16 +232,19 @@ export default function AvailableEvents() {
         },
       });
 
-      console.log("📥 Leave response status:", res.status);
-
       const data = await res.json();
-      
+
       if (!res.ok) {
-        console.error("❌ Leave error:", data);
+        console.error("Leave error:", data);
         throw new Error(data.message || "Failed to leave event");
       }
 
-      toast.success(`You've left "${eventName}"`);
+      const eventName = events.find((e) => e._id === eventId)?.title || "this event";
+
+      toast.success(`You have left "${eventName}".`, {
+        position: "top-center",
+        autoClose: 2500,
+      });
 
       setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
 
@@ -226,21 +253,23 @@ export default function AvailableEvents() {
           e._id === eventId
             ? {
                 ...e,
-                participants: (e.participants || []).filter(
-                  (id) => id !== userId
-                ),
+                participants: (e.participants || []).filter((id) => id !== userId),
               }
             : e
         )
       );
-
-      console.log("✅ Successfully left event");
     } catch (error) {
-      console.error("❌ Leave error:", error);
+      console.error("Leave error:", error);
       toast.error(error.message || "Error leaving event.");
     } finally {
       setProcessingEvent(null);
     }
+  };
+  // -----------------------------------------------------------------------
+
+  // Old handleLeave now just triggers the toast confirm
+  const handleLeave = (eventId) => {
+    showLeaveConfirm(eventId);
   };
 
   if (loading) {
@@ -276,13 +305,25 @@ export default function AvailableEvents() {
 
   return (
     <div className="min-h-screen pt-28 px-6 py-12 bg-gradient-to-br from-violet-50 via-purple-50 to-sky-50">
+      {/* Toast container with subtle, professional settings */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        toastClassName="rounded-lg shadow-md border"
+        bodyClassName="p-0"
+      />
+
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 bg-white rounded-2xl shadow p-6 border border-violet-100 relative">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
-                Discover Events
-              </h1>
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-1">Discover Events</h1>
               <p className="text-gray-600 text-sm">
                 {filtered.length} {filtered.length === 1 ? "event" : "events"} waiting for you
               </p>
