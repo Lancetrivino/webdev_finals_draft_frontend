@@ -10,6 +10,8 @@ function Dashboard() {
   const [now, setNow] = useState(new Date());
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [allEvents, setAllEvents] = useState([]); // store full event list for stats
+  const [reviewsCount, setReviewsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,65 +19,95 @@ function Dashboard() {
     return () => clearInterval(t);
   }, []);
 
-  // Fetch upcoming events that the user has joined
+  // Fetch upcoming events that the user has joined and also store all events
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
       if (!currentUser) return;
-      
+
       setLoadingEvents(true);
       try {
         const token = localStorage.getItem("token") || currentUser?.token;
-        
-        console.log("🔍 Fetching upcoming events for user:", currentUser._id || currentUser.id);
-        
+
         // Fetch all available events
         const res = await fetch(`${API_BASE_URL}/api/events/available`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) throw new Error("Failed to fetch events");
-        
+
         const data = await res.json();
-        console.log("📥 All events received:", data.length);
-        
+        // save full list for stats and other calculations
+        setAllEvents(Array.isArray(data) ? data : []);
+
         // Get user ID - try both _id and id
         const userId = currentUser._id || currentUser.id;
-        console.log("👤 Current user ID:", userId);
-        
+
         // Filter for events the user has joined and are in the future
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        const userUpcomingEvents = data
-          .filter(event => {
+
+        const userUpcomingEvents = (Array.isArray(data) ? data : [])
+          .filter((event) => {
             const eventDate = new Date(event.date);
-            
-            // Check if user has joined - handle both string and object IDs
+
             const participants = event.participants || [];
-            const hasJoined = participants.some(p => {
-              // Handle if participant is an object with _id or id
-              if (typeof p === 'object') {
+            const hasJoined = participants.some((p) => {
+              if (typeof p === "object") {
                 return p._id === userId || p.id === userId;
               }
-              // Handle if participant is just a string ID
               return p === userId;
             });
-            
-            const isFuture = eventDate >= today;
-            
-            console.log(`📅 Event: ${event.title}`);
-            console.log(`  - Date: ${eventDate.toLocaleDateString()}`);
-            console.log(`  - Participants:`, participants);
-            console.log(`  - Has Joined: ${hasJoined}`);
-            console.log(`  - Is Future: ${isFuture}`);
-            
+
+            const isFuture = !isNaN(eventDate) && eventDate >= today;
             return hasJoined && isFuture;
           })
           .sort((a, b) => new Date(a.date) - new Date(b.date))
-          .slice(0, 3); // Get only the first 3 upcoming events
-        
-        console.log("✅ Filtered upcoming events:", userUpcomingEvents.length);
+          .slice(0, 3);
+
         setUpcomingEvents(userUpcomingEvents);
+
+        // Try to fetch user reviews from dedicated endpoint. If not available, infer from events.
+        try {
+          const reviewsRes = await fetch(`${API_BASE_URL}/api/reviews/user/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (reviewsRes.ok) {
+            const reviewsData = await reviewsRes.json();
+            // handle common response shapes
+            if (Array.isArray(reviewsData)) {
+              setReviewsCount(reviewsData.length);
+            } else if (reviewsData && typeof reviewsData === "object") {
+              // e.g., { data: [...], total: 5 }
+              if (Array.isArray(reviewsData.data)) setReviewsCount(reviewsData.data.length);
+              else if (typeof reviewsData.total === "number") setReviewsCount(reviewsData.total);
+              else setReviewsCount(0);
+            } else {
+              setReviewsCount(0);
+            }
+          } else {
+            // fallback: infer reviews from event objects
+            const inferred = (Array.isArray(data) ? data : []).reduce((acc, ev) => {
+              const r = (ev.reviews || []).filter((rv) => {
+                if (typeof rv === "object") return rv.user === userId || rv.user?._id === userId;
+                // rv might be a reviewer id or have reviewer prop
+                return rv === userId || rv.reviewer === userId;
+              });
+              return acc + r.length;
+            }, 0);
+            setReviewsCount(inferred);
+          }
+        } catch (err) {
+          console.warn("Couldn't fetch reviews endpoint, inferring from events if possible.", err);
+          const inferred = (Array.isArray(data) ? data : []).reduce((acc, ev) => {
+            const r = (ev.reviews || []).filter((rv) => {
+              if (typeof rv === "object") return rv.user === userId || rv.user?._id === userId;
+              return rv === userId || rv.reviewer === userId;
+            });
+            return acc + r.length;
+          }, 0);
+          setReviewsCount(inferred);
+        }
       } catch (error) {
         console.error("❌ Error fetching upcoming events:", error);
         toast.error("Failed to load upcoming events");
@@ -148,10 +180,39 @@ function Dashboard() {
     },
   ];
 
+  // compute stats from allEvents and reviewsCount
+  const eventsJoinedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+    return allEvents.reduce((count, event) => {
+      const participants = event.participants || [];
+      const hasJoined = participants.some((p) => {
+        if (typeof p === "object") return p._id === userId || p.id === userId;
+        return p === userId;
+      });
+      return count + (hasJoined ? 1 : 0);
+    }, 0);
+  }, [allEvents, currentUser]);
+
+  const eventsCreatedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+    return allEvents.reduce((count, event) => {
+      const creator = event.creator;
+      if (!creator) return count;
+      if (typeof creator === "object") {
+        if (creator._id === userId || creator.id === userId) return count + 1;
+      } else if (creator === userId) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+  }, [allEvents, currentUser]);
+
   const stats = [
-    { label: "Events Joined", value: "12", color: "text-violet-600" },
-    { label: "Events Created", value: "5", color: "text-purple-600" },
-    { label: "Total Reviews", value: "8", color: "text-indigo-600" },
+    { label: "Events Joined", value: eventsJoinedCount.toString(), color: "text-violet-600" },
+    { label: "Events Created", value: eventsCreatedCount.toString(), color: "text-purple-600" },
+    { label: "Total Reviews", value: reviewsCount.toString(), color: "text-indigo-600" },
   ];
 
   return (
@@ -262,7 +323,7 @@ function Dashboard() {
               <h3 className="text-2xl font-bold text-gray-900">Upcoming Events</h3>
               <div className="text-sm font-medium text-violet-600">Schedule</div>
             </div>
-            
+
             {loadingEvents ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -283,8 +344,8 @@ function Dashboard() {
               <div className="space-y-4">
                 {upcomingEvents.map((event, idx) => (
                   <div
-                    key={event._id}
-                    onClick={() => navigate(`/events/${event._id}`)}
+                    key={event._id || event.id || idx}
+                    onClick={() => navigate(`/events/${event._id || event.id}`)}
                     className="flex items-center gap-4 p-4 bg-violet-50 rounded-xl border border-violet-100 hover:bg-violet-100 transition-colors cursor-pointer"
                   >
                     <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold shadow flex-shrink-0">
@@ -293,8 +354,8 @@ function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 truncate">{event.title}</p>
                       <p className="text-sm text-gray-600 truncate">
-                        {new Date(event.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
+                        {new Date(event.date).toLocaleDateString('en-US', {
+                          month: 'short',
                           day: 'numeric',
                           year: 'numeric'
                         })} • {event.venue}
@@ -307,7 +368,7 @@ function Dashboard() {
                 ))}
               </div>
             )}
-            
+
             {upcomingEvents.length > 0 && (
               <button
                 onClick={() => navigate("/available-events")}
