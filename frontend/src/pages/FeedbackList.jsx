@@ -16,7 +16,7 @@ export default function FeedbackUnrestricted() {
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState("idea");
   const [email, setEmail] = useState("");
-  const [feedbackType, setFeedbackType] = useState("event"); // "event" or "website"
+  const [feedbackType, setFeedbackType] = useState("event"); 
   
   const [photos, setPhotos] = useState([]);
   const [photoPreviews, setPhotoPreviews] = useState([]);
