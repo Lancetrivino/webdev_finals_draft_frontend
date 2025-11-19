@@ -16,8 +16,6 @@ export default function FeedbackEnhanced() {
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState("idea");
   const [email, setEmail] = useState("");
-  const [hasJoined, setHasJoined] = useState(false);
-  const [eventHasPassed, setEventHasPassed] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   const [photos, setPhotos] = useState([]);
@@ -43,15 +41,10 @@ export default function FeedbackEnhanced() {
         const eventData = await eventRes.json();
         setEvent(eventData.event || eventData);
 
-        const joined = (eventData.event?.participants || eventData.participants || []).includes(
-          currentUser._id
-        );
-        setHasJoined(joined);
+        // ✅ REMOVED: Join check
+        // ✅ REMOVED: Event date check
 
-        const eventDate = new Date(eventData.event?.date || eventData.date);
-        const now = new Date();
-        setEventHasPassed(now > eventDate);
-
+        // Only check if already submitted
         const feedbackRes = await fetch(`${API_BASE_URL}/api/feedback/${eventId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -109,15 +102,8 @@ export default function FeedbackEnhanced() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!hasJoined) {
-      toast.error("⚠️ You must join this event before giving feedback.");
-      return;
-    }
-
-    if (!eventHasPassed) {
-      toast.error("⚠️ You can submit feedback after the event ends.");
-      return;
-    }
+    // ✅ REMOVED: Join requirement check
+    // ✅ REMOVED: Event date check
 
     if (alreadySubmitted) {
       toast.error("⚠️ You have already submitted feedback for this event.");
@@ -161,7 +147,7 @@ export default function FeedbackEnhanced() {
       if (!res.ok) throw new Error(data.message || "Failed to send feedback.");
 
       toast.success("✅ Thank you for your feedback!");
-      setTimeout(() => navigate(`/available-events`), 1500);
+      setTimeout(() => navigate(`/events/${eventId}`), 1500);
     } catch (err) {
       toast.error(err.message || "Error submitting feedback.");
     } finally {
@@ -169,48 +155,8 @@ export default function FeedbackEnhanced() {
     }
   };
 
-  if (!hasJoined) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
-        <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-violet-200">
-          <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl">🔒</span>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Join Event First</h2>
-          <p className="text-gray-600 mb-6">You must join this event before you can leave feedback.</p>
-          <button
-            onClick={() => navigate(`/available-events`)}
-            className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            View Available Events
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!eventHasPassed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
-        <div className="max-w-md text-center bg-white rounded-2xl p-8 shadow-2xl border-2 border-violet-200">
-          <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-4xl">⏳</span>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Not Yet Complete</h2>
-          <p className="text-gray-600 mb-2">You can submit feedback after the event date:</p>
-          <p className="text-lg font-semibold text-violet-600 mb-6">
-            {event && new Date(event.date).toLocaleDateString()}
-          </p>
-          <button
-            onClick={() => navigate(`/available-events`)}
-            className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            Back to Events
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // ✅ REMOVED: hasJoined check UI
+  // ✅ REMOVED: eventHasPassed check UI
 
   if (alreadySubmitted) {
     return (
@@ -222,17 +168,17 @@ export default function FeedbackEnhanced() {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Feedback Already Submitted</h2>
           <p className="text-gray-600 mb-6">You have already submitted feedback for this event. Thank you!</p>
           <button
-            onClick={() => navigate(`/available-events`)}
+            onClick={() => navigate(`/events/${eventId}`)}
             className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
-            View Available Events
+            Back to Event
           </button>
         </div>
       </div>
     );
   }
 
-  // Main form (compact card layout inspired by the provided image)
+  // Main form (compact card layout)
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
       <div className="w-full max-w-md">
@@ -241,7 +187,7 @@ export default function FeedbackEnhanced() {
           <div className="p-6">
             <h2 className="text-xl font-semibold text-gray-800 text-center mb-1">Event Feedback</h2>
             <p className="text-sm text-gray-500 text-center">
-              {event ? event.title : "Your event"} — share a quick review
+              {event ? event.title : "Your event"} – share a quick review
             </p>
           </div>
 
