@@ -139,8 +139,8 @@ export default function AvailableEvents() {
       }
 
       const eventName = events.find((e) => e._id === eventId)?.title || "event";
-      toast.success(`You've successfully joined "${eventName}"!`);
-
+      
+      // Update state FIRST, then show toast
       setJoinedEventIds((prev) => [...prev, eventId]);
 
       setEvents((prev) =>
@@ -152,9 +152,23 @@ export default function AvailableEvents() {
       );
 
       console.log("✅ Successfully joined event");
+      
+      // Show success toast with longer duration and higher position
+      toast.success(`🎉 You've successfully joined "${eventName}"!`, {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
     } catch (error) {
       console.error("❌ Join error:", error);
-      toast.error(error.message || "Error joining event.");
+      toast.error(error.message || "Error joining event.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     } finally {
       setProcessingEvent(null);
     }
