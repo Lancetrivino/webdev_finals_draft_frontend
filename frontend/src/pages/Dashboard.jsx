@@ -26,6 +26,8 @@ function Dashboard() {
       try {
         const token = localStorage.getItem("token") || currentUser?.token;
         
+        console.log("🔍 Fetching upcoming events for user:", currentUser._id || currentUser.id);
+        
         // Fetch all available events
         const res = await fetch(`${API_BASE_URL}/api/events/available`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -34,24 +36,48 @@ function Dashboard() {
         if (!res.ok) throw new Error("Failed to fetch events");
         
         const data = await res.json();
+        console.log("📥 All events received:", data.length);
+        
+        // Get user ID - try both _id and id
+        const userId = currentUser._id || currentUser.id;
+        console.log("👤 Current user ID:", userId);
         
         // Filter for events the user has joined and are in the future
-        const userId = currentUser._id || currentUser.id;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
         const userUpcomingEvents = data
           .filter(event => {
             const eventDate = new Date(event.date);
-            const hasJoined = event.participants?.includes(userId);
-            return hasJoined && eventDate >= today;
+            
+            // Check if user has joined - handle both string and object IDs
+            const participants = event.participants || [];
+            const hasJoined = participants.some(p => {
+              // Handle if participant is an object with _id or id
+              if (typeof p === 'object') {
+                return p._id === userId || p.id === userId;
+              }
+              // Handle if participant is just a string ID
+              return p === userId;
+            });
+            
+            const isFuture = eventDate >= today;
+            
+            console.log(`📅 Event: ${event.title}`);
+            console.log(`  - Date: ${eventDate.toLocaleDateString()}`);
+            console.log(`  - Participants:`, participants);
+            console.log(`  - Has Joined: ${hasJoined}`);
+            console.log(`  - Is Future: ${isFuture}`);
+            
+            return hasJoined && isFuture;
           })
           .sort((a, b) => new Date(a.date) - new Date(b.date))
           .slice(0, 3); // Get only the first 3 upcoming events
         
+        console.log("✅ Filtered upcoming events:", userUpcomingEvents.length);
         setUpcomingEvents(userUpcomingEvents);
       } catch (error) {
-        console.error("Error fetching upcoming events:", error);
+        console.error("❌ Error fetching upcoming events:", error);
         toast.error("Failed to load upcoming events");
       } finally {
         setLoadingEvents(false);
