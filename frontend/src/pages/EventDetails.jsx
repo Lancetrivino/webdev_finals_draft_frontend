@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
@@ -19,6 +19,14 @@ const EventDetails = () => {
   const [showReviews, setShowReviews] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+
+  // Write-review inline form state inside panel
+  const [showWriteForm, setShowWriteForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewEmail, setReviewEmail] = useState(currentUser?.email || "");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   // fetch event
   useEffect(() => {
@@ -96,12 +104,85 @@ const EventDetails = () => {
       const feedbacks = data.feedbacks ?? data ?? [];
       setReviews(Array.isArray(feedbacks) ? feedbacks : []);
       setShowReviews(true);
+      setShowWriteForm(false); 
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
       toast.error(err.message || "Failed to load reviews.");
       setShowReviews(true);
     } finally {
       setLoadingReviews(false);
+    }
+  };
+
+  const handleOpenWrite = () => {
+    if (!currentUser) {
+      toast.info("Please log in to write a review.");
+      navigate("/login");
+      return;
+    }
+
+    // ✅ REMOVED: Join requirement check
+    // ✅ REMOVED: Event has passed check
+    
+    if (alreadySubmittedFeedback) {
+      toast.info("You've already submitted feedback for this event.");
+      return;
+    }
+    setShowWriteForm((s) => !s);
+  };
+
+  const submitReview = async (e) => {
+    e?.preventDefault();
+    if (!currentUser) {
+      toast.info("Please login to submit a review.");
+      navigate("/login");
+      return;
+    }
+    if (!reviewComment.trim()) {
+      toast.error("Please write your review before submitting.");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const token = currentUser?.token || localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("rating", reviewRating);
+      formData.append("comment", reviewComment);
+      formData.append("type", "review");
+      if (reviewEmail) formData.append("email", reviewEmail);
+
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to submit review");
+
+      const newReview = {
+        comment: reviewComment,
+        rating: reviewRating,
+        createdAt: new Date().toISOString(),
+        user: {
+          name: currentUser.name || currentUser.username || "You",
+          avatar: currentUser.avatar || null,
+        },
+      };
+      setReviews((prev) => [newReview, ...prev]);
+      toast.success("Thank you – your review was submitted!");
+      setAlreadySubmittedFeedback(true);
+      setShowWriteForm(false);
+      setReviewComment("");
+      setReviewRating(5);
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      toast.error(err.message || "Error submitting review.");
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -281,7 +362,7 @@ const EventDetails = () => {
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
                 <div className="flex items-center gap-2 text-violet-600">
                   <span>📍</span>
-                  <span className="text-lg font-medium">{venue || "—"}</span>
+                  <span className="text-lg font-medium">{venue || "–"}</span>
                 </div>
               </div>
 
@@ -313,7 +394,7 @@ const EventDetails = () => {
                     <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">📅</div>
                     <div>
                       <p className="text-xs text-gray-600 font-medium">Date</p>
-                      <p className="text-gray-900 font-semibold">{date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "—"}</p>
+                      <p className="text-gray-900 font-semibold">{date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "–"}</p>
                     </div>
                   </div>
 
@@ -405,7 +486,11 @@ const EventDetails = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Reviews Panel */}
+=======
+      {/* Reviews toast panel */}
+>>>>>>> f694446c84fed11fe189b2094e1c413a314ae034
       {showReviews && (
         <div className="fixed inset-0 z-[9999] flex items-end justify-center pointer-events-none">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowReviews(false)} />
@@ -421,11 +506,74 @@ const EventDetails = () => {
                 </div>
               </div>
 
-              <button onClick={() => setShowReviews(false)} className="px-3 py-1.5 text-sm bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition">Close</button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleOpenWrite}
+                  className="px-3 py-1.5 bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition"
+                >
+                  {showWriteForm ? "Cancel" : "Write a Review"}
+                </button>
+
+                <button onClick={() => setShowReviews(false)} className="px-3 py-1.5 text-sm bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition">Close</button>
+              </div>
             </div>
 
             {/* body */}
             <div className="p-4 overflow-auto space-y-3 max-h-[62vh]">
+<<<<<<< HEAD
+=======
+              {/* inline write form */}
+              {showWriteForm && (
+                <form onSubmit={submitReview} className="p-4 rounded-xl border-2 border-violet-100 bg-violet-50/50 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="font-semibold">Your Rating</div>
+                    <div className="flex gap-2">
+                      {[1,2,3,4,5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setReviewRating(n)}
+                          onMouseEnter={() => setReviewHover(n)}
+                          onMouseLeave={() => setReviewHover(0)}
+                          className="text-2xl"
+                          aria-label={`${n} star`}
+                        >
+                          {n <= (reviewHover || reviewRating) ? "⭐" : "☆"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value.slice(0, 1000))}
+                    placeholder="Write your review here..."
+                    rows={4}
+                    className="w-full border-2 border-violet-100 rounded-xl p-3 focus:ring-4 focus:ring-violet-100 outline-none resize-none"
+                    required
+                  />
+
+                  <input
+                    type="email"
+                    value={reviewEmail}
+                    onChange={(e) => setReviewEmail(e.target.value)}
+                    placeholder="Email (optional)"
+                    className="w-full border-2 border-violet-100 rounded-xl p-3 focus:ring-4 focus:ring-violet-100 outline-none"
+                  />
+
+                  <div className="flex items-center justify-end gap-3">
+                    <button type="button" onClick={() => setShowWriteForm(false)} className="px-4 py-2 bg-white border-2 border-violet-100 rounded-xl">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={submittingReview} className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold">
+                      {submittingReview ? "Submitting..." : "Submit Review"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* reviews list (or empty state) */}
+>>>>>>> f694446c84fed11fe189b2094e1c413a314ae034
               {loadingReviews && <div className="text-center py-6 text-gray-500">Loading reviews...</div>}
 
               {!loadingReviews && reviews.length === 0 && <div className="text-center py-6 text-gray-500">No reviews yet. Be the first to review!</div>}
