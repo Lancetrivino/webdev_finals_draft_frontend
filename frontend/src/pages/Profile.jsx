@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { API_BASE_URL } from "../App";
 
 function Profile() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, updateCurrentUser } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    address: "",
   });
+
   const [loading, setLoading] = useState(false);
+  const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [allEvents, setAllEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!currentUser) {
@@ -22,38 +29,187 @@ function Profile() {
       setFormData({
         name: currentUser.name || "",
         email: currentUser.email || "",
+        address: currentUser.address || "",
       });
+      setAvatarPreview(currentUser.avatar || "");
     }
   }, [currentUser, navigate]);
+
+  // Fetch all events for stats calculation
+  useEffect(() => {
+    const fetchAllEvents = async () => {
+      if (!currentUser) return;
+
+      setLoadingEvents(true);
+      try {
+        const token = localStorage.getItem("token") || currentUser?.token;
+
+        const res = await fetch(`${API_BASE_URL}/api/events/available`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch events");
+
+        const data = await res.json();
+        setAllEvents(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("❌ Error fetching events:", error);
+        toast.error("Failed to load event statistics");
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchAllEvents();
+  }, [currentUser]);
+
+  // Calculate events joined count
+  const eventsJoinedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+    return allEvents.reduce((count, event) => {
+      const participants = event.participants || [];
+      const hasJoined = participants.some((p) => {
+        if (typeof p === "object") return p._id === userId || p.id === userId;
+        return p === userId;
+      });
+      return count + (hasJoined ? 1 : 0);
+    }, 0);
+  }, [allEvents, currentUser]);
+
+  // Calculate events created count
+  const eventsCreatedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+
+    const isCreatedByUser = (event) => {
+      const creatorCandidates = [
+        event.creator,
+        event.createdBy,
+        event.owner,
+        event.user,
+        event.host,
+        event.organizer,
+        event.author,
+        event.created_by,
+      ];
+
+      for (const candidate of creatorCandidates) {
+        if (!candidate) continue;
+        if (typeof candidate === "object") {
+          if (candidate._id === userId || candidate.id === userId || candidate.user === userId) return true;
+          if (candidate.user && (candidate.user._id === userId || candidate.user.id === userId)) return true;
+        } else {
+          if (candidate === userId) return true;
+        }
+      }
+
+      if (event.creatorId === userId || event.userId === userId || event.creator_id === userId) return true;
+
+      return false;
+    };
+
+    return allEvents.reduce((count, event) => {
+      return count + (isCreatedByUser(event) ? 1 : 0);
+    }, 0);
+  }, [allEvents, currentUser]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    console.log("📸 File selected:", file);
+
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+
+      setAvatar(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAvatarPreview(reader.result);
+        console.log("✅ Preview set");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openFilePicker = () => {
+    console.log("🖱️ File picker clicked");
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    console.log("📤 Submitting profile update...");
+    console.log("  Name:", formData.name);
+    console.log("  Address:", formData.address);
+    console.log("  Avatar file:", avatar);
+
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || currentUser?.token;
+      if (!token) {
+        toast.error("Please log in first.");
+        navigate("/login");
+        return;
+      }
+
+      const formPayload = new FormData();
+      formPayload.append("name", formData.name);
+      formPayload.append("address", formData.address || "");
+      if (avatar) {
+        formPayload.append("avatar", avatar);
+        console.log("✅ Avatar attached to FormData");
+      }
+
+      console.log("🌐 Sending request to:", `${API_BASE_URL}/api/users/profile`);
+
       const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: formPayload,
       });
 
+      console.log("📥 Response status:", res.status);
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update profile.");
+      console.log("📥 Response data:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update profile.");
+      }
+
+      updateCurrentUser(data.user);
+
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...storedUser,
+          ...data.user,
+        })
+      );
 
       toast.success("✅ Profile updated successfully!");
-      localStorage.setItem("user", JSON.stringify(data.user));
-      toast.info("Please re-login to see changes.");
-      logout();
-      navigate("/login");
+
+      setAvatar(null);
     } catch (err) {
+      console.error("❌ Error updating profile:", err);
       toast.error(err.message || "Error updating profile.");
     } finally {
       setLoading(false);
@@ -65,71 +221,206 @@ function Profile() {
     navigate("/login");
   };
 
+  const getInitials = () => {
+    const name = formData.name || formData.email || "User";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F2EEEB] p-6">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg p-8 border border-[#D9D2CC]">
-        <h2 className="text-2xl font-bold text-center text-[#5B5149] mb-6">
-          My Profile
-        </h2>
+    <div
+      className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 py-12 px-4"
+      style={{ paddingTop: "calc(var(--nav-height,72px) + 24px)" }}
+    >
+      <main className="w-full max-w-4xl mx-auto relative z-10">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-violet-100">
+          <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 h-36 flex items-center px-8">
+            <div className="w-full max-w-3xl mx-auto grid grid-cols-12 gap-4 items-center">
+              <div className="col-span-3">
+                <div className="relative w-fit mx-auto md:mx-0">
+                  <div className="w-28 h-28 rounded-md overflow-hidden border-4 border-white bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-extrabold text-white">{getInitials()}</span>
+                    )}
+                  </div>
 
-        {currentUser && (
-          <form onSubmit={handleUpdate} className="space-y-4">
-            <div>
-              <label className="block text-[#5B5149] font-semibold mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border border-[#D9D2CC] rounded-lg p-3 focus:ring-2 focus:ring-[#B0755E] outline-none bg-[#FAF8F7]"
-              />
+                  <button
+                    type="button"
+                    onClick={openFilePicker}
+                    className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full border border-violet-100 shadow-md flex items-center justify-center text-violet-700 hover:scale-105 transition-transform hover:bg-violet-50"
+                    title="Change profile picture"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                      <path d="M12 4v16M5 12h14" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </button>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                    aria-label="Upload profile picture"
+                  />
+                </div>
+              </div>
+
+              <div className="col-span-9 text-white">
+                <div className="text-sm font-semibold opacity-90">{currentUser?.role || ""}</div>
+                <h1 className="text-2xl md:text-3xl font-extrabold leading-tight">{formData.name || "User"}</h1>
+                <div className="text-sm opacity-90 mt-1">{formData.email}</div>
+              </div>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-[#5B5149] font-semibold mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                disabled
-                className="w-full border border-[#D9D2CC] rounded-lg p-3 bg-[#EDE8E5] cursor-not-allowed text-gray-600"
-              />
+          <div className="px-8 pb-8 pt-6">
+            <form onSubmit={handleUpdate} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-lg border border-violet-100 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-violet-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    disabled
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Enter your address (optional)"
+                  className="w-full rounded-lg border border-violet-100 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-violet-100"
+                />
+              </div>
+
+              <div className="mx-auto max-w-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-100">
+                  <div className="text-center">
+                    {loadingEvents ? (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-4xl md:text-5xl font-extrabold text-violet-600">{eventsJoinedCount}</p>
+                        <p className="text-xs font-semibold text-gray-600 mt-1">Events Joined</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    {loadingEvents ? (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-4xl md:text-5xl font-extrabold text-purple-600">{eventsCreatedCount}</p>
+                        <p className="text-xs font-semibold text-gray-600 mt-1">Events Created</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-violet-100">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`flex-1 rounded-lg py-3 text-lg font-semibold shadow-md transition-all ${
+                    loading
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
+                  }`}
+                >
+                  {loading ? "Updating..." : "Save Changes"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex-1 md:flex-none md:px-8 rounded-lg py-3 border border-red-500 bg-white text-red-600 font-semibold hover:bg-red-50 transition-all"
+                >
+                  Logout
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="p-4 bg-white rounded-lg border border-violet-100 hover:border-violet-200 hover:shadow-md transition text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-violet-50">
+                <div className="w-4 h-4 bg-violet-600 rounded-sm"></div>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Dashboard</p>
+                <p className="text-sm text-gray-600">View overview</p>
+              </div>
             </div>
+          </button>
 
-            <div>
-              <label className="block text-[#5B5149] font-semibold mb-1">
-                Role
-              </label>
-              <p className="w-full border border-[#D9D2CC] rounded-lg p-3 bg-[#EDE8E5] text-[#5B5149]">
-                {currentUser.role}
-              </p>
+          <button
+            onClick={() => navigate("/events")}
+            className="p-4 bg-white rounded-lg border border-violet-100 hover:border-violet-200 hover:shadow-md transition text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-purple-50">
+                <div className="w-4 h-4 bg-purple-600 rounded-sm"></div>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">My Events</p>
+                <p className="text-sm text-gray-600">Manage events</p>
+              </div>
             </div>
+          </button>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 font-semibold text-white rounded-lg shadow-md transition-transform transform hover:scale-105 ${
-                loading
-                  ? "bg-[#A39C96] cursor-not-allowed"
-                  : "bg-[#8B6B61] hover:bg-[#7A5D55]"
-              }`}
-            >
-              {loading ? "Saving..." : "Update Profile"}
-            </button>
-          </form>
-        )}
-
-        <button
-          onClick={handleLogout}
-          className="w-full mt-4 py-3 bg-[#B05E48] text-white font-semibold rounded-lg shadow-md hover:bg-[#9C4E3A] transition"
-        >
-          Logout
-        </button>
-      </div>
+          <button
+            onClick={() => navigate("/available-events")}
+            className="p-4 bg-white rounded-lg border border-violet-100 hover:border-violet-200 hover:shadow-md transition text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-indigo-50">
+                <div className="w-4 h-4 bg-indigo-600 rounded-sm"></div>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Browse Events</p>
+                <p className="text-sm text-gray-600">Find new events</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

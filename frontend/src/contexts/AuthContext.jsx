@@ -1,110 +1,165 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
-import { API_BASE_URL } from "../App"; // uses your dynamic API config
+import { API_BASE_URL } from "../App";
 
-// Create context
 const AuthContext = createContext();
 
-// Hook for easy access
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
-  /* -------------------------------------------------------------
-     Load stored user from localStorage on mount
-     ------------------------------------------------------------- */
+  // Initialize auth state from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initAuth = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const storedToken = localStorage.getItem("token");
+
+        console.log("🔐 Initializing auth...");
+        console.log("  Stored user:", storedUser ? "✅ Found" : "❌ Not found");
+        console.log("  Stored token:", storedToken ? "✅ Found" : "❌ Not found");
+
+        if (storedUser && storedToken) {
+          const user = JSON.parse(storedUser);
+          
+          // ✅ CRITICAL: Make sure token is included in user object
+          user.token = storedToken;
+          
+          console.log("✅ User loaded:", user.email, "Role:", user.role);
+          setCurrentUser(user);
+        } else {
+          console.log("⚠️ No stored credentials found");
+        }
+      } catch (error) {
+        console.error("❌ Error initializing auth:", error);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
-  /* -------------------------------------------------------------
-     LOGIN FUNCTION
-     ------------------------------------------------------------- */
-  const login = async ({ email, password }) => {
+  // Login function
+  const login = async (credentials) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
+      console.log("📝 Login attempt:", credentials.email);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials");
+      const data = await response.json();
+      console.log("📥 Login response:", data);
 
-      // ✅ Save to localStorage
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      if (!data.token) {
+        throw new Error("No token received from server");
+      }
+
+      // ✅ Store token and user separately
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ Update context
-      setCurrentUser(data.user);
+      // ✅ CRITICAL: Include token in user object for immediate use
+      const userWithToken = {
+        ...data.user,
+        token: data.token,
+      };
 
-      
-      return data.user;
-    } catch (err) {
-      toast.error(err.message || "Login failed");
-      throw err;
+      console.log("✅ Login successful:", userWithToken.email);
+      console.log("  Role:", userWithToken.role);
+      console.log("  Token:", data.token.substring(0, 20) + "...");
+
+      setCurrentUser(userWithToken);
+      return userWithToken;
+    } catch (error) {
+      console.error("❌ Login error:", error);
+      throw error;
     }
   };
 
-  /* -------------------------------------------------------------
-     REGISTER FUNCTION
-     ------------------------------------------------------------- */
-  const register = async ({ name, email, password }) => {
+  // Register function
+  const register = async (userData) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/register`, {
+      console.log("📝 Register attempt:", userData.email);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
+      const data = await response.json();
+      console.log("📥 Register response:", data);
 
-      toast.success("🎉 Account created! Please log in.");
-      return true;
-    } catch (err) {
-      toast.error(err.message || "Registration failed");
-      throw err;
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      console.log("✅ Registration successful:", data.user?.email);
+      
+      // Don't auto-login after registration
+      // Let user go to login page
+      return data;
+    } catch (error) {
+      console.error("❌ Register error:", error);
+      throw error;
     }
   };
 
-  /* -------------------------------------------------------------
-     LOGOUT FUNCTION
-     ------------------------------------------------------------- */
+  // Logout function
   const logout = () => {
+    console.log("👋 Logging out...");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setCurrentUser(null);
-    toast.success("👋 Logged out successfully.");
+    console.log("✅ Logout complete");
   };
 
-  /* -------------------------------------------------------------
-     CHECK AUTH STATUS
-     ------------------------------------------------------------- */
-  const isAuthenticated = () => {
-    return !!localStorage.getItem("token");
+  // Update current user (for profile updates)
+  const updateCurrentUser = (updatedUser) => {
+    console.log("🔄 Updating current user...");
+    
+    // ✅ Keep the token when updating user
+    const token = currentUser?.token || localStorage.getItem("token");
+    
+    const userWithToken = {
+      ...updatedUser,
+      token: token,
+    };
+
+    setCurrentUser(userWithToken);
+    localStorage.setItem("user", JSON.stringify(userWithToken));
+    console.log("✅ User updated");
   };
 
-  /* -------------------------------------------------------------
-     CONTEXT VALUE
-     ------------------------------------------------------------- */
   const value = {
     currentUser,
+    initializing,
     login,
     register,
     logout,
-    isAuthenticated,
+    updateCurrentUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
