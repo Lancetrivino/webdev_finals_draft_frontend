@@ -180,7 +180,7 @@ export default function FeedbackEnhanced() {
 
   // Main form (compact card layout)
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+    <div className="min-h-screen flex items-center justify-center p-6 mt-24 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-violet-200">
           {/* header */}
