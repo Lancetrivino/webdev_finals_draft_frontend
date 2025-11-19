@@ -13,26 +13,49 @@ function Events() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const storedToken = localStorage.getItem("token");
+    
+    if (!storedUser || !storedToken) {
       toast.info("Please login to view events");
       navigate("/login");
       return;
     }
 
-    const { token } = JSON.parse(storedUser);
-
     const fetchEvents = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_URL;
+        
+        // Debug logging
+        console.log("🔍 Fetching events...");
+        console.log("API_BASE:", API_BASE);
+        console.log("Token exists:", !!storedToken);
+        console.log("Full URL:", `${API_BASE}/api/events`);
+        
         const res = await fetch(`${API_BASE}/api/events`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${storedToken}` },
         });
 
+        console.log("Response status:", res.status);
+        console.log("Response ok:", res.ok);
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch events");
+        console.log("Response data:", data);
+
+        if (!res.ok) {
+          console.error("❌ Error response:", data);
+          throw new Error(data.message || "Failed to fetch events");
+        }
+        
         setEvents(data);
+        console.log("✅ Events loaded successfully:", data.length);
       } catch (error) {
-        toast.error("Failed to load events. Check your connection or permissions.");
+        console.error("❌ Fetch error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        toast.error(`Failed to load events: ${error.message}`);
       } finally {
         setLoading(false);
       }
