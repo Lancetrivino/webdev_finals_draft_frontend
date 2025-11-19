@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
@@ -17,13 +17,9 @@ function Profile() {
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const fileInputRef = useRef(null);
-
-  // new state to hold events & computed stats
   const [allEvents, setAllEvents] = useState([]);
-  const [eventsJoinedCount, setEventsJoinedCount] = useState(0);
-  const [eventsCreatedCount, setEventsCreatedCount] = useState(0);
-  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!currentUser) {
@@ -39,93 +35,84 @@ function Profile() {
     }
   }, [currentUser, navigate]);
 
-  // Fetch events to compute joined/created counts
+  // Fetch all events for stats calculation
   useEffect(() => {
-    const fetchEventsForStats = async () => {
+    const fetchAllEvents = async () => {
       if (!currentUser) return;
-      setLoadingStats(true);
 
+      setLoadingEvents(true);
       try {
         const token = localStorage.getItem("token") || currentUser?.token;
+
         const res = await fetch(`${API_BASE_URL}/api/events/available`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) {
-          // If the endpoint is protected and fails, don't crash UI — just keep counts 0
-          console.warn("Failed to fetch events for stats:", res.status);
-          setAllEvents([]);
-          setEventsJoinedCount(0);
-          setEventsCreatedCount(0);
-          return;
-        }
+        if (!res.ok) throw new Error("Failed to fetch events");
 
         const data = await res.json();
-        const events = Array.isArray(data) ? data : [];
-        setAllEvents(events);
-
-        // compute counts
-        const userId = currentUser._id || currentUser.id;
-        let joined = 0;
-        let created = 0;
-
-        const checkIsCreator = (event) => {
-          // Accept many shapes for creator
-          const creatorCandidates = [
-            event.creator,
-            event.createdBy,
-            event.owner,
-            event.user,
-            event.host,
-            event.organizer,
-            event.author,
-            event.created_by,
-            event.creatorId,
-            event.userId,
-            event.creator_id,
-          ];
-
-          for (const candidate of creatorCandidates) {
-            if (!candidate) continue;
-            if (typeof candidate === "object") {
-              if (candidate._id === userId || candidate.id === userId || candidate.user === userId) return true;
-              if (candidate.user && (candidate.user._id === userId || candidate.user.id === userId)) return true;
-            } else {
-              if (candidate === userId) return true;
-            }
-          }
-          return false;
-        };
-
-        for (const ev of events) {
-          // participants can be array of strings or objects
-          const participants = ev.participants || [];
-          const hasJoined = participants.some((p) => {
-            if (!p) return false;
-            if (typeof p === "object") {
-              return p._id === userId || p.id === userId || p.user === userId;
-            }
-            return p === userId;
-          });
-          if (hasJoined) joined++;
-
-          if (checkIsCreator(ev)) created++;
-        }
-
-        setEventsJoinedCount(joined);
-        setEventsCreatedCount(created);
-      } catch (err) {
-        console.error("Error fetching events for profile stats:", err);
-        setAllEvents([]);
-        setEventsJoinedCount(0);
-        setEventsCreatedCount(0);
+        setAllEvents(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("❌ Error fetching events:", error);
+        toast.error("Failed to load event statistics");
       } finally {
-        setLoadingStats(false);
+        setLoadingEvents(false);
       }
     };
 
-    fetchEventsForStats();
+    fetchAllEvents();
   }, [currentUser]);
+
+  // Calculate events joined count
+  const eventsJoinedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+    return allEvents.reduce((count, event) => {
+      const participants = event.participants || [];
+      const hasJoined = participants.some((p) => {
+        if (typeof p === "object") return p._id === userId || p.id === userId;
+        return p === userId;
+      });
+      return count + (hasJoined ? 1 : 0);
+    }, 0);
+  }, [allEvents, currentUser]);
+
+  // Calculate events created count
+  const eventsCreatedCount = useMemo(() => {
+    if (!currentUser || !Array.isArray(allEvents)) return 0;
+    const userId = currentUser._id || currentUser.id;
+
+    const isCreatedByUser = (event) => {
+      const creatorCandidates = [
+        event.creator,
+        event.createdBy,
+        event.owner,
+        event.user,
+        event.host,
+        event.organizer,
+        event.author,
+        event.created_by,
+      ];
+
+      for (const candidate of creatorCandidates) {
+        if (!candidate) continue;
+        if (typeof candidate === "object") {
+          if (candidate._id === userId || candidate.id === userId || candidate.user === userId) return true;
+          if (candidate.user && (candidate.user._id === userId || candidate.user.id === userId)) return true;
+        } else {
+          if (candidate === userId) return true;
+        }
+      }
+
+      if (event.creatorId === userId || event.userId === userId || event.creator_id === userId) return true;
+
+      return false;
+    };
+
+    return allEvents.reduce((count, event) => {
+      return count + (isCreatedByUser(event) ? 1 : 0);
+    }, 0);
+  }, [allEvents, currentUser]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -133,7 +120,7 @@ function Profile() {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    console.log("📸 File selected:", file); // Debug
+    console.log("📸 File selected:", file);
 
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -149,14 +136,14 @@ function Profile() {
       const reader = new FileReader();
       reader.onload = () => {
         setAvatarPreview(reader.result);
-        console.log("✅ Preview set"); // Debug
+        console.log("✅ Preview set");
       };
       reader.readAsDataURL(file);
     }
   };
 
   const openFilePicker = () => {
-    console.log("🖱️ File picker clicked"); // Debug
+    console.log("🖱️ File picker clicked");
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -165,7 +152,7 @@ function Profile() {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    console.log("📤 Submitting profile update..."); // Debug
+    console.log("📤 Submitting profile update...");
     console.log("  Name:", formData.name);
     console.log("  Address:", formData.address);
     console.log("  Avatar file:", avatar);
@@ -185,7 +172,7 @@ function Profile() {
       formPayload.append("address", formData.address || "");
       if (avatar) {
         formPayload.append("avatar", avatar);
-        console.log("✅ Avatar attached to FormData"); // Debug
+        console.log("✅ Avatar attached to FormData");
       }
 
       console.log("🌐 Sending request to:", `${API_BASE_URL}/api/users/profile`);
@@ -198,19 +185,17 @@ function Profile() {
         body: formPayload,
       });
 
-      console.log("📥 Response status:", res.status); // Debug
+      console.log("📥 Response status:", res.status);
 
       const data = await res.json();
-      console.log("📥 Response data:", data); // Debug
+      console.log("📥 Response data:", data);
 
       if (!res.ok) {
         throw new Error(data.message || "Failed to update profile.");
       }
 
-      // Update auth context with new user data
       updateCurrentUser(data.user);
 
-      // Also update localStorage
       const storedUser = JSON.parse(localStorage.getItem("user"));
       localStorage.setItem(
         "user",
@@ -222,7 +207,6 @@ function Profile() {
 
       toast.success("✅ Profile updated successfully!");
 
-      // Clear avatar file state
       setAvatar(null);
     } catch (err) {
       console.error("❌ Error updating profile:", err);
@@ -336,20 +320,31 @@ function Profile() {
                 />
               </div>
 
-              {/* Updated: removed Reviews tile and resized/centered the remaining two */}
               <div className="mx-auto max-w-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-100">
                   <div className="text-center">
-                    <p className="text-4xl md:text-5xl font-extrabold text-violet-600">
-                      {loadingStats ? "—" : eventsJoinedCount}
-                    </p>
-                    <p className="text-xs font-semibold text-gray-600 mt-1">Events Joined</p>
+                    {loadingEvents ? (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-4xl md:text-5xl font-extrabold text-violet-600">{eventsJoinedCount}</p>
+                        <p className="text-xs font-semibold text-gray-600 mt-1">Events Joined</p>
+                      </>
+                    )}
                   </div>
                   <div className="text-center">
-                    <p className="text-4xl md:text-5xl font-extrabold text-purple-600">
-                      {loadingStats ? "—" : eventsCreatedCount}
-                    </p>
-                    <p className="text-xs font-semibold text-gray-600 mt-1">Events Created</p>
+                    {loadingEvents ? (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-4xl md:text-5xl font-extrabold text-purple-600">{eventsCreatedCount}</p>
+                        <p className="text-xs font-semibold text-gray-600 mt-1">Events Created</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
