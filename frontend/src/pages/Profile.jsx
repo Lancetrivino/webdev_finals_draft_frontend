@@ -39,31 +39,62 @@ function Profile() {
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
+    console.log("📸 File selected:", file); // Debug
+    
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image must be less than 5MB");
         return;
       }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+      
       setAvatar(file);
-      setAvatarPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAvatarPreview(reader.result);
+        console.log("✅ Preview set"); // Debug
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const openFilePicker = () => {
-    if (fileInputRef.current) fileInputRef.current.click();
+    console.log("🖱️ File picker clicked"); // Debug
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    
+    console.log("📤 Submitting profile update..."); // Debug
+    console.log("  Name:", formData.name);
+    console.log("  Address:", formData.address);
+    console.log("  Avatar file:", avatar);
+    
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const formPayload = new FormData();
+      const token = localStorage.getItem("token") || currentUser?.token;
+      if (!token) {
+        toast.error("Please log in first.");
+        navigate("/login");
+        return;
+      }
 
+      const formPayload = new FormData();
       formPayload.append("name", formData.name);
       formPayload.append("address", formData.address || "");
-      if (avatar) formPayload.append("avatar", avatar);
+      if (avatar) {
+        formPayload.append("avatar", avatar);
+        console.log("✅ Avatar attached to FormData"); // Debug
+      }
+
+      console.log("🌐 Sending request to:", `${API_BASE_URL}/api/users/profile`);
 
       const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: "PUT",
@@ -73,12 +104,31 @@ function Profile() {
         body: formPayload,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update profile.");
+      console.log("📥 Response status:", res.status); // Debug
 
+      const data = await res.json();
+      console.log("📥 Response data:", data); // Debug
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update profile.");
+      }
+
+      // Update auth context with new user data
       updateCurrentUser(data.user);
-      toast.success("Profile updated successfully");
+      
+      // Also update localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      localStorage.setItem("user", JSON.stringify({
+        ...storedUser,
+        ...data.user
+      }));
+
+      toast.success("✅ Profile updated successfully!");
+      
+      // Clear avatar file state
+      setAvatar(null);
     } catch (err) {
+      console.error("❌ Error updating profile:", err);
       toast.error(err.message || "Error updating profile.");
     } finally {
       setLoading(false);
@@ -124,14 +174,22 @@ function Profile() {
                   <button
                     type="button"
                     onClick={openFilePicker}
-                    className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full border border-violet-100 shadow-md flex items-center justify-center text-violet-700 hover:scale-105 transition-transform"
+                    className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full border border-violet-100 shadow-md flex items-center justify-center text-violet-700 hover:scale-105 transition-transform hover:bg-violet-50"
+                    title="Change profile picture"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none">
                       <path d="M12 4v16M5 12h14" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </button>
 
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                  <input 
+                    ref={fileInputRef} 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarChange} 
+                    className="hidden" 
+                    aria-label="Upload profile picture"
+                  />
                 </div>
               </div>
 
@@ -178,6 +236,7 @@ function Profile() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
+                  placeholder="Enter your address (optional)"
                   className="w-full rounded-lg border border-violet-100 bg-white px-4 py-3 text-gray-900 focus:ring-2 focus:ring-violet-100"
                 />
               </div>
@@ -201,7 +260,7 @@ function Profile() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex-1 rounded-lg py-3 text-lg font-semibold shadow-md ${
+                  className={`flex-1 rounded-lg py-3 text-lg font-semibold shadow-md transition-all ${
                     loading
                       ? "bg-gray-400 text-white cursor-not-allowed"
                       : "bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
@@ -213,7 +272,7 @@ function Profile() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex-1 md:flex-none md:px-8 rounded-lg py-3 border border-red-500 bg-white text-red-600 font-semibold hover:bg-red-50"
+                  className="flex-1 md:flex-none md:px-8 rounded-lg py-3 border border-red-500 bg-white text-red-600 font-semibold hover:bg-red-50 transition-all"
                 >
                   Logout
                 </button>
