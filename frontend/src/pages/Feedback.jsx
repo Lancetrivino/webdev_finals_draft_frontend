@@ -199,7 +199,7 @@ export default function FeedbackEnhanced() {
                  <button
   key={star}
   type="button"
-  onClick={() => setRating(star)}
+  onClick={() => setRating(prev => (prev === star ? 0 : star))}
   onMouseEnter={() => setHoverRating(star)}
   onMouseLeave={() => setHoverRating(0)}
   className="text-4xl p-2 rounded-lg transition-transform hover:scale-125 hover:bg-violet-100"
