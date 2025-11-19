@@ -126,18 +126,9 @@ const EventDetails = () => {
       return;
     }
 
-   
-    if (!joined) {
-      toast.info("You need to join this event before writing a review.");
-      return;
-    }
-
-   
-    if (!eventHasPassed) {
-      toast.info("You can leave a review after the event has ended.");
-      return;
-    }
-
+    // ✅ REMOVED: Join requirement check
+    // ✅ REMOVED: Event has passed check
+    
     if (alreadySubmittedFeedback) {
       toast.info("You've already submitted feedback for this event.");
       return;
@@ -187,9 +178,11 @@ const EventDetails = () => {
         },
       };
       setReviews((prev) => [newReview, ...prev]);
-      toast.success("Thank you — your review was submitted!");
+      toast.success("Thank you – your review was submitted!");
       setAlreadySubmittedFeedback(true);
       setShowWriteForm(false);
+      setReviewComment("");
+      setReviewRating(5);
     } catch (err) {
       console.error("Failed to submit review:", err);
       toast.error(err.message || "Error submitting review.");
@@ -280,6 +273,7 @@ const EventDetails = () => {
     time,
     duration,
     imageData,
+    image,
     reminders,
     status,
     capacity,
@@ -303,7 +297,7 @@ const EventDetails = () => {
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
                 <div className="flex items-center gap-2 text-violet-600">
                   <span>📍</span>
-                  <span className="text-lg font-medium">{venue || "—"}</span>
+                  <span className="text-lg font-medium">{venue || "–"}</span>
                 </div>
               </div>
 
@@ -314,7 +308,7 @@ const EventDetails = () => {
               )}
             </div>
 
-            {imageData && <div className="rounded-2xl overflow-hidden mb-8 shadow-xl border-2 border-violet-200"><img src={imageData} alt={title} className="w-full max-h-96 object-cover" /></div>}
+            {(imageData || image) && <div className="rounded-2xl overflow-hidden mb-8 shadow-xl border-2 border-violet-200"><img src={imageData || image} alt={title} className="w-full max-h-96 object-cover" /></div>}
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="bg-violet-50 rounded-xl p-6 border-2 border-violet-200">
@@ -323,7 +317,7 @@ const EventDetails = () => {
                     <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">📅</div>
                     <div>
                       <p className="text-xs text-gray-600 font-medium">Date</p>
-                      <p className="text-gray-900 font-semibold">{date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "—"}</p>
+                      <p className="text-gray-900 font-semibold">{date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "–"}</p>
                     </div>
                   </div>
 
@@ -348,24 +342,75 @@ const EventDetails = () => {
 
             {reminders && reminders.length > 0 && (<div className="mb-8"><h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2><ul className="space-y-2">{reminders.map((r, i) => <li key={i} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200"><span className="text-violet-600 font-bold">•</span><span className="text-gray-700">{r}</span></li>)}</ul></div>)}
 
-           
+            {/* ✅ IMPROVED ACTION BUTTONS */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex gap-3 flex-1">
-                {currentUser && !isFull && !joined && <button onClick={handleJoin} disabled={processing} className={`px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold shadow-lg ${processing ? "opacity-50 cursor-not-allowed" : ""}`}>{processing ? "Joining..." : "✓ Join Event"}</button>}
-                {currentUser && joined && <button onClick={handleLeave} disabled={processing} className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg ${processing ? "opacity-50 cursor-not-allowed" : ""}`}>{processing ? "Leaving..." : "✕ Leave Event"}</button>}
-                {!currentUser && <button onClick={() => navigate("/login")} className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg">Login to Join</button>}
-                {isFull && !joined && <div className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold flex items-center">🚫 Event is Full</div>}
+              <div className="flex gap-3 flex-1 flex-wrap">
+                {/* Not logged in */}
+                {!currentUser && (
+                  <button 
+                    onClick={() => navigate("/login")} 
+                    className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:from-violet-700 hover:to-purple-700 transition-all"
+                  >
+                    Login to Join
+                  </button>
+                )}
+
+                {/* Event is full and not joined */}
+                {currentUser && isFull && !joined && (
+                  <div className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold flex items-center">
+                    🚫 Event is Full
+                  </div>
+                )}
+
+                {/* Can join */}
+                {currentUser && !isFull && !joined && (
+                  <button 
+                    onClick={handleJoin} 
+                    disabled={processing} 
+                    className={`px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-green-700 hover:to-green-800"}`}
+                  >
+                    {processing ? "Joining..." : "✓ Join Event"}
+                  </button>
+                )}
+
+                {/* Already joined - show status badge AND leave button */}
+                {currentUser && joined && (
+                  <>
+                    <div className="px-6 py-3 bg-green-100 border-2 border-green-300 text-green-700 rounded-xl font-semibold flex items-center gap-2">
+                      ✓ You're Attending
+                    </div>
+                    <button 
+                      onClick={handleLeave} 
+                      disabled={processing} 
+                      className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-red-700 hover:to-red-800"}`}
+                    >
+                      {processing ? "Leaving..." : "✕ Leave Event"}
+                    </button>
+                  </>
+                )}
               </div>
 
-              <div className="flex gap-3 items-center">
-                {currentUser && joined && eventHasPassed && !alreadySubmittedFeedback && <button onClick={() => navigate(`/feedback/${id}`)} className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold shadow-lg">⭐ Leave Review</button>}
+              <div className="flex gap-3 items-center flex-wrap">
+                {/* Write Review button - ✅ NO RESTRICTIONS */}
+                {currentUser && !alreadySubmittedFeedback && (
+                  <button 
+                    onClick={() => navigate(`/feedback/${id}`)} 
+                    className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
+                  >
+                    ⭐ Write Review
+                  </button>
+                )}
 
-                <button onClick={fetchReviews} className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-semibold shadow-lg" title={`View ${totalReviews || 0} reviews`}>
-                  📝 View Reviews ({totalReviews || 0})
+                {/* View reviews button */}
+                <button 
+                  onClick={fetchReviews} 
+                  className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-semibold shadow-lg hover:from-gray-700 hover:to-gray-800 transition-all" 
+                  title={`View ${totalReviews || 0} reviews`}
+                >
+                  📝 Reviews ({totalReviews || 0})
                 </button>
               </div>
             </div>
-            {/* end actions */}
           </div>
         </div>
       </div>
@@ -387,7 +432,6 @@ const EventDetails = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                {/* WRITE button always visible — uses handler to check eligibility */}
                 <button
                   onClick={handleOpenWrite}
                   className="px-3 py-1.5 bg-violet-50 rounded-lg border-2 border-violet-100 font-semibold hover:bg-violet-100 transition"
@@ -454,7 +498,7 @@ const EventDetails = () => {
               {/* reviews list (or empty state) */}
               {loadingReviews && <div className="text-center py-6 text-gray-500">Loading reviews...</div>}
 
-              {!loadingReviews && reviews.length === 0 && <div className="text-center py-6 text-gray-500">No reviews yet.</div>}
+              {!loadingReviews && reviews.length === 0 && <div className="text-center py-6 text-gray-500">No reviews yet. Be the first to review!</div>}
 
               {!loadingReviews && reviews.map((r, idx) => {
                 const reviewerName = r.user?.name || r.user?.username || r.name || "Anonymous";

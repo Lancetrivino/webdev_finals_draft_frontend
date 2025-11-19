@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CreateEvent from "./pages/CreateEvent";
+import EditEvent from "./pages/EditEvent"; // ✅ ADD THIS IMPORT
 import AdminDashboard from "./pages/AdminDashboard";
 import Events from "./pages/Events";
 import Feedback from "./pages/Feedback";
@@ -141,6 +142,15 @@ const AppContent = () => (
             element={
               <PrivateRoute>
                 <CreateEvent />
+              </PrivateRoute>
+            }
+          />
+          {/* ✅ ADD EDIT EVENT ROUTE */}
+          <Route
+            path="/events/edit/:id"
+            element={
+              <PrivateRoute>
+                <EditEvent />
               </PrivateRoute>
             }
           />
