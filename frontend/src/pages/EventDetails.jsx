@@ -1,8 +1,82 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { API_BASE_URL } from "../App";
+
+const LocationIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M12 11.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12 21s7-4.5 7-10a7 7 0 10-14 0c0 5.5 7 10 7 10z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CalendarIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ClockIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M12 8v5l3 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const DurationIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const UsersIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M17 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M21 11v-1a4 4 0 00-3-3.87" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const StarIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+  </svg>
+);
+
+const ReviewIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CheckIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CrossIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const BanIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M4.93 4.93l14.14 14.14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const NotFoundIcon = ({ className = "w-16 h-16 text-gray-300" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -15,13 +89,9 @@ const EventDetails = () => {
   const [processing, setProcessing] = useState(false);
   const [eventHasPassed, setEventHasPassed] = useState(false);
   const [alreadySubmittedFeedback, setAlreadySubmittedFeedback] = useState(false);
-
-  // Reviews toast panel state
   const [showReviews, setShowReviews] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
-
-  // Write-review inline form state inside panel
   const [showWriteForm, setShowWriteForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewHover, setReviewHover] = useState(0);
@@ -29,7 +99,6 @@ const EventDetails = () => {
   const [reviewEmail, setReviewEmail] = useState(currentUser?.email || "");
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // fetch event
   useEffect(() => {
     const fetchEvent = async () => {
       setLoading(true);
@@ -56,7 +125,7 @@ const EventDetails = () => {
           setJoined(participantIds.includes(userId));
         }
       } catch (err) {
-        console.error("❌ Error fetching event details:", err);
+        console.error("Error fetching event details:", err);
         toast.error(err.message || "Failed to load event details.");
       } finally {
         setLoading(false);
@@ -66,7 +135,6 @@ const EventDetails = () => {
     fetchEvent();
   }, [id, navigate, currentUser]);
 
-  // feedback eligibility
   useEffect(() => {
     if (!event || !currentUser) return;
 
@@ -96,7 +164,6 @@ const EventDetails = () => {
     checkFeedback();
   }, [event, currentUser, id]);
 
-  // fetch reviews and open panel
   const fetchReviews = async () => {
     setLoadingReviews(true);
     try {
@@ -126,9 +193,6 @@ const EventDetails = () => {
       return;
     }
 
-    // ✅ REMOVED: Join requirement check
-    // ✅ REMOVED: Event has passed check
-    
     if (alreadySubmittedFeedback) {
       toast.info("You've already submitted feedback for this event.");
       return;
@@ -206,11 +270,11 @@ const EventDetails = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to join event");
-      toast.success("🎉 " + (data.message || "Joined!"));
+      toast.success(data.message || "Joined!");
       setJoined(true);
       setEvent((prev) => ({ ...prev, participants: [...(prev.participants || []), currentUser._id || currentUser.id] }));
     } catch (err) {
-      console.error(err);
+      console.error("Error joining:", err);
       toast.error(err.message || "Error joining.");
     } finally {
       setProcessing(false);
@@ -238,7 +302,7 @@ const EventDetails = () => {
       const userId = currentUser._id || currentUser.id;
       setEvent((prev) => ({ ...prev, participants: (prev.participants || []).filter((u) => u !== userId) }));
     } catch (err) {
-      console.error(err);
+      console.error("Error leaving:", err);
       toast.error(err.message || "Error leaving.");
     } finally {
       setProcessing(false);
@@ -259,7 +323,9 @@ const EventDetails = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50" style={{ paddingTop: "calc(var(--nav-height,72px) + 24px)" }}>
         <div className="text-center bg-white rounded-2xl p-12 shadow-2xl border-2 border-violet-200">
-          <div className="text-6xl mb-4">😞</div>
+          <div className="mb-4">
+            <NotFoundIcon />
+          </div>
           <p className="text-xl text-gray-600 font-semibold">Event not found.</p>
         </div>
       </div>
@@ -296,7 +362,7 @@ const EventDetails = () => {
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{title}</h1>
                 <div className="flex items-center gap-2 text-violet-600">
-                  <span>📍</span>
+                  <LocationIcon className="w-5 h-5" />
                   <span className="text-lg font-medium">{venue || "–"}</span>
                 </div>
               </div>
@@ -314,23 +380,81 @@ const EventDetails = () => {
               <div className="bg-violet-50 rounded-xl p-6 border-2 border-violet-200">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">📅</div>
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                      <CalendarIcon className="w-5 h-5" />
+                    </div>
                     <div>
                       <p className="text-xs text-gray-600 font-medium">Date</p>
                       <p className="text-gray-900 font-semibold">{date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "–"}</p>
                     </div>
                   </div>
 
-                  {time && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">⏰</div><div><p className="text-xs text-gray-600 font-medium">Time</p><p className="text-gray-900 font-semibold">{time}</p></div></div>}
-                  {duration && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">🕐</div><div><p className="text-xs text-gray-600 font-medium">Duration</p><p className="text-gray-900 font-semibold">{duration}</p></div></div>}
+                  {time && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        <ClockIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Time</p>
+                        <p className="text-gray-900 font-semibold">{time}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {duration && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        <DurationIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Duration</p>
+                        <p className="text-gray-900 font-semibold">{duration}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="bg-violet-50 rounded-xl p-6 border-2 border-violet-200">
                 <div className="space-y-4">
-                  {remainingSlots !== null && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">👥</div><div><p className="text-xs text-gray-600 font-medium">Availability</p><p className={`font-bold text-lg ${isFull ? "text-red-600" : "text-green-600"}`}>{isFull ? "Event is Full" : `${remainingSlots} slots remaining`}</p></div></div>}
-                  {averageRating > 0 && totalReviews > 0 && <div className="flex items-center gap-3"><div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">⭐</div><div><p className="text-xs text-gray-600 font-medium">Rating</p><div className="flex items-center gap-2"><span className="text-2xl font-bold text-violet-600">{averageRating.toFixed(1)}</span><span className="text-gray-600">({totalReviews} {totalReviews === 1 ? "review" : "reviews"})</span></div></div></div>}
-                  {currentUser && joined && <div className="flex items-center gap-3 p-3 bg-green-100 rounded-lg border-2 border-green-300"><div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">✓</div><div><p className="text-xs text-green-600 font-medium">Status</p><p className="font-bold text-green-700">You've joined this event</p></div></div>}
+                  {remainingSlots !== null && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        <UsersIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Availability</p>
+                        <p className={`font-bold text-lg ${isFull ? "text-red-600" : "text-green-600"}`}>{isFull ? "Event is Full" : `${remainingSlots} slots remaining`}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {averageRating > 0 && totalReviews > 0 && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        <StarIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-medium">Rating</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-violet-600">{averageRating.toFixed(1)}</span>
+                          <span className="text-gray-600">({totalReviews} {totalReviews === 1 ? "review" : "reviews"})</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentUser && joined && (
+                    <div className="flex items-center gap-3 p-3 bg-green-100 rounded-lg border-2 border-green-300">
+                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white shadow-lg">
+                        <CheckIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-green-600 font-medium">Status</p>
+                        <p className="font-bold text-green-700">You're attending</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -340,74 +464,81 @@ const EventDetails = () => {
               <p className="text-gray-700 leading-relaxed whitespace-pre-line bg-violet-50 p-6 rounded-xl border-2 border-violet-200">{description || "No description provided."}</p>
             </div>
 
-            {reminders && reminders.length > 0 && (<div className="mb-8"><h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2><ul className="space-y-2">{reminders.map((r, i) => <li key={i} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200"><span className="text-violet-600 font-bold">•</span><span className="text-gray-700">{r}</span></li>)}</ul></div>)}
+            {reminders && reminders.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Important Reminders</h2>
+                <ul className="space-y-2">
+                  {reminders.map((r, i) => (
+                    <li key={i} className="flex items-start gap-3 bg-violet-50 p-4 rounded-xl border-2 border-violet-200">
+                      <span className="text-violet-600 font-bold">•</span>
+                      <span className="text-gray-700">{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* ✅ IMPROVED ACTION BUTTONS */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="flex gap-3 flex-1 flex-wrap">
-                {/* Not logged in */}
                 {!currentUser && (
-                  <button 
-                    onClick={() => navigate("/login")} 
+                  <button
+                    onClick={() => navigate("/login")}
                     className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:from-violet-700 hover:to-purple-700 transition-all"
                   >
                     Login to Join
                   </button>
                 )}
 
-                {/* Event is full and not joined */}
                 {currentUser && isFull && !joined && (
                   <div className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold flex items-center">
-                    🚫 Event is Full
+                    <BanIcon className="w-4 h-4 mr-2" />
+                    Event is Full
                   </div>
                 )}
 
-                {/* Can join */}
                 {currentUser && !isFull && !joined && (
-                  <button 
-                    onClick={handleJoin} 
-                    disabled={processing} 
+                  <button
+                    onClick={handleJoin}
+                    disabled={processing}
                     className={`px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-green-700 hover:to-green-800"}`}
                   >
-                    {processing ? "Joining..." : "✓ Join Event"}
+                    {processing ? "Joining..." : <span className="inline-flex items-center gap-2"><CheckIcon className="w-4 h-4" /> Join Event</span>}
                   </button>
                 )}
 
-                {/* Already joined - show status badge AND leave button */}
                 {currentUser && joined && (
                   <>
                     <div className="px-6 py-3 bg-green-100 border-2 border-green-300 text-green-700 rounded-xl font-semibold flex items-center gap-2">
-                      ✓ You're Attending
+                      <CheckIcon className="w-4 h-4" />
+                      You're Attending
                     </div>
-                    <button 
-                      onClick={handleLeave} 
-                      disabled={processing} 
+                    <button
+                      onClick={handleLeave}
+                      disabled={processing}
                       className={`px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold shadow-lg transition-all ${processing ? "opacity-50 cursor-not-allowed" : "hover:from-red-700 hover:to-red-800"}`}
                     >
-                      {processing ? "Leaving..." : "✕ Leave Event"}
+                      {processing ? "Leaving..." : <span className="inline-flex items-center gap-2"><CrossIcon className="w-4 h-4" /> Leave Event</span>}
                     </button>
                   </>
                 )}
               </div>
 
               <div className="flex gap-3 items-center flex-wrap">
-                {/* Write Review button - ✅ NO RESTRICTIONS */}
                 {currentUser && !alreadySubmittedFeedback && (
-                  <button 
-                    onClick={() => navigate(`/feedback/${id}`)} 
+                  <button
+                    onClick={() => navigate(`/feedback/${id}`)}
                     className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all"
                   >
-                    ⭐ Write Review
+                    <span className="inline-flex items-center gap-2"><StarIcon className="w-4 h-4" /> Write Review</span>
                   </button>
                 )}
 
-                {/* View reviews button */}
-                <button 
-                  onClick={fetchReviews} 
-                  className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-semibold shadow-lg hover:from-gray-700 hover:to-gray-800 transition-all" 
+                <button
+                  onClick={fetchReviews}
+                  className="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-semibold shadow-lg hover:from-gray-700 hover:to-gray-800 transition-all"
                   title={`View ${totalReviews || 0} reviews`}
                 >
-                  📝 Reviews ({totalReviews || 0})
+                  <span className="inline-flex items-center gap-2"><ReviewIcon className="w-4 h-4" /> Reviews ({totalReviews || 0})</span>
                 </button>
               </div>
             </div>
@@ -415,16 +546,16 @@ const EventDetails = () => {
         </div>
       </div>
 
-      {/* Reviews panel (toast) */}
       {showReviews && (
         <div className="fixed inset-0 z-[9999] flex items-end justify-center pointer-events-none">
           <div className="absolute inset-0 bg-black/30" onClick={() => setShowReviews(false)} />
 
           <div className="relative pointer-events-auto mb-8 w-[min(920px,95%)] max-h-[80vh] overflow-hidden rounded-2xl bg-white shadow-2xl border-2 border-violet-200">
-            {/* header */}
             <div className="flex items-center justify-between p-4 border-b border-violet-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold shadow">📝</div>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold shadow">
+                  <ReviewIcon className="w-5 h-5" />
+                </div>
                 <div>
                   <div className="font-bold text-gray-900">Reviews</div>
                   <div className="text-xs text-gray-500">{reviews.length} {reviews.length === 1 ? "review" : "reviews"}</div>
@@ -443,9 +574,7 @@ const EventDetails = () => {
               </div>
             </div>
 
-            {/* body */}
             <div className="p-4 overflow-auto space-y-3 max-h-[62vh]">
-              {/* inline write form */}
               {showWriteForm && (
                 <form onSubmit={submitReview} className="p-4 rounded-xl border-2 border-violet-100 bg-violet-50/50 space-y-3">
                   <div className="flex items-center gap-3">
@@ -461,7 +590,7 @@ const EventDetails = () => {
                           className="text-2xl"
                           aria-label={`${n} star`}
                         >
-                          {n <= (reviewHover || reviewRating) ? "⭐" : "☆"}
+                          {n <= (reviewHover || reviewRating) ? "★" : "☆"}
                         </button>
                       ))}
                     </div>
@@ -495,7 +624,6 @@ const EventDetails = () => {
                 </form>
               )}
 
-              {/* reviews list (or empty state) */}
               {loadingReviews && <div className="text-center py-6 text-gray-500">Loading reviews...</div>}
 
               {!loadingReviews && reviews.length === 0 && <div className="text-center py-6 text-gray-500">No reviews yet. Be the first to review!</div>}
@@ -520,7 +648,11 @@ const EventDetails = () => {
                         </div>
 
                         <div className="flex items-center gap-1">
-                          {[1,2,3,4,5].map(i => <svg key={i} className={`w-4 h-4 ${i <= stars ? "text-yellow-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
+                          {[1,2,3,4,5].map(i => (
+                            <svg key={i} className={`w-4 h-4 ${i <= stars ? "text-yellow-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
                         </div>
                       </div>
 
