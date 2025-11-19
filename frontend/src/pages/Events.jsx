@@ -127,14 +127,14 @@ function Events() {
   // Actual delete action (kept separate so it can be invoked from the toast)
   const doDelete = async (eventId) => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (!storedUser) throw new Error("Not authenticated");
-      const { token } = storedUser;
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) throw new Error("Not authenticated");
+      
       const API_BASE = import.meta.env.VITE_API_URL;
 
       const res = await fetch(`${API_BASE}/api/events/${eventId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${storedToken}` },
       });
 
       const data = await res.json();
